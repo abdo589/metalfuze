@@ -100,15 +100,17 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <header className="flex flex-col items-center gap-4 text-center">
+        <div className="rounded-2xl bg-white px-8 py-4 shadow-sm ring-1 ring-border/60">
+          <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665} className="h-auto w-72 max-w-full sm:w-96" />
+        </div>
         <div>
-          <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1536} height={382} className="mb-4 h-auto w-72 max-w-full rounded-xl border border-border/60 sm:w-80" />
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">لوحة متابعة المشاريع</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {new Date().toLocaleDateString("ar-SA-u-ca-gregory", { dateStyle: "full" })}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 print:hidden">
+        <div className="flex flex-wrap justify-center gap-2 print:hidden">
           <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ""; }} />
           <ThemeToggle />
