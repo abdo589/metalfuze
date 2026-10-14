@@ -147,7 +147,7 @@ function Dashboard() {
             <BarChart data={bySector}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
-              <YAxis orientation="right" tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
+              <YAxis orientation="right" width={50} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
               <Tooltip {...tip} formatter={(v: number) => fmtMoney(v)} cursor={{ fill: "var(--muted)" }} />
               <Bar dataKey="value" name="القيمة" radius={[6, 6, 0, 0]} fill="var(--chart-1)" />
             </BarChart>
