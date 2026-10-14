@@ -119,6 +119,9 @@ function Dashboard() {
           <Button variant="outline" asChild>
             <Link to="/assistant"><BrainCircuit /> المستشار الذكي</Link>
           </Button>
+          <Button variant="outline" asChild>
+            <Link to="/payroll"><Banknote /> الرواتب</Link>
+          </Button>
           <Button variant="outline" onClick={() => fileRef.current?.click()}>
             <FileSpreadsheet /> تحديث من ملف Excel
           </Button>
