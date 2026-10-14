@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Import uploaded brand imagery through Lovable Assets pointers; keep only the resized favicon in public so branding stays lightweight and tab icons remain directly accessible.

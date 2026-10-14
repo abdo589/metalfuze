@@ -11,6 +11,7 @@ import {
   daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
 } from "@/lib/projects";
 import { exportExcel } from "@/lib/export";
+import logoAsset from "@/assets/metal-fuze-logo.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -100,7 +101,7 @@ function Dashboard() {
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-medium tracking-widest text-primary">METAL FUZE</p>
+          <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1536} height={382} className="mb-4 h-auto w-72 max-w-full rounded-sm sm:w-80" />
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">لوحة متابعة المشاريع</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {new Date().toLocaleDateString("ar-SA-u-ca-gregory", { dateStyle: "full" })}
@@ -255,7 +256,7 @@ function Dashboard() {
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
-                          <div className="h-full bg-copper" style={{ width: `${Math.min(100, p.progress * 100)}%` }} />
+                          <div className="h-full bg-primary" style={{ width: `${Math.min(100, p.progress * 100)}%` }} />
                         </div>
                         <span className="text-xs">{fmtPct(p.progress)}</span>
                       </div>
@@ -288,7 +289,7 @@ function Kpi({ icon, label, value, sub, accent }: { icon: React.ReactNode; label
         <span className="text-sm">{label}</span>
         <span className="text-primary [&_svg]:size-5">{icon}</span>
       </div>
-      <p className={`mt-3 font-display text-3xl font-extrabold tabular-nums ${accent ? "text-copper" : ""}`}>{value}</p>
+      <p className={`mt-3 font-display text-3xl font-extrabold tabular-nums ${accent ? "text-primary" : ""}`}>{value}</p>
       <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
     </div>
   );
