@@ -54,8 +54,8 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);
-  --font-sans: var(--font-sans);
-  --font-display: var(--font-display);
+  --font-sans: var(--app-sans);
+  --font-display: var(--app-display);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -98,8 +98,8 @@
   --gradient-metal: linear-gradient(135deg, oklch(0.26 0.012 260), oklch(0.2 0.01 260));
   --gradient-copper: linear-gradient(120deg, oklch(0.78 0.13 65), oklch(0.62 0.15 40));
   --shadow-card: 0 1px 0 oklch(1 0 0 / 6%) inset, 0 20px 40px -24px oklch(0 0 0 / 60%);
-  --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
-  --font-display: "Tajawal", "IBM Plex Sans Arabic", sans-serif;
+  --app-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --app-display: "Tajawal", "IBM Plex Sans Arabic", sans-serif;
   --sidebar: oklch(0.2 0.01 260);
   --sidebar-foreground: oklch(0.95 0.005 80);
   --sidebar-primary: oklch(0.72 0.14 55);
@@ -118,7 +118,7 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: var(--font-sans);
+    font-family: var(--app-sans);
     background-image: radial-gradient(ellipse at top right, oklch(0.72 0.14 55 / 8%), transparent 50%);
     background-attachment: fixed;
   }
