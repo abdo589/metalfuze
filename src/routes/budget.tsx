@@ -46,10 +46,10 @@ function Budget() {
     return { rows: rows.sort((a, b) => b.p.contract - a.p.contract), contracts, paid, payroll, payrollPaid, general };
   }, [projects, employees, month]);
 
-  const kpis: [string, string, string?][] = [
-    ["إجمالي العقود", fmtMoney(data.contracts)],
+  const kpis: [string, string, string | undefined][] = [
+    ["إجمالي العقود", fmtMoney(data.contracts), undefined],
     ["المصروف من العقود", fmtMoney(data.paid), data.contracts ? fmtPct(data.paid / data.contracts) : undefined],
-    ["المتبقي من العقود", fmtMoney(data.contracts - data.paid)],
+    ["المتبقي من العقود", fmtMoney(data.contracts - data.paid), undefined],
     ["صرف الرواتب الشهري", fmtMoney(data.payroll), `مدفوع ${fmtMoney(data.payrollPaid)}`],
   ];
 
