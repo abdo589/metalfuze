@@ -1,0 +1,100 @@
+import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { newEmpId, type Employee } from "@/lib/payroll";
+
+const empty: Employee = {
+  id: "",
+  name: "",
+  role: "",
+  dept: "",
+  project: "",
+  base: 0,
+  allowances: 0,
+  deductions: 0,
+  joined: null,
+  active: true,
+  paidMonths: [],
+};
+
+export function EmployeeDialog({
+  open,
+  onOpenChange,
+  employee,
+  onSave,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  employee: Employee | null;
+  onSave: (e: Employee) => void;
+}) {
+  const [form, setForm] = useState<Employee>(empty);
+
+  useEffect(() => {
+    if (open) setForm(employee ?? { ...empty, id: newEmpId() });
+  }, [open, employee]);
+
+  const set = <K extends keyof Employee>(k: K, v: Employee[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const num = (v: string) => Number(v) || 0;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{employee ? "تعديل موظف" : "إضافة موظف"}</DialogTitle>
+        </DialogHeader>
+        <form
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSave(form);
+            onOpenChange(false);
+          }}
+        >
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>اسم الموظف</Label>
+            <Input required value={form.name} onChange={(e) => set("name", e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>المسمى الوظيفي</Label>
+            <Input value={form.role} onChange={(e) => set("role", e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>الإدارة</Label>
+            <Input value={form.dept} onChange={(e) => set("dept", e.target.value)} />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>المشروع (اختياري)</Label>
+            <Input value={form.project} onChange={(e) => set("project", e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>الراتب الأساسي</Label>
+            <Input type="number" min={0} value={form.base} onChange={(e) => set("base", num(e.target.value))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>البدلات</Label>
+            <Input type="number" min={0} value={form.allowances} onChange={(e) => set("allowances", num(e.target.value))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>الخصومات</Label>
+            <Input type="number" min={0} value={form.deductions} onChange={(e) => set("deductions", num(e.target.value))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>تاريخ التعيين</Label>
+            <Input type="date" value={form.joined ?? ""} onChange={(e) => set("joined", e.target.value || null)} />
+          </div>
+          <label className="flex items-center gap-2 sm:col-span-2">
+            <input type="checkbox" checked={form.active} onChange={(e) => set("active", e.target.checked)} className="size-4 accent-primary" />
+            <span className="text-sm">موظف نشط (يظهر في مسير الرواتب)</span>
+          </label>
+          <div className="flex justify-end gap-2 sm:col-span-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
+            <Button type="submit">حفظ</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
