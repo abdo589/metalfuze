@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { LogOut, Lock } from "lucide-react";
+import { LogOut, Lock, Users } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     <>
       <div className="flex items-center justify-end gap-2 px-4 pt-3 text-sm text-muted-foreground print:hidden sm:px-6">
         <span>مرحباً، <b className="text-foreground">{name}</b></span>
+        <Button size="sm" variant="ghost" asChild><Link to="/users"><Users /> المستخدمون</Link></Button>
         <Button size="sm" variant="ghost" onClick={() => supabase.auth.signOut()}><LogOut /> خروج</Button>
       </div>
       {children}
