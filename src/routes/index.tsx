@@ -122,6 +122,9 @@ function Dashboard() {
           <Button variant="outline" asChild>
             <Link to="/payroll"><Banknote /> الرواتب</Link>
           </Button>
+          <Button variant="outline" asChild>
+            <Link to="/budget"><Banknote /> الميزانية</Link>
+          </Button>
           <Button variant="outline" onClick={() => fileRef.current?.click()}>
             <FileSpreadsheet /> تحديث من ملف Excel
           </Button>

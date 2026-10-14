@@ -87,6 +87,9 @@ function Payroll() {
           <Button variant="outline" asChild>
             <Link to="/report"><FileDown /> التقرير الشهري</Link>
           </Button>
+          <Button variant="outline" asChild>
+            <Link to="/budget">الميزانية</Link>
+          </Button>
           <Button variant="outline" onClick={onExport}>
             <FileDown /> تصدير مسير Excel
           </Button>
