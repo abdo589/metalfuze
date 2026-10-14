@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, BrainCircuit, MessageSquarePlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -91,6 +92,10 @@ function ChatWindow({ threadId }: { threadId: string }) {
   const initial = useMemo(() => threadStore.get(threadId)?.messages ?? [], [threadId]);
   const transport = useMemo(() => new DefaultChatTransport({
     api: "/api/chat",
+    headers: async (): Promise<Record<string, string>> => {
+      const { data } = await supabase.auth.getSession();
+      return data.session ? { Authorization: `Bearer ${data.session.access_token}` } : {};
+    },
     body: () => ({
       threadId,
       today: new Date().toISOString().slice(0, 10),

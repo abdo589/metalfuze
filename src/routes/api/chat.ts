@@ -15,6 +15,11 @@ export const Route = createFileRoute("/api/chat")({
       POST: async ({ request }) => {
         const apiKey = process.env["LOVABLE_API_KEY"];
         if (!apiKey) return new Response("مفتاح الذكاء الاصطناعي غير مهيأ", { status: 500 });
+        const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+        if (!token) return new Response("يجب تسجيل الدخول", { status: 401 });
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: auth } = await supabaseAdmin.auth.getUser(token);
+        if (!auth.user) return new Response("يجب تسجيل الدخول", { status: 401 });
         let body: { messages?: UIMessage[]; projects?: unknown[]; today?: string };
         try { body = await request.json(); } catch { return new Response("طلب غير صالح", { status: 400 }); }
         const messages = Array.isArray(body.messages) ? body.messages.slice(-40) : [];
