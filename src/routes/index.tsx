@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, Banknote, FileSpreadsheet, FolderKanban, Pencil, Plus, Search, Trash2, TrendingUp } from "lucide-react";
+import { AlertTriangle, Banknote, CircleAlert, FileDown, FileSpreadsheet, FolderKanban, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { ProjectDialog } from "@/components/ProjectDialog";
 import {
   daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
 } from "@/lib/projects";
+import { exportExcel } from "@/lib/export";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,9 +59,16 @@ function Dashboard() {
     const withProg = projects.filter((p) => p.progress > 0);
     const avg = withProg.length ? withProg.reduce((a, p) => a + p.progress, 0) / withProg.length : 0;
     const late = projects.filter((p) => p.status.includes("متأخر")).length;
-    const alerts = projects.filter((p) => { const d = daysLeft(p.end); return d !== null && d <= 30 && p.progress < 1; });
-    return { contract, paid, remaining: contract - paid, avg, late, alerts };
+    const overdue = projects.filter((p) => { const d = daysLeft(p.end); return d !== null && d < 0 && p.progress < 1; });
+    const soon = projects.filter((p) => { const d = daysLeft(p.end); return d !== null && d >= 0 && d <= 14 && p.progress < 1; });
+    return { contract, paid, remaining: contract - paid, avg, late, overdue, soon };
   }, [projects]);
+
+  const tableRef = useRef<HTMLElement>(null);
+  function scrollToTable(filter?: string) {
+    if (filter) setStatus(filter);
+    tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   const managers = useMemo(() => [...new Set(projects.map((p) => p.manager).filter(Boolean))], [projects]);
   const byStatus = useMemo(() => groupBy(projects, (p) => p.status), [projects]);
