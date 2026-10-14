@@ -171,6 +171,15 @@
   border-radius: var(--radius-xl);
 }
 
+/* The logo PNG is transparent, so the dark theme needs the recolored light variant. */
+.dark .logo-on-light {
+  display: none;
+}
+
+.dark .logo-on-dark {
+  display: block;
+}
+
 @media print {
   @page {
     size: A4;
@@ -191,6 +200,15 @@
     --muted-foreground: #444;
     --border: #ddd;
     --input: #ddd;
+  }
+
+  /* Paper is white, so always print the dark-ink logo whatever mode is on screen. */
+  .logo-on-light {
+    display: block !important;
+  }
+
+  .logo-on-dark {
+    display: none !important;
   }
 
   body {

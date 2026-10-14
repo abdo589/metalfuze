@@ -13,6 +13,7 @@ import {
 } from "@/lib/projects";
 import { exportExcel } from "@/lib/export";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
+import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -101,9 +102,10 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col items-center gap-4 text-center">
-        <div className="rounded-2xl bg-white px-8 py-4 shadow-sm ring-1 ring-border/60">
-          <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665} className="h-auto w-72 max-w-full sm:w-96" />
-        </div>
+        <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
+          className="logo-on-light h-auto w-72 max-w-full sm:w-96" />
+        <img src={logoLightAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
+          className="logo-on-dark hidden h-auto w-72 max-w-full sm:w-96" />
         <div>
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">لوحة متابعة المشاريع</h1>
           <p className="mt-1 text-sm text-muted-foreground">
