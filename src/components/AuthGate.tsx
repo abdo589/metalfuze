@@ -24,7 +24,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   if (session === undefined) return <div className="min-h-screen" />;
   if (!session) return <Login />;
 
-  const name = (session.user.user_metadata?.display_name as string) || session.user.email?.split("@")[0];
+  const name = (session.user.user_metadata?.["display_name"] as string) || session.user.email?.split("@")[0];
   return (
     <>
       <div className="flex items-center justify-end gap-2 px-4 pt-3 text-sm text-muted-foreground print:hidden sm:px-6">
