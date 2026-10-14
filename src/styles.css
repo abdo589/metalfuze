@@ -10,7 +10,8 @@
  * The @theme inline block maps CSS custom properties to Tailwind utility
  * classes (e.g. --color-primary -> bg-primary, text-primary).
  *
- * The :root and .dark blocks define the actual color values using oklch.
+ * The :root block holds the light theme and the .dark block holds the dark
+ * theme (the .dark class is put on <html> by src/lib/theme.ts).
  * All colors MUST use oklch format.
  *
  * To add a new semantic color:
@@ -66,8 +67,53 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ============ Light theme (default) ============ */
 :root {
   --radius: 0.75rem;
+  color-scheme: light;
+  --background: oklch(0.977 0.003 219.5);
+  --foreground: oklch(0.281 0.038 235.1);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.483 0.072 196.3);
+  --primary-foreground: oklch(0.985 0.005 190);
+  --secondary: oklch(0.942 0.007 219.6);
+  --secondary-foreground: oklch(0.32 0.035 220);
+  --muted: oklch(0.942 0.007 219.6);
+  --muted-foreground: oklch(0.534 0.029 222);
+  --accent: oklch(0.925 0.014 202.4);
+  --accent-foreground: oklch(0.3 0.05 200);
+  --destructive: oklch(0.543 0.174 29.7);
+  --destructive-foreground: oklch(0.98 0 0);
+  --success: oklch(0.564 0.116 161.1);
+  --warning: oklch(0.619 0.125 76.5);
+  --info: oklch(0.522 0.099 243.7);
+  --border: oklch(0.281 0.038 235.1 / 14%);
+  --input: oklch(0.281 0.038 235.1 / 20%);
+  --ring: var(--primary);
+  --chart-1: oklch(0.557 0.079 195.1);
+  --chart-2: oklch(0.522 0.099 243.7);
+  --chart-3: oklch(0.564 0.116 161.1);
+  --chart-4: oklch(0.619 0.125 76.5);
+  --chart-5: oklch(0.543 0.174 29.7);
+  --shadow-card: 0 1px 2px oklch(0.281 0.038 235.1 / 8%), 0 14px 30px -20px oklch(0.281 0.038 235.1 / 30%);
+  --app-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --app-display: "Tajawal", "IBM Plex Sans Arabic", sans-serif;
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: oklch(0.281 0.038 235.1 / 14%);
+  --sidebar-ring: var(--primary);
+}
+
+/* ============ Dark theme ============ */
+.dark {
+  color-scheme: dark;
   --background: oklch(0.205 0.024 218);
   --foreground: oklch(0.96 0.007 190);
   --card: oklch(0.265 0.033 219);
@@ -96,8 +142,6 @@
   --chart-4: oklch(0.8 0.15 85);
   --chart-5: oklch(0.64 0.2 25);
   --shadow-card: 0 1px 0 oklch(1 0 0 / 6%) inset, 0 20px 40px -24px oklch(0 0 0 / 60%);
-  --app-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
-  --app-display: "Tajawal", "IBM Plex Sans Arabic", sans-serif;
   --sidebar: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -131,6 +175,22 @@
   @page {
     size: A4;
     margin: 12mm;
+  }
+
+  /* Printing always uses the light palette, whatever mode is on screen. */
+  :root,
+  .dark {
+    color-scheme: light;
+    --background: #fff;
+    --foreground: #111;
+    --card: #fff;
+    --card-foreground: #111;
+    --popover: #fff;
+    --popover-foreground: #111;
+    --muted: #f1f1f1;
+    --muted-foreground: #444;
+    --border: #ddd;
+    --input: #ddd;
   }
 
   body {
