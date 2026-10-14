@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -19,6 +20,11 @@ import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threa
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BudgetRoute = BudgetRouteImport.update({
+  id: '/budget',
+  path: '/budget',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PayrollRoute = PayrollRouteImport.update({
@@ -49,6 +55,7 @@ const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/budget': typeof BudgetRoute
   '/payroll': typeof PayrollRoute
   '/report': typeof ReportRoute
   '/api/chat': typeof ApiChatRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/budget': typeof BudgetRoute
   '/payroll': typeof PayrollRoute
   '/report': typeof ReportRoute
   '/api/chat': typeof ApiChatRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/budget': typeof BudgetRoute
   '/payroll': typeof PayrollRoute
   '/report': typeof ReportRoute
   '/api/chat': typeof ApiChatRoute
@@ -76,6 +85,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/budget'
     | '/payroll'
     | '/report'
     | '/api/chat'
@@ -84,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/budget'
     | '/payroll'
     | '/report'
     | '/api/chat'
@@ -92,6 +103,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/budget'
     | '/payroll'
     | '/report'
     | '/api/chat'
@@ -101,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BudgetRoute: typeof BudgetRoute
   PayrollRoute: typeof PayrollRoute
   ReportRoute: typeof ReportRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/budget': {
+      id: '/budget'
+      path: '/budget'
+      fullPath: '/budget'
+      preLoaderRoute: typeof BudgetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payroll': {
@@ -157,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BudgetRoute: BudgetRoute,
   PayrollRoute: PayrollRoute,
   ReportRoute: ReportRoute,
   ApiChatRoute: ApiChatRoute,
