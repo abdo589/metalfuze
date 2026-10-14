@@ -216,7 +216,7 @@ function Dashboard() {
       <section ref={tableRef} className="surface overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
           <h2 className="font-display text-lg font-bold">جميع المشاريع ({filtered.length})</h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 print:hidden">
             {statuses.map((st) => (
               <Button key={st} size="sm" variant={status === st ? "default" : "outline"} onClick={() => setStatus(st)}>{st}</Button>
             ))}
