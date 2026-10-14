@@ -68,20 +68,20 @@
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.17 0.008 260);
-  --foreground: oklch(0.95 0.005 80);
-  --card: oklch(0.215 0.01 260);
-  --card-foreground: oklch(0.95 0.005 80);
-  --popover: oklch(0.22 0.01 260);
-  --popover-foreground: oklch(0.95 0.005 80);
-  --primary: oklch(0.72 0.14 55);
-  --primary-foreground: oklch(0.17 0.01 260);
-  --secondary: oklch(0.27 0.01 260);
-  --secondary-foreground: oklch(0.95 0.005 80);
-  --muted: oklch(0.26 0.01 260);
-  --muted-foreground: oklch(0.68 0.012 260);
-  --accent: oklch(0.29 0.02 60);
-  --accent-foreground: oklch(0.9 0.08 60);
+  --background: oklch(0.205 0.024 218);
+  --foreground: oklch(0.96 0.007 190);
+  --card: oklch(0.265 0.033 219);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.28 0.032 219);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.74 0.105 185);
+  --primary-foreground: oklch(0.205 0.024 218);
+  --secondary: oklch(0.32 0.035 215);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.31 0.029 218);
+  --muted-foreground: oklch(0.75 0.025 205);
+  --accent: oklch(0.35 0.052 190);
+  --accent-foreground: oklch(0.9 0.055 185);
   --destructive: oklch(0.64 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
   --success: oklch(0.72 0.15 155);
@@ -89,25 +89,23 @@
   --info: oklch(0.7 0.11 230);
   --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 13%);
-  --ring: oklch(0.72 0.14 55);
-  --chart-1: oklch(0.72 0.14 55);
+  --ring: var(--primary);
+  --chart-1: var(--primary);
   --chart-2: oklch(0.7 0.11 230);
   --chart-3: oklch(0.72 0.15 155);
   --chart-4: oklch(0.8 0.15 85);
   --chart-5: oklch(0.64 0.2 25);
-  --gradient-metal: linear-gradient(135deg, oklch(0.26 0.012 260), oklch(0.2 0.01 260));
-  --gradient-copper: linear-gradient(120deg, oklch(0.78 0.13 65), oklch(0.62 0.15 40));
   --shadow-card: 0 1px 0 oklch(1 0 0 / 6%) inset, 0 20px 40px -24px oklch(0 0 0 / 60%);
   --app-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
   --app-display: "Tajawal", "IBM Plex Sans Arabic", sans-serif;
-  --sidebar: oklch(0.2 0.01 260);
-  --sidebar-foreground: oklch(0.95 0.005 80);
-  --sidebar-primary: oklch(0.72 0.14 55);
-  --sidebar-primary-foreground: oklch(0.17 0.01 260);
-  --sidebar-accent: oklch(0.27 0.01 260);
-  --sidebar-accent-foreground: oklch(0.95 0.005 80);
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(0.72 0.14 55);
+  --sidebar-ring: var(--primary);
 }
 
 @layer base {
@@ -119,25 +117,14 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--app-sans);
-    background-image: radial-gradient(ellipse at top right, oklch(0.72 0.14 55 / 8%), transparent 50%);
-    background-attachment: fixed;
   }
 }
 
 @utility surface {
-  background: var(--gradient-metal);
+  background: var(--card);
   box-shadow: var(--shadow-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-}
-@utility text-copper {
-  background: var(--gradient-copper);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-@utility bg-copper {
-  background: var(--gradient-copper);
 }
 
 @media print {
