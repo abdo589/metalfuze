@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as UsersRouteImport } from './routes/users'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
@@ -37,6 +38,11 @@ const ReportRoute = ReportRouteImport.update({
   path: '/report',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UsersRoute = UsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/budget': typeof BudgetRoute
   '/payroll': typeof PayrollRoute
   '/report': typeof ReportRoute
+  '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/assistant/': typeof AssistantIndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/budget': typeof BudgetRoute
   '/payroll': typeof PayrollRoute
   '/report': typeof ReportRoute
+  '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/assistant': typeof AssistantIndexRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/budget': typeof BudgetRoute
   '/payroll': typeof PayrollRoute
   '/report': typeof ReportRoute
+  '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/assistant/': typeof AssistantIndexRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/budget'
     | '/payroll'
     | '/report'
+    | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
     | '/assistant/'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/budget'
     | '/payroll'
     | '/report'
+    | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
     | '/assistant'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/budget'
     | '/payroll'
     | '/report'
+    | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
     | '/assistant/'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   BudgetRoute: typeof BudgetRoute
   PayrollRoute: typeof PayrollRoute
   ReportRoute: typeof ReportRoute
+  UsersRoute: typeof UsersRoute
   ApiChatRoute: typeof ApiChatRoute
   AssistantThreadIdRoute: typeof AssistantThreadIdRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/users': {
+      id: '/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   BudgetRoute: BudgetRoute,
   PayrollRoute: PayrollRoute,
   ReportRoute: ReportRoute,
+  UsersRoute: UsersRoute,
   ApiChatRoute: ApiChatRoute,
   AssistantThreadIdRoute: AssistantThreadIdRoute,
   AssistantIndexRoute: AssistantIndexRoute,
