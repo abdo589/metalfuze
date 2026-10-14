@@ -1,24 +1,282 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useRef, useState } from "react";
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { AlertTriangle, Banknote, FileSpreadsheet, FolderKanban, Pencil, Plus, Search, Trash2, TrendingUp } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ProjectDialog } from "@/components/ProjectDialog";
+import {
+  daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
+} from "@/lib/projects";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "لوحة متابعة المشاريع — Metal Fuze" },
+      { name: "description", content: "داشبورد متابعة مشاريع Metal Fuze: الإنجاز، العقود، المدفوعات والتنبيهات." },
+      { property: "og:title", content: "لوحة متابعة المشاريع — Metal Fuze" },
+      { property: "og:description", content: "متابعة حالة المشاريع والعقود والمدفوعات لحظياً." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Dashboard,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
+const tip = {
+  contentStyle: { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--foreground)" },
+  itemStyle: { color: "var(--foreground)" },
+};
+
+function statusClass(s: string) {
+  if (s.includes("متأخر")) return "bg-destructive/15 text-destructive border-destructive/30";
+  if (s.includes("متقدم")) return "bg-success/15 text-success border-success/30";
+  if (s) return "bg-info/15 text-info border-info/30";
+  return "bg-muted text-muted-foreground";
+}
+
+function groupBy(list: Project[], key: (p: Project) => string, val: (p: Project) => number = () => 1) {
+  const m = new Map<string, number>();
+  list.forEach((p) => { const k = key(p) || "غير محدد"; m.set(k, (m.get(k) ?? 0) + val(p)); });
+  return [...m.entries()].map(([name, value]) => ({ name, value }));
+}
+
+function Dashboard() {
+  const projects = useProjects();
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("الكل");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Project | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const s = useMemo(() => {
+    const contract = projects.reduce((a, p) => a + (p.contract || 0), 0);
+    const paid = projects.reduce((a, p) => a + (p.paid || 0), 0);
+    const withProg = projects.filter((p) => p.progress > 0);
+    const avg = withProg.length ? withProg.reduce((a, p) => a + p.progress, 0) / withProg.length : 0;
+    const late = projects.filter((p) => p.status.includes("متأخر")).length;
+    const alerts = projects.filter((p) => { const d = daysLeft(p.end); return d !== null && d <= 30 && p.progress < 1; });
+    return { contract, paid, remaining: contract - paid, avg, late, alerts };
+  }, [projects]);
+
+  const managers = useMemo(() => [...new Set(projects.map((p) => p.manager).filter(Boolean))], [projects]);
+  const byStatus = useMemo(() => groupBy(projects, (p) => p.status), [projects]);
+  const bySector = useMemo(() => groupBy(projects, (p) => p.sector, (p) => p.contract), [projects]);
+  const byManager = useMemo(() => groupBy(projects, (p) => p.manager), [projects]);
+  const progressData = useMemo(
+    () => projects.map((p) => ({ name: p.name, فعلي: Math.round(p.progress * 100), مخطط: Math.round(p.planned * 100) })),
+    [projects],
+  );
+
+  const filtered = projects.filter(
+    (p) =>
+      (status === "الكل" || p.status === status) &&
+      [p.name, p.code, p.manager, p.sector].join(" ").toLowerCase().includes(q.toLowerCase()),
+  );
+  const statuses = ["الكل", ...new Set(projects.map((p) => p.status).filter(Boolean))];
+
+  async function onImport(file: File) {
+    try {
+      const list = await importExcel(file);
+      projectStore.replaceAll(list);
+      toast.success(`تم تحديث البيانات: ${list.length} مشروع`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium tracking-widest text-primary">METAL FUZE</p>
+          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">لوحة متابعة المشاريع</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {new Date().toLocaleDateString("ar-SA-u-ca-gregory", { dateStyle: "full" })}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ""; }} />
+          <Button variant="outline" onClick={() => fileRef.current?.click()}>
+            <FileSpreadsheet /> تحديث من ملف Excel
+          </Button>
+          <Button onClick={() => { setEditing(null); setOpen(true); }}>
+            <Plus /> مشروع جديد
+          </Button>
+        </div>
+      </header>
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi icon={<FolderKanban />} label="إجمالي المشاريع" value={String(projects.length)} sub={`${s.late} متأخر`} />
+        <Kpi icon={<Banknote />} label="إجمالي قيمة العقود" value={fmtMoney(s.contract)} sub="ريال" accent />
+        <Kpi icon={<TrendingUp />} label="المدفوع" value={fmtMoney(s.paid)}
+          sub={`نسبة الصرف ${fmtPct(s.contract ? s.paid / s.contract : 0)}`} />
+        <Kpi icon={<Banknote />} label="المتبقي" value={fmtMoney(s.remaining)} sub={`متوسط الإنجاز ${fmtPct(s.avg)}`} />
+      </section>
+
+      {s.alerts.length > 0 && (
+        <section className="surface flex flex-wrap items-center gap-3 border-warning/30 p-4">
+          <AlertTriangle className="size-5 text-warning" />
+          <span className="font-semibold">تنبيهات المواعيد:</span>
+          {s.alerts.map((p) => (
+            <Badge key={p.id} variant="outline" className="border-warning/40 text-warning">
+              {p.name} — {deadlineAlert(p.end) === "انتهى" ? `منتهي منذ ${Math.abs(daysLeft(p.end)!)} يوم` : `باقي ${daysLeft(p.end)} يوم`}
+            </Badge>
+          ))}
+        </section>
+      )}
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Panel title="حالة المشاريع">
+          <ResponsiveContainer width="100%" height={240}>
+            <PieChart>
+              <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={3} stroke="none">
+                {byStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              </Pie>
+              <Tooltip {...tip} />
+            </PieChart>
+          </ResponsiveContainer>
+          <Legend data={byStatus} />
+        </Panel>
+        <Panel title="قيمة العقود حسب القطاع">
+          <ResponsiveContainer width="100%" height={270}>
+            <BarChart data={bySector}>
+              <CartesianGrid stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
+              <YAxis orientation="right" tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
+              <Tooltip {...tip} formatter={(v: number) => fmtMoney(v)} cursor={{ fill: "var(--muted)" }} />
+              <Bar dataKey="value" name="القيمة" radius={[6, 6, 0, 0]} fill="var(--chart-1)" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Panel>
+        <Panel title="المشاريع لكل مدير">
+          <ResponsiveContainer width="100%" height={270}>
+            <BarChart data={byManager} layout="vertical">
+              <XAxis type="number" hide allowDecimals={false} />
+              <YAxis type="category" dataKey="name" orientation="right" width={130} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
+              <Tooltip {...tip} cursor={{ fill: "var(--muted)" }} />
+              <Bar dataKey="value" name="عدد المشاريع" radius={[6, 0, 0, 6]} fill="var(--chart-2)" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Panel>
+      </section>
+
+      <Panel title="الإنجاز الفعلي مقابل المخطط">
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={progressData}>
+            <CartesianGrid stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={70} />
+            <YAxis orientation="right" unit="%" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
+            <Tooltip {...tip} formatter={(v: number) => `${v}%`} cursor={{ fill: "var(--muted)" }} />
+            <Bar dataKey="مخطط" fill="var(--muted-foreground)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="فعلي" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </Panel>
+
+      <section className="surface overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
+          <h2 className="font-display text-lg font-bold">جميع المشاريع ({filtered.length})</h2>
+          <div className="flex flex-wrap gap-2">
+            {statuses.map((st) => (
+              <Button key={st} size="sm" variant={status === st ? "default" : "outline"} onClick={() => setStatus(st)}>{st}</Button>
+            ))}
+            <div className="relative">
+              <Search className="absolute right-2.5 top-2.5 size-4 text-muted-foreground" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث..." className="h-9 w-48 pr-8" />
+            </div>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-muted-foreground">
+              <tr>
+                {["الرمز", "المشروع", "القطاع", "المدير", "الانتهاء", "الحالة", "الإنجاز", "قيمة العقد", "المدفوع", "المتبقي", ""].map((h) => (
+                  <th key={h} className="whitespace-nowrap px-3 py-3 text-right font-medium">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((p) => {
+                const d = daysLeft(p.end);
+                return (
+                  <tr key={p.id} className="border-t transition-colors hover:bg-muted/30">
+                    <td className="px-3 py-3 text-muted-foreground">{p.code}</td>
+                    <td className="px-3 py-3 font-medium">
+                      {p.name}
+                      {p.issues && <p className="mt-0.5 line-clamp-1 max-w-xs text-xs text-destructive/80">{p.issues}</p>}
+                    </td>
+                    <td className="px-3 py-3">{p.sector}</td>
+                    <td className="whitespace-nowrap px-3 py-3" dir="ltr">{p.manager}</td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {p.end ?? "—"}
+                      {d !== null && <p className={`text-xs ${d < 0 ? "text-destructive" : d <= 30 ? "text-warning" : "text-muted-foreground"}`}>{deadlineAlert(p.end)} ({d})</p>}
+                    </td>
+                    <td className="px-3 py-3">{p.status && <Badge variant="outline" className={statusClass(p.status)}>{p.status}</Badge>}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
+                          <div className="h-full bg-copper" style={{ width: `${Math.min(100, p.progress * 100)}%` }} />
+                        </div>
+                        <span className="text-xs">{fmtPct(p.progress)}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract)}</td>
+                    <td className="px-3 py-3 tabular-nums">{fmtMoney(p.paid)}</td>
+                    <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract - p.paid)}</td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      <Button size="icon" variant="ghost" aria-label="تعديل" onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>
+                      <Button size="icon" variant="ghost" aria-label="حذف"
+                        onClick={() => { if (confirm(`حذف ${p.name}؟`)) projectStore.remove(p.id); }}><Trash2 /></Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <ProjectDialog open={open} onOpenChange={setOpen} project={editing} managers={managers} />
+    </div>
+  );
+}
+
+function Kpi({ icon, label, value, sub, accent }: { icon: React.ReactNode; label: string; value: string; sub: string; accent?: boolean }) {
+  return (
+    <div className="surface p-5">
+      <div className="flex items-center justify-between text-muted-foreground">
+        <span className="text-sm">{label}</span>
+        <span className="text-primary [&_svg]:size-5">{icon}</span>
+      </div>
+      <p className={`mt-3 font-display text-3xl font-extrabold tabular-nums ${accent ? "text-copper" : ""}`}>{value}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
+    </div>
+  );
+}
+
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="surface p-5">
+      <h2 className="mb-3 font-display text-lg font-bold">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+function Legend({ data }: { data: { name: string; value: number }[] }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-3 text-xs">
+      {data.map((d, i) => (
+        <span key={d.name} className="flex items-center gap-1.5">
+          <span className="size-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+          {d.name} ({d.value})
+        </span>
+      ))}
     </div>
   );
 }
