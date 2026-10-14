@@ -43,6 +43,7 @@ function save(list: Project[]) {
 }
 
 export const projectStore = {
+  all: () => load(),
   upsert(p: Project) {
     const list = load();
     const i = list.findIndex((x) => x.id === p.id);

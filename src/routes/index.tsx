@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, Banknote, CircleAlert, FileDown, FileSpreadsheet, FolderKanban, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
+import { AlertTriangle, Banknote, CircleAlert, FileDown, FileSpreadsheet, FolderKanban, BrainCircuit, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,6 +112,9 @@ function Dashboard() {
           <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ""; }} />
           <ThemeToggle />
+          <Button variant="outline" asChild>
+            <Link to="/assistant"><BrainCircuit /> المستشار الذكي</Link>
+          </Button>
           <Button variant="outline" onClick={() => fileRef.current?.click()}>
             <FileSpreadsheet /> تحديث من ملف Excel
           </Button>
