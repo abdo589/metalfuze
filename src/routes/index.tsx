@@ -163,7 +163,7 @@ function Dashboard() {
         </section>
       )}
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-3 print:hidden">
         <Panel title="حالة المشاريع">
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
@@ -198,6 +198,7 @@ function Dashboard() {
         </Panel>
       </section>
 
+      <div className="print:hidden">
       <Panel title="الإنجاز الفعلي مقابل المخطط">
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={progressData}>
@@ -210,8 +211,9 @@ function Dashboard() {
           </BarChart>
         </ResponsiveContainer>
       </Panel>
+      </div>
 
-      <section className="surface overflow-hidden">
+      <section ref={tableRef} className="surface overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
           <h2 className="font-display text-lg font-bold">جميع المشاريع ({filtered.length})</h2>
           <div className="flex flex-wrap gap-2">
