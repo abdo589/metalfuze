@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.LOVABLE_API_KEY;
+        const apiKey = process.env["LOVABLE_API_KEY"];
         if (!apiKey) return new Response("مفتاح الذكاء الاصطناعي غير مهيأ", { status: 500 });
         let body: { messages?: UIMessage[]; projects?: unknown[]; today?: string };
         try { body = await request.json(); } catch { return new Response("طلب غير صالح", { status: 400 }); }
