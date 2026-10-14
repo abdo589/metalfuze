@@ -45,6 +45,6 @@ export function createResponsesCall(
   return {
     result,
     response: () =>
-      withLovableAiGatewayRunIdHeader(result.toUIMessageStreamResponse({ sendReasoning: true, originalMessages }), runIdFetch),
+      withLovableAiGatewayRunIdHeader(result.toUIMessageStreamResponse({ sendReasoning: true, ...(originalMessages ? { originalMessages } : {}) }), runIdFetch),
   };
 }
