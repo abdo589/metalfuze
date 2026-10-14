@@ -3,6 +3,7 @@ import type { Session } from "@supabase/supabase-js";
 import { LogOut, Lock, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -43,6 +44,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +53,22 @@ function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email: toEmail(username), password });
     setBusy(false);
     if (error) setError("اسم المستخدم أو كلمة المرور غير صحيحة");
+  }
+
+  async function onGoogle() {
+    setGoogleBusy(true);
+    setError("");
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      setGoogleBusy(false);
+      setError("تعذر الدخول بحساب جوجل، حاول مرة أخرى");
+      return;
+    }
+    if (result.redirected) return; // Browser is heading to Google
+    // Popup flow: session is already set; onAuthStateChange picks it up.
+    setGoogleBusy(false);
   }
 
   return (
@@ -64,7 +82,21 @@ function Login() {
         <Input placeholder="اسم المستخدم" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" dir="ltr" required />
         <Input placeholder="كلمة المرور" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" dir="ltr" required />
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button type="submit" className="w-full" disabled={busy}>{busy ? "جارٍ الدخول..." : "دخول"}</Button>
+        <Button type="submit" className="w-full" disabled={busy || googleBusy}>{busy ? "جارٍ الدخول..." : "دخول"}</Button>
+        <div className="flex items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">أو</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <Button type="button" variant="outline" className="w-full" disabled={busy || googleBusy} onClick={onGoogle}>
+          <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
+            <path fill="#4285F4" d="M23.06 12.25c0-.85-.08-1.67-.22-2.45H12v4.64h6.2a5.3 5.3 0 0 1-2.3 3.48v2.9h3.72c2.17-2 3.44-4.95 3.44-8.57Z" />
+            <path fill="#34A853" d="M12 23.5c3.1 0 5.7-1.03 7.6-2.78l-3.72-2.9c-1.03.7-2.36 1.1-3.88 1.1-2.98 0-5.5-2.01-6.4-4.72H1.76v2.99A11.5 11.5 0 0 0 12 23.5Z" />
+            <path fill="#FBBC05" d="M5.6 14.2a6.9 6.9 0 0 1 0-4.4V6.81H1.76a11.5 11.5 0 0 0 0 10.38L5.6 14.2Z" />
+            <path fill="#EA4335" d="M12 5.08c1.68 0 3.19.58 4.38 1.71l3.28-3.28C17.68 1.63 15.1.5 12 .5A11.5 11.5 0 0 0 1.76 6.81L5.6 9.8c.9-2.71 3.42-4.72 6.4-4.72Z" />
+          </svg>
+          {googleBusy ? "جارٍ فتح جوجل..." : "الدخول بحساب جوجل"}
+        </Button>
       </form>
     </div>
   );
