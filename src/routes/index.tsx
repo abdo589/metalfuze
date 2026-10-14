@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, Banknote, FileSpreadsheet, FolderKanban, Pencil, Plus, Search, Trash2, TrendingUp } from "lucide-react";
+import { AlertTriangle, Banknote, CircleAlert, FileDown, FileSpreadsheet, FolderKanban, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { ProjectDialog } from "@/components/ProjectDialog";
 import {
   daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
 } from "@/lib/projects";
+import { exportExcel } from "@/lib/export";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,9 +59,16 @@ function Dashboard() {
     const withProg = projects.filter((p) => p.progress > 0);
     const avg = withProg.length ? withProg.reduce((a, p) => a + p.progress, 0) / withProg.length : 0;
     const late = projects.filter((p) => p.status.includes("متأخر")).length;
-    const alerts = projects.filter((p) => { const d = daysLeft(p.end); return d !== null && d <= 30 && p.progress < 1; });
-    return { contract, paid, remaining: contract - paid, avg, late, alerts };
+    const overdue = projects.filter((p) => { const d = daysLeft(p.end); return d !== null && d < 0 && p.progress < 1; });
+    const soon = projects.filter((p) => { const d = daysLeft(p.end); return d !== null && d >= 0 && d <= 14 && p.progress < 1; });
+    return { contract, paid, remaining: contract - paid, avg, late, overdue, soon };
   }, [projects]);
+
+  const tableRef = useRef<HTMLElement>(null);
+  function scrollToTable(filter?: string) {
+    if (filter) setStatus(filter);
+    tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   const managers = useMemo(() => [...new Set(projects.map((p) => p.manager).filter(Boolean))], [projects]);
   const byStatus = useMemo(() => groupBy(projects, (p) => p.status), [projects]);
@@ -98,11 +106,17 @@ function Dashboard() {
             {new Date().toLocaleDateString("ar-SA-u-ca-gregory", { dateStyle: "full" })}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 print:hidden">
           <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ""; }} />
           <Button variant="outline" onClick={() => fileRef.current?.click()}>
             <FileSpreadsheet /> تحديث من ملف Excel
+          </Button>
+          <Button variant="outline" onClick={async () => { try { await exportExcel(projects); toast.success("تم تصدير تقرير Excel"); } catch { toast.error("تعذر التصدير"); } }}>
+            <FileDown /> تصدير تقرير Excel
+          </Button>
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer /> طباعة / PDF
           </Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }}>
             <Plus /> مشروع جديد
@@ -118,19 +132,38 @@ function Dashboard() {
         <Kpi icon={<Banknote />} label="المتبقي" value={fmtMoney(s.remaining)} sub={`متوسط الإنجاز ${fmtPct(s.avg)}`} />
       </section>
 
-      {s.alerts.length > 0 && (
-        <section className="surface flex flex-wrap items-center gap-3 border-warning/30 p-4">
-          <AlertTriangle className="size-5 text-warning" />
-          <span className="font-semibold">تنبيهات المواعيد:</span>
-          {s.alerts.map((p) => (
-            <Badge key={p.id} variant="outline" className="border-warning/40 text-warning">
-              {p.name} — {deadlineAlert(p.end) === "انتهى" ? `منتهي منذ ${Math.abs(daysLeft(p.end)!)} يوم` : `باقي ${daysLeft(p.end)} يوم`}
-            </Badge>
-          ))}
+      {(s.overdue.length > 0 || s.soon.length > 0) && (
+        <section className="space-y-3 print:hidden">
+          {s.overdue.length > 0 && (
+            <div className="surface flex flex-wrap items-center gap-3 border-destructive/40 p-4">
+              <CircleAlert className="size-5 text-destructive" />
+              <span className="font-semibold text-destructive">مشاريع متأخرة ({s.overdue.length}):</span>
+              {s.overdue.map((p) => (
+                <button key={p.id} onClick={() => scrollToTable()} className="transition-transform hover:scale-105">
+                  <Badge variant="outline" className="cursor-pointer border-destructive/40 text-destructive">
+                    {p.name} — متأخر {Math.abs(daysLeft(p.end)!)} يوم
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          )}
+          {s.soon.length > 0 && (
+            <div className="surface flex flex-wrap items-center gap-3 border-warning/30 p-4">
+              <AlertTriangle className="size-5 text-warning" />
+              <span className="font-semibold text-warning">قريبة من الانتهاء ({s.soon.length}):</span>
+              {s.soon.map((p) => (
+                <button key={p.id} onClick={() => scrollToTable()} className="transition-transform hover:scale-105">
+                  <Badge variant="outline" className="cursor-pointer border-warning/40 text-warning">
+                    {p.name} — باقي {daysLeft(p.end)} يوم
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-3 print:hidden">
         <Panel title="حالة المشاريع">
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
@@ -165,6 +198,7 @@ function Dashboard() {
         </Panel>
       </section>
 
+      <div className="print:hidden">
       <Panel title="الإنجاز الفعلي مقابل المخطط">
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={progressData}>
@@ -177,11 +211,12 @@ function Dashboard() {
           </BarChart>
         </ResponsiveContainer>
       </Panel>
+      </div>
 
-      <section className="surface overflow-hidden">
+      <section ref={tableRef} className="surface overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
           <h2 className="font-display text-lg font-bold">جميع المشاريع ({filtered.length})</h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 print:hidden">
             {statuses.map((st) => (
               <Button key={st} size="sm" variant={status === st ? "default" : "outline"} onClick={() => setStatus(st)}>{st}</Button>
             ))}
