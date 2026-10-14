@@ -12,7 +12,7 @@ import {
   daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
 } from "@/lib/projects";
 import { exportExcel } from "@/lib/export";
-import logoAsset from "@/assets/metal-fuze-logo.jpg.asset.json";
+import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
