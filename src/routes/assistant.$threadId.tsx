@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
@@ -29,13 +30,14 @@ export const Route = createFileRoute("/assistant/$threadId")({
 });
 
 const SUGGESTIONS = [
-  "ما المشاريع الأكثر خطورة الآن ولماذا؟",
-  "قارن الإنجاز الفعلي بالمخطط لكل مشروع",
-  "أين توجد فجوات في التحصيل المالي؟",
-  "ما أولويات الإدارة لهذا الأسبوع؟",
+  t("ما المشاريع الأكثر خطورة الآن ولماذا؟"),
+  t("قارن الإنجاز الفعلي بالمخطط لكل مشروع"),
+  t("أين توجد فجوات في التحصيل المالي؟"),
+  t("ما أولويات الإدارة لهذا الأسبوع؟"),
 ];
 
 function AssistantPage() {
+  useLanguage();
   const { threadId } = Route.useParams();
   const threads = useThreads();
   const navigate = useNavigate();
@@ -46,15 +48,14 @@ function AssistantPage() {
     <div className="mx-auto flex h-dvh max-w-7xl gap-4 px-4 py-4 sm:px-6">
       <aside className="surface hidden w-64 shrink-0 flex-col gap-2 rounded-2xl p-3 md:flex">
         <Button onClick={() => navigate({ to: "/assistant/$threadId", params: { threadId: threadStore.create() } })}>
-          <MessageSquarePlus /> محادثة جديدة
-        </Button>
+          <MessageSquarePlus /> {t("محادثة جديدة")}</Button>
         <div className="flex-1 space-y-1 overflow-y-auto">
           {threads.map((t) => (
             <div key={t.id} className={`group flex items-center gap-1 rounded-lg ${t.id === threadId ? "bg-accent" : "hover:bg-accent/60"}`}>
               <Link to="/assistant/$threadId" params={{ threadId: t.id }} className="flex-1 truncate px-3 py-2 text-sm">
                 {t.title}
               </Link>
-              <button aria-label="حذف المحادثة" className="p-2 text-muted-foreground opacity-0 hover:text-destructive group-hover:opacity-100"
+              <button aria-label={t("حذف المحادثة")} className="p-2 text-muted-foreground opacity-0 hover:text-destructive group-hover:opacity-100"
                 onClick={() => {
                   threadStore.remove(t.id);
                   if (t.id === threadId) navigate({ to: "/assistant" });
@@ -70,8 +71,8 @@ function AssistantPage() {
           <div className="flex items-center gap-3">
             <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground"><BrainCircuit /></span>
             <div>
-              <h1 className="font-display text-xl font-extrabold">المستشار الذكي</h1>
-              <p className="text-xs text-muted-foreground">يحلل بيانات اللوحة الحالية ويقدم توصيات</p>
+              <h1 className="font-display text-xl font-extrabold">{t("المستشار الذكي")}</h1>
+              <p className="text-xs text-muted-foreground">{t("يحلل بيانات اللوحة الحالية ويقدم توصيات")}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -79,7 +80,7 @@ function AssistantPage() {
               <MessageSquarePlus />
             </Button>
             <ThemeToggle />
-            <Button variant="outline" asChild><Link to="/"><ArrowRight /> اللوحة</Link></Button>
+            <Button variant="outline" asChild><Link to="/"><ArrowRight /> {t("اللوحة")}</Link></Button>
           </div>
         </header>
         {ready && <ChatWindow key={threadId} threadId={threadId} />}
@@ -89,6 +90,7 @@ function AssistantPage() {
 }
 
 function ChatWindow({ threadId }: { threadId: string }) {
+  useLanguage();
   const initial = useMemo(() => threadStore.get(threadId)?.messages ?? [], [threadId]);
   const transport = useMemo(() => new DefaultChatTransport({
     api: "/api/chat",
@@ -108,9 +110,9 @@ function ChatWindow({ threadId }: { threadId: string }) {
     transport,
     onError: (e) => {
       const m = e.message || "";
-      if (m.includes("429")) toast.error("طلبات كثيرة، حاول بعد قليل");
-      else if (m.includes("402")) toast.error("نفد رصيد الذكاء الاصطناعي، أضف رصيداً من إعدادات مساحة العمل");
-      else toast.error(m.length < 200 && m ? m : "تعذر الحصول على إجابة، تحقق من الاتصال");
+      if (m.includes("429")) toast.error(t("طلبات كثيرة، حاول بعد قليل"));
+      else if (m.includes("402")) toast.error(t("نفد رصيد الذكاء الاصطناعي، أضف رصيداً من إعدادات مساحة العمل"));
+      else toast.error(m.length < 200 && m ? m : t("تعذر الحصول على إجابة، تحقق من الاتصال"));
     },
   });
   useEffect(() => {
@@ -125,8 +127,8 @@ function ChatWindow({ threadId }: { threadId: string }) {
       <Conversation className="min-h-0 flex-1">
         <ConversationContent>
           {messages.length === 0 ? (
-            <ConversationEmptyState icon={<BrainCircuit className="size-10" />} title="اسأل عن مشاريعك"
-              description="أجيبك من البيانات الموجودة في اللوحة حالياً">
+            <ConversationEmptyState icon={<BrainCircuit className="size-10" />} title={t("اسأل عن مشاريعك")}
+              description={t("أجيبك من البيانات الموجودة في اللوحة حالياً")}>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {SUGGESTIONS.map((s) => (
                   <Button key={s} variant="outline" className="h-auto whitespace-normal py-2 text-start" onClick={() => send(s)}>{s}</Button>
@@ -142,13 +144,13 @@ function ChatWindow({ threadId }: { threadId: string }) {
               </MessageContent>
             </Message>
           ))}
-          {status === "submitted" && <Shimmer className="text-sm">جارٍ تحليل بيانات المشاريع...</Shimmer>}
+          {status === "submitted" && <Shimmer className="text-sm">{t("جارٍ تحليل بيانات المشاريع...")}</Shimmer>}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
       <div className="p-3">
         <PromptInput onSubmit={(msg) => send(msg.text ?? "")}>
-          <PromptInputTextarea autoFocus placeholder="مثال: ما المشاريع المتأخرة وما الحل؟" />
+          <PromptInputTextarea autoFocus placeholder={t("مثال: ما المشاريع المتأخرة وما الحل؟")} />
           <PromptInputFooter className="justify-end">
             <PromptInputSubmit status={status} onStop={stop} />
           </PromptInputFooter>

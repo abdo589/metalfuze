@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, Printer } from "lucide-react";
@@ -27,6 +28,7 @@ function shiftMonth(key: string, d: number) {
 }
 
 function Budget() {
+  useLanguage();
   const projects = useProjects();
   const employees = usePayroll();
   const [month, setMonth] = useState(monthKey());
@@ -48,30 +50,30 @@ function Budget() {
   }, [projects, employees, month]);
 
   const kpis: [string, string, string | undefined][] = [
-    ["إجمالي العقود", fmtMoney(data.contracts), undefined],
-    ["المصروف من العقود", fmtMoney(data.paid), data.contracts ? fmtPct(data.paid / data.contracts) : undefined],
-    ["المتبقي للدفع", fmtMoney(data.contracts - data.paid), undefined],
-    ["صرف الرواتب الشهري", fmtMoney(data.payroll), `مدفوع ${fmtMoney(data.payrollPaid)}`],
+    [t("إجمالي العقود"), fmtMoney(data.contracts), undefined],
+    [t("المصروف من العقود"), fmtMoney(data.paid), data.contracts ? fmtPct(data.paid / data.contracts) : undefined],
+    [t("المتبقي للدفع"), fmtMoney(data.contracts - data.paid), undefined],
+    [t("صرف الرواتب الشهري"), fmtMoney(data.payroll), `مدفوع ${fmtMoney(data.payrollPaid)}`],
   ];
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col items-center gap-4 text-center">
         <div>
-          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">لوحة الميزانية</h1>
-          <p className="mt-1 text-sm text-muted-foreground">تتحدث تلقائياً من بيانات المشاريع والرواتب</p>
+          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{t("لوحة الميزانية")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("تتحدث تلقائياً من بيانات المشاريع والرواتب")}</p>
         </div>
         <div className="flex flex-wrap justify-center gap-2 print:hidden">
           <ThemeToggle />
-          <Button variant="outline" asChild><Link to="/"><ArrowRight /> لوحة المشاريع</Link></Button>
-          <Button variant="outline" asChild><Link to="/payroll">الرواتب</Link></Button>
-          <Button variant="outline" asChild><Link to="/report">التقرير الشهري</Link></Button>
+          <Button variant="outline" asChild><Link to="/"><ArrowRight /> {t("لوحة المشاريع")}</Link></Button>
+          <Button variant="outline" asChild><Link to="/payroll">{t("الرواتب")}</Link></Button>
+          <Button variant="outline" asChild><Link to="/report">{t("التقرير الشهري")}</Link></Button>
           <PdfButton />
         </div>
         <div className="flex items-center gap-3">
-          <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="الشهر السابق"><ChevronRight /></Button>
+          <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, -1))} aria-label={t("الشهر السابق")}><ChevronRight /></Button>
           <span className="min-w-40 font-display text-lg font-bold">{monthLabel(month)}</span>
-          <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, 1))} aria-label="الشهر التالي"><ChevronLeft /></Button>
+          <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, 1))} aria-label={t("الشهر التالي")}><ChevronLeft /></Button>
         </div>
       </header>
 
@@ -86,11 +88,11 @@ function Budget() {
       </section>
 
       <section className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <h2 className="p-4 font-display text-lg font-bold">الميزانية حسب المشروع</h2>
+        <h2 className="p-4 font-display text-lg font-bold">{t("الميزانية حسب المشروع")}</h2>
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr className="text-right">
-              {["المشروع", "قيمة العقد", "المصروف", "المتبقي للدفع", "نسبة الصرف", "الإنجاز", "موظفون", "رواتب الشهر"].map((h) => (
+              {[t("المشروع"), t("قيمة العقد"), t("المصروف"), t("المتبقي للدفع"), t("نسبة الصرف"), t("الإنجاز"), t("موظفون"), t("رواتب الشهر")].map((h) => (
                 <th key={h} className="px-4 py-3 font-medium">{h}</th>
               ))}
             </tr>
@@ -107,7 +109,7 @@ function Budget() {
                   <td className="px-4 py-3 font-bold">{fmtMoney(remaining)}</td>
                   <td className="px-4 py-3 min-w-32">
                     <div className="h-2 rounded-full bg-muted"><div className={`h-2 rounded-full ${over ? "bg-destructive" : "bg-primary"}`} style={{ width: `${Math.min(100, spend * 100)}%` }} /></div>
-                    <div className={`mt-1 text-xs ${over ? "text-destructive" : ""}`}>{fmtPct(spend)}{over ? " — الصرف أعلى من الإنجاز" : ""}</div>
+                    <div className={`mt-1 text-xs ${over ? "text-destructive" : ""}`}>{fmtPct(spend)}{over ? t(" — الصرف أعلى من الإنجاز") : ""}</div>
                   </td>
                   <td className="px-4 py-3">{fmtPct(p.progress)}</td>
                   <td className="px-4 py-3">{staff}</td>
@@ -116,7 +118,7 @@ function Budget() {
               );
             })}
             <tr className="border-t border-border bg-muted/30">
-              <td className="px-4 py-3 font-medium" colSpan={7}>رواتب إدارة عامة (غير مرتبطة بمشروع)</td>
+              <td className="px-4 py-3 font-medium" colSpan={7}>{t("رواتب إدارة عامة (غير مرتبطة بمشروع)")}</td>
               <td className="px-4 py-3 font-bold">{fmtMoney(data.general)}</td>
             </tr>
           </tbody>

@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { currentTheme, setTheme, type Theme } from "@/lib/theme";
 
 export function ThemeToggle() {
+  useLanguage();
   const [theme, setThemeState] = useState<Theme>("dark");
 
   // Read the real value after mount so server and client markup match.
@@ -19,11 +21,11 @@ export function ThemeToggle() {
         setTheme(next);
         setThemeState(next);
       }}
-      aria-label={next === "light" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"}
-      title={next === "light" ? "الوضع الفاتح" : "الوضع الداكن"}
+      aria-label={next === "light" ? t("تفعيل الوضع الفاتح") : t("تفعيل الوضع الداكن")}
+      title={next === "light" ? t("الوضع الفاتح") : t("الوضع الداكن")}
     >
       {theme === "dark" ? <Sun /> : <Moon />}
-      {next === "light" ? "فاتح" : "داكن"}
+      {next === "light" ? t("فاتح") : t("داكن")}
     </Button>
   );
 }
