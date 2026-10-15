@@ -15,3 +15,4 @@
 - AI assistant: client sends current dashboard projects to /api/chat (server route, Lovable AI Gateway Responses via src/server/ai); chat threads live in localStorage (src/lib/threads.ts) because project data is browser-local too.
 - Company PDFs use a shared browser-only export helper and button: capture the print layout and paginate at row boundaries to omit browser URL footers and avoid cutting rows.
 - Use the shared i18n store and translation function for labels, dates, dialogs and export headings; keep user-entered names, project links, notes and credentials unchanged so language switching never changes business data.
+- Period project reports select projects whose scheduled dates overlap the calendar period (Monday-start weeks); undated projects remain included, and financial/progress figures are explicitly current cumulative snapshots, not fabricated historical movements.
