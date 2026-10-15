@@ -103,9 +103,9 @@ function Dashboard() {
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col items-center gap-4 text-center">
         <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
-          className="logo-on-light h-auto w-72 max-w-full sm:w-96" />
+          className="screen-logo logo-on-light h-auto w-72 max-w-full sm:w-96" />
         <img src={logoLightAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
-          className="logo-on-dark hidden h-auto w-72 max-w-full sm:w-96" />
+          className="screen-logo logo-on-dark hidden h-auto w-72 max-w-full sm:w-96" />
         <div>
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">لوحة متابعة المشاريع</h1>
           <p className="mt-1 text-sm text-muted-foreground">

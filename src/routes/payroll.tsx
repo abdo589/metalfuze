@@ -50,22 +50,32 @@ function Payroll() {
 
   async function onExport() {
     try {
-      const XLSX = await import("xlsx");
-      const rows = active.map((e) => ({
-        "الموظف": e.name,
-        "المسمى": e.role,
-        "الإدارة": e.dept,
-        "المشروع": e.project,
-        "الأساسي": e.base,
-        "البدلات": e.allowances,
-        "الخصومات": e.deductions,
-        "الصافي": netSalary(e),
-        "الحالة": e.paidMonths.includes(month) ? "مدفوع" : "غير مدفوع",
-      }));
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, `رواتب ${month}`);
-      XLSX.writeFile(wb, `مسير-رواتب-${month}.xlsx`);
+      const { exportBrandedExcel } = await import("@/lib/branded-excel");
+      const total = active.reduce((x, e) => x + netSalary(e), 0);
+      const paidN = active.filter((e) => e.paidMonths.includes(month)).reduce((x, e) => x + netSalary(e), 0);
+      await exportBrandedExcel({
+        filename: `مسير-رواتب-${month}.xlsx`,
+        reportTitle: `مسير الرواتب — ${month}`,
+        summary: [
+          ["عدد الموظفين", active.length, "int"],
+          ["إجمالي صافي الرواتب", total, "money"],
+          ["المدفوع", paidN, "money"],
+          ["المتبقي للصرف", total - paidN, "money"],
+        ],
+        sheets: [{
+          name: "مسير الرواتب",
+          title: `مسير رواتب شهر ${month}`,
+          columns: [
+            { header: "الموظف", width: 22 }, { header: "المسمى", width: 18 }, { header: "الإدارة" },
+            { header: "المشروع", width: 28 }, { header: "الأساسي", format: "money" },
+            { header: "البدلات", format: "money" }, { header: "الخصومات", format: "money" },
+            { header: "الصافي", format: "money" }, { header: "الحالة", width: 12 },
+          ],
+          rows: active.map((e) => [e.name, e.role, e.dept, e.project, e.base, e.allowances, e.deductions,
+            netSalary(e), e.paidMonths.includes(month) ? "مدفوع" : "غير مدفوع"]),
+          totals: [4, 5, 6, 7],
+        }],
+      });
       toast.success("تم تصدير مسير الرواتب");
     } catch {
       toast.error("تعذر التصدير");

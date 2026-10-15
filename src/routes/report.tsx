@@ -65,38 +65,42 @@ function Report() {
 
   async function onExport() {
     try {
-      const XLSX = await import("xlsx");
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(
-        wb,
-        XLSX.utils.json_to_sheet(
-          rows.map((r) => ({
-            "الموظف": r.e.name,
-            "المسمى": r.e.role,
-            "المشروع": r.e.project || "—",
-            "نسبة الإنجاز": r.p ? fmtPct(r.p.progress) : "—",
-            "قيمة العقد": r.p?.contract ?? "",
-            "المصروف من العقد": r.p?.paid ?? "",
-            "نسبة الصرف": r.spendPct != null ? fmtPct(r.spendPct) : "—",
-            "الراتب الصافي": r.net,
-            "حالة الراتب": r.paidSalary ? "مدفوع" : "غير مدفوع",
-          })),
-        ),
-        "الموظفون",
-      );
-      XLSX.utils.book_append_sheet(
-        wb,
-        XLSX.utils.json_to_sheet(
-          byProject.map((g) => ({
-            "المشروع": g.name,
-            "عدد الموظفين": g.count,
-            "نسبة الإنجاز": g.progress != null ? fmtPct(g.progress) : "—",
-            "إجمالي الرواتب": g.net,
-          })),
-        ),
-        "حسب المشروع",
-      );
-      XLSX.writeFile(wb, `تقرير-رواتب-مشاريع-${month}.xlsx`);
+      const { exportBrandedExcel } = await import("@/lib/branded-excel");
+      await exportBrandedExcel({
+        filename: `تقرير-رواتب-مشاريع-${month}.xlsx`,
+        reportTitle: `التقرير الشهري للرواتب والمشاريع — ${month}`,
+        summary: [
+          ["عدد الموظفين", rows.length, "int"],
+          ["إجمالي صافي الرواتب", total, "money"],
+          ["المدفوع", paid, "money"],
+          ["المتبقي للصرف", total - paid, "money"],
+        ],
+        sheets: [
+          {
+            name: "الموظفون",
+            title: "تفاصيل الموظفين والمشاريع",
+            columns: [
+              { header: "الموظف", width: 22 }, { header: "المسمى", width: 18 }, { header: "المشروع", width: 28 },
+              { header: "نسبة الإنجاز", format: "pct" }, { header: "قيمة العقد", width: 17, format: "money" },
+              { header: "المصروف من العقد", width: 17, format: "money" }, { header: "نسبة الصرف", format: "pct" },
+              { header: "الراتب الصافي", format: "money" }, { header: "حالة الراتب", width: 12 },
+            ],
+            rows: rows.map((r) => [r.e.name, r.e.role, r.e.project || "—", r.p ? r.p.progress : "—",
+              r.p?.contract ?? "", r.p?.paid ?? "", r.spendPct ?? "—", r.net, r.paidSalary ? "مدفوع" : "غير مدفوع"]),
+            totals: [7],
+          },
+          {
+            name: "حسب المشروع",
+            title: "الرواتب حسب المشروع",
+            columns: [
+              { header: "المشروع", width: 32 }, { header: "عدد الموظفين", format: "int" },
+              { header: "نسبة الإنجاز", format: "pct" }, { header: "إجمالي الرواتب", width: 18, format: "money" },
+            ],
+            rows: byProject.map((g) => [g.name, g.count, g.progress ?? "—", g.net]),
+            totals: [1, 3],
+          },
+        ],
+      });
       toast.success("تم تصدير التقرير");
     } catch {
       toast.error("تعذر التصدير");
