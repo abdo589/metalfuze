@@ -16,6 +16,8 @@ import { AuthGate } from "@/components/AuthGate";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { themeScript } from "../lib/theme";
+import { initializeLanguage, useLanguage } from "@/lib/i18n";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 function NotFoundComponent() {
   return (
@@ -109,8 +111,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const language = useLanguage();
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang={language} dir={language === "en" ? "ltr" : "rtl"} suppressHydrationWarning>
       <head>
         <HeadContent />
         {/* Applies the saved light/dark choice before first paint. */}
@@ -126,9 +129,11 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => { initializeLanguage(); }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
+      <div className="flex justify-end px-4 pt-3 print:hidden"><LanguageToggle /></div>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AuthGate>
         <div data-report-document>

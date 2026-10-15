@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export function EmployeeDialog({
   employee: Employee | null;
   onSave: (e: Employee) => void;
 }) {
+  useLanguage();
   const [form, setForm] = useState<Employee>(empty);
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export function EmployeeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{employee ? "تعديل موظف" : "إضافة موظف"}</DialogTitle>
+          <DialogTitle>{employee ? t("تعديل موظف") : t("إضافة موظف")}</DialogTitle>
         </DialogHeader>
         <form
           className="grid grid-cols-1 gap-4 sm:grid-cols-2"
@@ -54,44 +56,44 @@ export function EmployeeDialog({
           }}
         >
           <div className="space-y-1.5 sm:col-span-2">
-            <Label>اسم الموظف</Label>
+            <Label>{t("اسم الموظف")}</Label>
             <Input required value={form.name} onChange={(e) => set("name", e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label>المسمى الوظيفي</Label>
+            <Label>{t("المسمى الوظيفي")}</Label>
             <Input value={form.role} onChange={(e) => set("role", e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label>الإدارة</Label>
+            <Label>{t("الإدارة")}</Label>
             <Input value={form.dept} onChange={(e) => set("dept", e.target.value)} />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label>المشروع (اختياري)</Label>
+            <Label>{t("المشروع (اختياري)")}</Label>
             <Input value={form.project} onChange={(e) => set("project", e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label>الراتب الأساسي</Label>
+            <Label>{t("الراتب الأساسي")}</Label>
             <Input type="number" min={0} value={form.base} onChange={(e) => set("base", num(e.target.value))} />
           </div>
           <div className="space-y-1.5">
-            <Label>البدلات</Label>
+            <Label>{t("البدلات")}</Label>
             <Input type="number" min={0} value={form.allowances} onChange={(e) => set("allowances", num(e.target.value))} />
           </div>
           <div className="space-y-1.5">
-            <Label>الخصومات</Label>
+            <Label>{t("الخصومات")}</Label>
             <Input type="number" min={0} value={form.deductions} onChange={(e) => set("deductions", num(e.target.value))} />
           </div>
           <div className="space-y-1.5">
-            <Label>تاريخ التعيين</Label>
+            <Label>{t("تاريخ التعيين")}</Label>
             <Input type="date" value={form.joined ?? ""} onChange={(e) => set("joined", e.target.value || null)} />
           </div>
           <label className="flex items-center gap-2 sm:col-span-2">
             <input type="checkbox" checked={form.active} onChange={(e) => set("active", e.target.checked)} className="size-4 accent-primary" />
-            <span className="text-sm">موظف نشط (يظهر في مسير الرواتب)</span>
+            <span className="text-sm">{t("موظف نشط (يظهر في مسير الرواتب)")}</span>
           </label>
           <div className="flex justify-end gap-2 sm:col-span-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
-            <Button type="submit">حفظ</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t("إلغاء")}</Button>
+            <Button type="submit">{t("حفظ")}</Button>
           </div>
         </form>
       </DialogContent>

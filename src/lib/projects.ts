@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { t } from "./i18n";
 import seed from "./seed.json";
 
 export type Project = {
@@ -82,9 +83,9 @@ export function daysLeft(end: string | null) {
 export function deadlineAlert(end: string | null) {
   const d = daysLeft(end);
   if (d === null) return "";
-  if (d < 0) return "انتهى";
-  if (d <= 30) return "متبقي أقل من شهر";
-  return "ساري";
+  if (d < 0) return t("انتهى");
+  if (d <= 30) return t("متبقي أقل من شهر");
+  return t("ساري");
 }
 
 export const fmtMoney = (n: number) =>
@@ -105,7 +106,7 @@ export async function importExcel(file: File): Promise<Project[]> {
   const ws = wb.Sheets[wb.SheetNames[0]!]!;
   const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: null });
   const h = rows.findIndex((r) => r.some((c) => String(c ?? "").trim() === "اسم المشروع"));
-  if (h < 0) throw new Error("لم يتم العثور على عمود اسم المشروع");
+  if (h < 0) throw new Error(t("لم يتم العثور على عمود اسم المشروع"));
   const head = rows[h]!.map((c) => String(c ?? "").trim());
   const col = (n: string) => head.indexOf(n);
   const str = (v: unknown) => (v == null ? "" : String(v).trim());

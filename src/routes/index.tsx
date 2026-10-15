@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -19,9 +20,9 @@ import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "لوحة متابعة المشاريع — Metal Fuze" },
+      { title: "METAL FUZE PROJECTS" },
       { name: "description", content: "داشبورد متابعة مشاريع Metal Fuze: الإنجاز، العقود، المدفوعات والتنبيهات." },
-      { property: "og:title", content: "لوحة متابعة المشاريع — Metal Fuze" },
+      { property: "og:title", content: "METAL FUZE PROJECTS" },
       { property: "og:description", content: "متابعة حالة المشاريع والعقود والمدفوعات لحظياً." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -50,6 +51,7 @@ function groupBy(list: Project[], key: (p: Project) => string, val: (p: Project)
 }
 
 function Dashboard() {
+  useLanguage();
   const projects = useProjects();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("الكل");
@@ -94,7 +96,7 @@ function Dashboard() {
     try {
       const list = await importExcel(file);
       projectStore.replaceAll(list);
-      toast.success(`تم تحديث البيانات: ${list.length} مشروع`);
+      toast.success(`${t("تم تحديث البيانات:")} ${list.length} ${t("مشروع")}`);
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -108,9 +110,9 @@ function Dashboard() {
         <img src={logoLightAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
           className="screen-logo logo-on-dark hidden h-auto w-72 max-w-full sm:w-96" />
         <div>
-          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">لوحة متابعة المشاريع</h1>
+          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{t("لوحة متابعة المشاريع")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {new Date().toLocaleDateString("ar-SA-u-ca-gregory", { dateStyle: "full" })}
+            {new Date().toLocaleDateString(locale(), { dateStyle: "full" })}
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-2 print:hidden">
@@ -118,33 +120,30 @@ function Dashboard() {
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ""; }} />
           <ThemeToggle />
           <Button variant="outline" asChild>
-            <Link to="/assistant"><BrainCircuit /> المستشار الذكي</Link>
+            <Link to="/assistant"><BrainCircuit /> {t("المستشار الذكي")}</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/payroll"><Banknote /> الرواتب</Link>
+            <Link to="/payroll"><Banknote /> {t("الرواتب")}</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/budget"><Banknote /> الميزانية</Link>
+            <Link to="/budget"><Banknote /> {t("الميزانية")}</Link>
           </Button>
           <Button variant="outline" onClick={() => fileRef.current?.click()}>
-            <FileSpreadsheet /> تحديث من ملف Excel
-          </Button>
-          <Button variant="outline" onClick={async () => { try { await exportExcel(projects); toast.success("تم تصدير تقرير Excel"); } catch { toast.error("تعذر التصدير"); } }}>
-            <FileDown /> تصدير تقرير Excel
-          </Button>
+            <FileSpreadsheet /> {t("تحديث من ملف Excel")}</Button>
+          <Button variant="outline" onClick={async () => { try { await exportExcel(projects); toast.success(t("تم تصدير تقرير Excel")); } catch { toast.error(t("تعذر التصدير")); } }}>
+            <FileDown /> {t("تصدير تقرير Excel")}</Button>
           <PdfButton />
           <Button onClick={() => { setEditing(null); setOpen(true); }}>
-            <Plus /> مشروع جديد
-          </Button>
+            <Plus /> {t("مشروع جديد")}</Button>
         </div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi icon={<FolderKanban />} label="إجمالي المشاريع" value={String(projects.length)} sub={`${s.late} متأخر`} />
-        <Kpi icon={<Banknote />} label="إجمالي قيمة العقود" value={fmtMoney(s.contract)} sub="ريال" accent />
-        <Kpi icon={<TrendingUp />} label="المدفوع" value={fmtMoney(s.paid)}
-          sub={`نسبة الصرف ${fmtPct(s.contract ? s.paid / s.contract : 0)}`} />
-        <Kpi icon={<Banknote />} label="المتبقي للدفع" value={fmtMoney(s.remaining)} sub={`متوسط الإنجاز ${fmtPct(s.avg)}`} />
+        <Kpi icon={<FolderKanban />} label={t("إجمالي المشاريع")} value={String(projects.length)} sub={`${s.late} ${t("متأخر")}`} />
+        <Kpi icon={<Banknote />} label={t("إجمالي قيمة العقود")} value={fmtMoney(s.contract)} sub={t("ريال")} accent />
+        <Kpi icon={<TrendingUp />} label={t("المدفوع")} value={fmtMoney(s.paid)}
+          sub={`${t("نسبة الصرف")} ${fmtPct(s.contract ? s.paid / s.contract : 0)}`} />
+        <Kpi icon={<Banknote />} label={t("المتبقي للدفع")} value={fmtMoney(s.remaining)} sub={`${t("متوسط الإنجاز")} ${fmtPct(s.avg)}`} />
       </section>
 
       {(s.overdue.length > 0 || s.soon.length > 0) && (
@@ -152,12 +151,11 @@ function Dashboard() {
           {s.overdue.length > 0 && (
             <div className="surface flex flex-wrap items-center gap-3 border-destructive/40 p-4">
               <CircleAlert className="size-5 text-destructive" />
-              <span className="font-semibold text-destructive">مشاريع متأخرة ({s.overdue.length}):</span>
+              <span className="font-semibold text-destructive">{t("مشاريع متأخرة (")}{s.overdue.length}):</span>
               {s.overdue.map((p) => (
                 <button key={p.id} onClick={() => scrollToTable()} className="transition-transform hover:scale-105">
                   <Badge variant="outline" className="cursor-pointer border-destructive/40 text-destructive">
-                    {p.name} — متأخر {Math.abs(daysLeft(p.end)!)} يوم
-                  </Badge>
+                    {p.name} {t("— متأخر")}{Math.abs(daysLeft(p.end) ?? 0)} {t("يوم")}</Badge>
                 </button>
               ))}
             </div>
@@ -165,12 +163,11 @@ function Dashboard() {
           {s.soon.length > 0 && (
             <div className="surface flex flex-wrap items-center gap-3 border-warning/30 p-4">
               <AlertTriangle className="size-5 text-warning" />
-              <span className="font-semibold text-warning">قريبة من الانتهاء ({s.soon.length}):</span>
+              <span className="font-semibold text-warning">{t("قريبة من الانتهاء (")}{s.soon.length}):</span>
               {s.soon.map((p) => (
                 <button key={p.id} onClick={() => scrollToTable()} className="transition-transform hover:scale-105">
                   <Badge variant="outline" className="cursor-pointer border-warning/40 text-warning">
-                    {p.name} — باقي {daysLeft(p.end)} يوم
-                  </Badge>
+                    {p.name} {t("— باقي")}{daysLeft(p.end)} {t("يوم")}</Badge>
                 </button>
               ))}
             </div>
@@ -179,50 +176,50 @@ function Dashboard() {
       )}
 
       <section className="grid gap-4 lg:grid-cols-3 print:hidden">
-        <Panel title="حالة المشاريع">
+        <Panel title={t("حالة المشاريع")}>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={3} stroke="none">
                 {byStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
-              <Tooltip {...tip} />
+              <Tooltip {...tip} formatter={(value: number, name: string) => [value, t(name)]} />
             </PieChart>
           </ResponsiveContainer>
           <Legend data={byStatus} />
         </Panel>
-        <Panel title="قيمة العقود حسب القطاع">
+        <Panel title={t("قيمة العقود حسب القطاع")}>
           <ResponsiveContainer width="100%" height={270}>
             <BarChart data={bySector}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
+              <XAxis dataKey="name" tickFormatter={t} tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
               <YAxis orientation="right" width={50} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
               <Tooltip {...tip} formatter={(v: number) => fmtMoney(v)} cursor={{ fill: "var(--muted)" }} />
-              <Bar dataKey="value" name="القيمة" radius={[6, 6, 0, 0]} fill="var(--chart-1)" />
+              <Bar dataKey="value" name={t("القيمة")} radius={[6, 6, 0, 0]} fill="var(--chart-1)" />
             </BarChart>
           </ResponsiveContainer>
         </Panel>
-        <Panel title="المشاريع لكل مدير">
+        <Panel title={t("المشاريع لكل مدير")}>
           <ResponsiveContainer width="100%" height={270}>
             <BarChart data={byManager} layout="vertical">
               <XAxis type="number" hide allowDecimals={false} />
               <YAxis type="category" dataKey="name" orientation="right" width={130} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
               <Tooltip {...tip} cursor={{ fill: "var(--muted)" }} />
-              <Bar dataKey="value" name="عدد المشاريع" radius={[6, 0, 0, 6]} fill="var(--chart-2)" />
+              <Bar dataKey="value" name={t("عدد المشاريع")} radius={[6, 0, 0, 6]} fill="var(--chart-2)" />
             </BarChart>
           </ResponsiveContainer>
         </Panel>
       </section>
 
       <div className="print:hidden">
-      <Panel title="الإنجاز الفعلي مقابل المخطط">
+      <Panel title={t("الإنجاز الفعلي مقابل المخطط")}>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={progressData}>
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={70} />
             <YAxis orientation="right" unit="%" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
             <Tooltip {...tip} formatter={(v: number) => `${v}%`} cursor={{ fill: "var(--muted)" }} />
-            <Bar dataKey="مخطط" fill="var(--muted-foreground)" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="فعلي" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="مخطط" name={t("مخطط")} fill="var(--muted-foreground)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="فعلي" name={t("فعلي")} fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </Panel>
@@ -230,14 +227,14 @@ function Dashboard() {
 
       <section ref={tableRef} className="surface overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
-          <h2 className="font-display text-lg font-bold">جميع المشاريع ({filtered.length})</h2>
+          <h2 className="font-display text-lg font-bold">{t("جميع المشاريع (")}{filtered.length})</h2>
           <div className="flex flex-wrap gap-2 print:hidden">
             {statuses.map((st) => (
-              <Button key={st} size="sm" variant={status === st ? "default" : "outline"} onClick={() => setStatus(st)}>{st}</Button>
+              <Button key={st} size="sm" variant={status === st ? "default" : "outline"} onClick={() => setStatus(st)}>{t(st)}</Button>
             ))}
             <div className="relative">
               <Search className="absolute right-2.5 top-2.5 size-4 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث..." className="h-9 w-48 pr-8" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("بحث...")} className="h-9 w-48 pr-8" />
             </div>
           </div>
         </div>
@@ -245,7 +242,7 @@ function Dashboard() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                {["الرمز", "المشروع", "القطاع", "المدير", "الانتهاء", "الحالة", "الإنجاز", "قيمة العقد", "المدفوع", "المتبقي للدفع", ""].map((h) => (
+                {[t("الرمز"), t("المشروع"), t("القطاع"), t("المدير"), t("الانتهاء"), t("الحالة"), t("الإنجاز"), t("قيمة العقد"), t("المدفوع"), t("المتبقي للدفع"), ""].map((h) => (
                   <th key={h} className={`whitespace-nowrap px-3 py-3 text-right font-medium ${h === "" ? "print:hidden" : ""}`}>{h}</th>
                 ))}
               </tr>
@@ -260,13 +257,13 @@ function Dashboard() {
                       {p.name}
                       {p.issues && <p className="mt-0.5 line-clamp-1 max-w-xs text-xs text-destructive/80">{p.issues}</p>}
                     </td>
-                    <td className="px-3 py-3">{p.sector}</td>
+                    <td className="px-3 py-3">{t(p.sector)}</td>
                     <td className="whitespace-nowrap px-3 py-3" dir="ltr">{p.manager}</td>
                     <td className="whitespace-nowrap px-3 py-3">
                       {p.end ?? "—"}
                       {d !== null && <p className={`text-xs ${d < 0 ? "text-destructive" : d <= 30 ? "text-warning" : "text-muted-foreground"}`}>{deadlineAlert(p.end)} ({d})</p>}
                     </td>
-                    <td className="px-3 py-3">{p.status && <Badge variant="outline" className={statusClass(p.status)}>{p.status}</Badge>}</td>
+                    <td className="px-3 py-3">{p.status && <Badge variant="outline" className={statusClass(p.status)}>{t(p.status)}</Badge>}</td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
@@ -279,9 +276,9 @@ function Dashboard() {
                     <td className="px-3 py-3 tabular-nums">{fmtMoney(p.paid)}</td>
                     <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract - p.paid)}</td>
                     <td className="whitespace-nowrap px-3 py-3 print:hidden">
-                      <Button size="icon" variant="ghost" aria-label="تعديل" onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>
-                      <Button size="icon" variant="ghost" aria-label="حذف"
-                        onClick={() => { if (confirm(`حذف ${p.name}؟`)) projectStore.remove(p.id); }}><Trash2 /></Button>
+                      <Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>
+                      <Button size="icon" variant="ghost" aria-label={t("حذف")}
+                        onClick={() => { if (confirm(`${t("حذف")} ${p.name}?`)) projectStore.remove(p.id); }}><Trash2 /></Button>
                     </td>
                   </tr>
                 );
@@ -297,6 +294,7 @@ function Dashboard() {
 }
 
 function Kpi({ icon, label, value, sub, accent }: { icon: React.ReactNode; label: string; value: string; sub: string; accent?: boolean }) {
+  useLanguage();
   return (
     <div className="surface p-5">
       <div className="flex items-center justify-between text-muted-foreground">
@@ -310,6 +308,7 @@ function Kpi({ icon, label, value, sub, accent }: { icon: React.ReactNode; label
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  useLanguage();
   return (
     <div className="surface p-5">
       <h2 className="mb-3 font-display text-lg font-bold">{title}</h2>
@@ -319,12 +318,13 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 }
 
 function Legend({ data }: { data: { name: string; value: number }[] }) {
+  useLanguage();
   return (
     <div className="flex flex-wrap justify-center gap-3 text-xs">
       {data.map((d, i) => (
         <span key={d.name} className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-          {d.name} ({d.value})
+          {t(d.name)} ({d.value})
         </span>
       ))}
     </div>

@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowRight, Banknote, CheckCircle2, ChevronLeft, ChevronRight, FileDown, Pencil, Plus, Search, Trash2, Users, Wallet } from "lucide-react";
@@ -31,6 +32,7 @@ function shiftMonth(key: string, delta: number) {
 }
 
 function Payroll() {
+  useLanguage();
   const employees = usePayroll();
   const [month, setMonth] = useState(monthKey());
   const [q, setQ] = useState("");
@@ -55,31 +57,31 @@ function Payroll() {
       const total = active.reduce((x, e) => x + netSalary(e), 0);
       const paidN = active.filter((e) => e.paidMonths.includes(month)).reduce((x, e) => x + netSalary(e), 0);
       await exportBrandedExcel({
-        filename: `مسير-رواتب-${month}.xlsx`,
-        reportTitle: `مسير الرواتب — ${month}`,
+        filename: `${locale() === "en-GB" ? "Payroll" : "مسير-رواتب"}-${month}.xlsx`,
+        reportTitle: `${t("مسير الرواتب")} — ${month}`,
         summary: [
-          ["عدد الموظفين", active.length, "int"],
-          ["إجمالي صافي الرواتب", total, "money"],
-          ["المدفوع", paidN, "money"],
-          ["المتبقي للصرف", total - paidN, "money"],
+          [t("عدد الموظفين"), active.length, "int"],
+          [t("إجمالي صافي الرواتب"), total, "money"],
+          [t("المدفوع"), paidN, "money"],
+          [t("المتبقي للصرف"), total - paidN, "money"],
         ],
         sheets: [{
-          name: "مسير الرواتب",
-          title: `مسير رواتب شهر ${month}`,
+          name: t("مسير الرواتب"),
+          title: `${t("مسير الرواتب")} — ${monthLabel(month)}`,
           columns: [
-            { header: "الموظف", width: 22 }, { header: "المسمى", width: 18 }, { header: "الإدارة" },
-            { header: "المشروع", width: 28 }, { header: "الأساسي", format: "money" },
-            { header: "البدلات", format: "money" }, { header: "الخصومات", format: "money" },
-            { header: "الصافي", format: "money" }, { header: "الحالة", width: 12 },
+            { header: t("الموظف"), width: 22 }, { header: t("المسمى"), width: 18 }, { header: t("الإدارة") },
+            { header: t("المشروع"), width: 28 }, { header: t("الأساسي"), format: "money" },
+            { header: t("البدلات"), format: "money" }, { header: t("الخصومات"), format: "money" },
+            { header: t("الصافي"), format: "money" }, { header: t("الحالة"), width: 12 },
           ],
           rows: active.map((e) => [e.name, e.role, e.dept, e.project, e.base, e.allowances, e.deductions,
-            netSalary(e), e.paidMonths.includes(month) ? "مدفوع" : "غير مدفوع"]),
+            netSalary(e), e.paidMonths.includes(month) ? t("مدفوع") : t("غير مدفوع")]),
           totals: [4, 5, 6, 7],
         }],
       });
-      toast.success("تم تصدير مسير الرواتب");
+      toast.success(t("تم تصدير مسير الرواتب"));
     } catch {
-      toast.error("تعذر التصدير");
+      toast.error(t("تعذر التصدير"));
     }
   }
 
@@ -87,51 +89,49 @@ function Payroll() {
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col items-center gap-4 text-center">
         <div>
-          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">وحدة الرواتب</h1>
-          <p className="mt-1 text-sm text-muted-foreground">مسير الرواتب الشهري وحالة الصرف لكل موظف</p>
+          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{t("وحدة الرواتب")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("مسير الرواتب الشهري وحالة الصرف لكل موظف")}</p>
         </div>
         <div className="flex flex-wrap justify-center gap-2 print:hidden">
           <ThemeToggle />
           <Button variant="outline" asChild>
-            <Link to="/"><ArrowRight /> لوحة المشاريع</Link>
+            <Link to="/"><ArrowRight /> {t("لوحة المشاريع")}</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/report"><FileDown /> التقرير الشهري</Link>
+            <Link to="/report"><FileDown /> {t("التقرير الشهري")}</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/budget">الميزانية</Link>
+            <Link to="/budget">{t("الميزانية")}</Link>
           </Button>
           <Button variant="outline" onClick={onExport}>
-            <FileDown /> تصدير مسير Excel
-          </Button>
+            <FileDown /> {t("تصدير مسير Excel")}</Button>
           <PdfButton />
           <Button onClick={() => { setEditing(null); setOpen(true); }}>
-            <Plus /> إضافة موظف
-          </Button>
+            <Plus /> {t("إضافة موظف")}</Button>
         </div>
       </header>
 
       {/* اختيار الشهر */}
       <div className="flex items-center justify-center gap-3">
-        <Button variant="outline" size="icon" onClick={() => setMonth(shiftMonth(month, 1))} aria-label="الشهر التالي">
+        <Button variant="outline" size="icon" onClick={() => setMonth(shiftMonth(month, 1))} aria-label={t("الشهر التالي")}>
           <ChevronRight />
         </Button>
         <div className="min-w-40 text-center font-display text-lg font-bold">{monthLabel(month)}</div>
-        <Button variant="outline" size="icon" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="الشهر السابق">
+        <Button variant="outline" size="icon" onClick={() => setMonth(shiftMonth(month, -1))} aria-label={t("الشهر السابق")}>
           <ChevronLeft />
         </Button>
         {month !== monthKey() && (
-          <Button variant="ghost" size="sm" onClick={() => setMonth(monthKey())}>الشهر الحالي</Button>
+          <Button variant="ghost" size="sm" onClick={() => setMonth(monthKey())}>{t("الشهر الحالي")}</Button>
         )}
       </div>
 
       {/* مؤشرات */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          { label: "إجمالي رواتب الشهر", value: `${fmtMoney(s.total)} ر.س`, icon: Banknote },
-          { label: "الموظفون النشطون", value: active.length, icon: Users },
-          { label: "تم صرفه", value: `${fmtMoney(s.paidSum)} ر.س (${s.paidCount})`, icon: CheckCircle2 },
-          { label: "المتبقي للصرف", value: `${fmtMoney(s.remaining)} ر.س`, icon: Wallet },
+          { label: t("إجمالي رواتب الشهر"), value: `${fmtMoney(s.total)} ${t("ر.س")}`, icon: Banknote },
+          { label: t("الموظفون النشطون"), value: active.length, icon: Users },
+          { label: t("تم صرفه"), value: `${fmtMoney(s.paidSum)} ${t("ر.س")} (${s.paidCount})`, icon: CheckCircle2 },
+          { label: t("المتبقي للصرف"), value: `${fmtMoney(s.remaining)} ${t("ر.س")}`, icon: Wallet },
         ].map((k) => (
           <div key={k.label} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -148,27 +148,26 @@ function Payroll() {
         <div className="flex flex-wrap items-center gap-3 border-b border-border p-4 print:hidden">
           <div className="relative min-w-56 flex-1">
             <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث بالاسم أو الإدارة أو المشروع…" className="pr-9" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("بحث بالاسم أو الإدارة أو المشروع…")} className="pr-9" />
           </div>
           <Button
             variant="outline"
-            onClick={() => { payrollStore.payAll(month); toast.success(`تم اعتماد صرف رواتب ${monthLabel(month)} للجميع`); }}
+            onClick={() => { payrollStore.payAll(month); toast.success(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}`); }}
           >
-            <CheckCircle2 /> اعتماد صرف الشهر للجميع
-          </Button>
+            <CheckCircle2 /> {t("اعتماد صرف الشهر للجميع")}</Button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">
             <thead>
               <tr className="border-b border-border text-right text-xs text-muted-foreground">
-                <th className="p-3 font-medium">الموظف</th>
-                <th className="p-3 font-medium">الإدارة / المشروع</th>
-                <th className="p-3 font-medium">الأساسي</th>
-                <th className="p-3 font-medium">البدلات</th>
-                <th className="p-3 font-medium">الخصومات</th>
-                <th className="p-3 font-medium">الصافي</th>
-                <th className="p-3 font-medium">حالة {monthLabel(month)}</th>
-                <th className="p-3 font-medium print:hidden">إجراءات</th>
+                <th className="p-3 font-medium">{t("الموظف")}</th>
+                <th className="p-3 font-medium">{t("الإدارة / المشروع")}</th>
+                <th className="p-3 font-medium">{t("الأساسي")}</th>
+                <th className="p-3 font-medium">{t("البدلات")}</th>
+                <th className="p-3 font-medium">{t("الخصومات")}</th>
+                <th className="p-3 font-medium">{t("الصافي")}</th>
+                <th className="p-3 font-medium">{t("حالة")}{monthLabel(month)}</th>
+                <th className="p-3 font-medium print:hidden">{t("إجراءات")}</th>
               </tr>
             </thead>
             <tbody>
@@ -193,29 +192,29 @@ function Payroll() {
                         <button
                           onClick={() => payrollStore.togglePaid(e.id, month)}
                           className="cursor-pointer"
-                          title={paid ? "إلغاء الصرف" : "اعتماد الصرف"}
+                          title={paid ? t("إلغاء الصرف") : t("اعتماد الصرف")}
                         >
                           <Badge variant="outline" className={paid
                             ? "border-success/30 bg-success/15 text-success"
                             : "border-warning/30 bg-warning/15 text-warning"}>
-                            {paid ? "مدفوع ✓" : "قيد الصرف"}
+                            {paid ? t("مدفوع ✓") : t("قيد الصرف")}
                           </Badge>
                         </button>
                       ) : (
-                        <Badge variant="outline" className="bg-muted text-muted-foreground">غير نشط</Badge>
+                        <Badge variant="outline" className="bg-muted text-muted-foreground">{t("غير نشط")}</Badge>
                       )}
                     </td>
                     <td className="p-3 print:hidden">
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditing(e); setOpen(true); }} aria-label="تعديل">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditing(e); setOpen(true); }} aria-label={t("تعديل")}>
                           <Pencil className="size-4" />
                         </Button>
                         <Button
-                          variant="ghost" size="icon" aria-label="حذف"
+                          variant="ghost" size="icon" aria-label={t("حذف")}
                           onClick={() => {
-                            if (confirm(`حذف ${e.name} نهائياً؟`)) {
+                            if (confirm(`${t("حذف")} ${e.name}?`)) {
                               payrollStore.remove(e.id);
-                              toast.success("تم حذف الموظف");
+                              toast.success(t("تم حذف الموظف"));
                             }
                           }}
                         >
@@ -227,7 +226,7 @@ function Payroll() {
                 );
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا توجد نتائج مطابقة</td></tr>
+                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">{t("لا توجد نتائج مطابقة")}</td></tr>
               )}
             </tbody>
           </table>
@@ -240,7 +239,7 @@ function Payroll() {
         employee={editing}
         onSave={(e) => {
           payrollStore.upsert(e);
-          toast.success(editing ? "تم تحديث بيانات الموظف" : "تمت إضافة الموظف");
+          toast.success(editing ? t("تم تحديث بيانات الموظف") : t("تمت إضافة الموظف"));
         }}
       />
     </div>

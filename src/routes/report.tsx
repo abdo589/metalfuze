@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, FileDown, Printer } from "lucide-react";
@@ -29,6 +30,7 @@ function shiftMonth(key: string, d: number) {
 }
 
 function Report() {
+  useLanguage();
   const employees = usePayroll();
   const projects = useProjects();
   const [month, setMonth] = useState(monthKey());
@@ -68,43 +70,43 @@ function Report() {
     try {
       const { exportBrandedExcel } = await import("@/lib/branded-excel");
       await exportBrandedExcel({
-        filename: `تقرير-رواتب-مشاريع-${month}.xlsx`,
-        reportTitle: `التقرير الشهري للرواتب والمشاريع — ${month}`,
+        filename: `${locale() === "en-GB" ? "Payroll-Projects-Report" : "تقرير-رواتب-مشاريع"}-${month}.xlsx`,
+        reportTitle: `${t("التقرير الشهري: الرواتب والمشاريع")} — ${month}`,
         summary: [
-          ["عدد الموظفين", rows.length, "int"],
-          ["إجمالي صافي الرواتب", total, "money"],
-          ["المدفوع", paid, "money"],
-          ["المتبقي للصرف", total - paid, "money"],
+          [t("عدد الموظفين"), rows.length, "int"],
+          [t("إجمالي صافي الرواتب"), total, "money"],
+          [t("المدفوع"), paid, "money"],
+          [t("المتبقي للصرف"), total - paid, "money"],
         ],
         sheets: [
           {
-            name: "الموظفون",
-            title: "تفاصيل الموظفين والمشاريع",
+            name: t("الموظفون"),
+            title: t("تفاصيل الموظفين والمشاريع"),
             columns: [
-              { header: "الموظف", width: 22 }, { header: "المسمى", width: 18 }, { header: "المشروع", width: 28 },
-              { header: "نسبة الإنجاز", format: "pct" }, { header: "قيمة العقد", width: 17, format: "money" },
-              { header: "المصروف من العقد", width: 17, format: "money" }, { header: "نسبة الصرف", format: "pct" },
-              { header: "الراتب الصافي", format: "money" }, { header: "حالة الراتب", width: 12 },
+              { header: t("الموظف"), width: 22 }, { header: t("المسمى"), width: 18 }, { header: t("المشروع"), width: 28 },
+              { header: t("نسبة الإنجاز"), format: "pct" }, { header: t("قيمة العقد"), width: 17, format: "money" },
+              { header: t("المصروف من العقد"), width: 17, format: "money" }, { header: t("نسبة الصرف"), format: "pct" },
+              { header: t("الراتب الصافي"), format: "money" }, { header: t("حالة الراتب"), width: 12 },
             ],
             rows: rows.map((r) => [r.e.name, r.e.role, r.e.project || "—", r.p ? r.p.progress : "—",
-              r.p?.contract ?? "", r.p?.paid ?? "", r.spendPct ?? "—", r.net, r.paidSalary ? "مدفوع" : "غير مدفوع"]),
+              r.p?.contract ?? "", r.p?.paid ?? "", r.spendPct ?? "—", r.net, r.paidSalary ? t("مدفوع") : t("غير مدفوع")]),
             totals: [7],
           },
           {
-            name: "حسب المشروع",
-            title: "الرواتب حسب المشروع",
+            name: t("حسب المشروع"),
+            title: t("الرواتب حسب المشروع"),
             columns: [
-              { header: "المشروع", width: 32 }, { header: "عدد الموظفين", format: "int" },
-              { header: "نسبة الإنجاز", format: "pct" }, { header: "إجمالي الرواتب", width: 18, format: "money" },
+              { header: t("المشروع"), width: 32 }, { header: t("عدد الموظفين"), format: "int" },
+              { header: t("نسبة الإنجاز"), format: "pct" }, { header: t("إجمالي الرواتب"), width: 18, format: "money" },
             ],
-            rows: byProject.map((g) => [g.name, g.count, g.progress ?? "—", g.net]),
+            rows: byProject.map((g) => [g.name === "إدارة عامة (بدون مشروع)" ? t(g.name) : g.name, g.count, g.progress ?? "—", g.net]),
             totals: [1, 3],
           },
         ],
       });
-      toast.success("تم تصدير التقرير");
+      toast.success(t("تم تصدير التقرير"));
     } catch {
-      toast.error("تعذر التصدير");
+      toast.error(t("تعذر التصدير"));
     }
   }
 
@@ -112,28 +114,28 @@ function Report() {
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col items-center gap-4 text-center">
         <div>
-          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">التقرير الشهري: الرواتب والمشاريع</h1>
-          <p className="mt-1 text-sm text-muted-foreground">كل موظف مع مشروعه، الإنجاز، الصرف والراتب الصافي</p>
+          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{t("التقرير الشهري: الرواتب والمشاريع")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("كل موظف مع مشروعه، الإنجاز، الصرف والراتب الصافي")}</p>
         </div>
         <div className="flex flex-wrap justify-center gap-2 print:hidden">
           <ThemeToggle />
-          <Button variant="outline" asChild><Link to="/payroll"><ArrowRight /> الرواتب</Link></Button>
-          <Button variant="outline" asChild><Link to="/">لوحة المشاريع</Link></Button>
-          <Button variant="outline" onClick={onExport}><FileDown /> تصدير Excel</Button>
+          <Button variant="outline" asChild><Link to="/payroll"><ArrowRight /> {t("الرواتب")}</Link></Button>
+          <Button variant="outline" asChild><Link to="/">{t("لوحة المشاريع")}</Link></Button>
+          <Button variant="outline" onClick={onExport}><FileDown /> {t("تصدير Excel")}</Button>
           <PdfButton />
         </div>
         <div className="flex items-center gap-3">
-          <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="الشهر السابق"><ChevronRight /></Button>
+          <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, -1))} aria-label={t("الشهر السابق")}><ChevronRight /></Button>
           <span className="min-w-40 font-display text-lg font-bold">{monthLabel(month)}</span>
-          <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, 1))} aria-label="الشهر التالي"><ChevronLeft /></Button>
+          <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, 1))} aria-label={t("الشهر التالي")}><ChevronLeft /></Button>
         </div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-3">
         {[
-          ["إجمالي الرواتب الصافية", fmtMoney(total)],
-          ["المصروف من الرواتب", fmtMoney(paid)],
-          ["المتبقي للدفع", fmtMoney(total - paid)],
+          [t("إجمالي الرواتب الصافية"), fmtMoney(total)],
+          [t("المصروف من الرواتب"), fmtMoney(paid)],
+          [t("المتبقي للدفع"), fmtMoney(total - paid)],
         ].map(([l, v]) => (
           <div key={l} className="rounded-2xl border border-border bg-card p-5">
             <div className="text-sm text-muted-foreground">{l}</div>
@@ -143,11 +145,11 @@ function Report() {
       </section>
 
       <section className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <h2 className="p-4 font-display text-lg font-bold">تفاصيل الموظفين</h2>
+        <h2 className="p-4 font-display text-lg font-bold">{t("تفاصيل الموظفين")}</h2>
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr className="text-right">
-              {["الموظف", "المشروع", "الإنجاز", "صرف العقد", "الراتب الصافي", "حالة الراتب"].map((h) => (
+              {[t("الموظف"), t("المشروع"), t("الإنجاز"), t("صرف العقد"), t("الراتب الصافي"), t("حالة الراتب")].map((h) => (
                 <th key={h} className="px-4 py-3 font-medium">{h}</th>
               ))}
             </tr>
@@ -156,7 +158,7 @@ function Report() {
             {rows.map((r) => (
               <tr key={r.e.id} className="border-t border-border">
                 <td className="px-4 py-3"><div className="font-medium">{r.e.name}</div><div className="text-xs text-muted-foreground">{r.e.role}</div></td>
-                <td className="px-4 py-3">{r.e.project || <span className="text-muted-foreground">إدارة عامة</span>}</td>
+                <td className="px-4 py-3">{r.e.project || <span className="text-muted-foreground">{t("إدارة عامة")}</span>}</td>
                 <td className="px-4 py-3 min-w-32">
                   {r.p ? (
                     <div className="space-y-1">
@@ -167,7 +169,7 @@ function Report() {
                 </td>
                 <td className="px-4 py-3">{r.p ? <>{fmtMoney(r.p.paid)} <span className="text-xs text-muted-foreground">({r.spendPct != null ? fmtPct(r.spendPct) : "—"})</span></> : "—"}</td>
                 <td className="px-4 py-3 font-bold">{fmtMoney(r.net)}</td>
-                <td className="px-4 py-3">{r.paidSalary ? <Badge>مدفوع</Badge> : <Badge variant="outline">غير مدفوع</Badge>}</td>
+                <td className="px-4 py-3">{r.paidSalary ? <Badge>{t("مدفوع")}</Badge> : <Badge variant="outline">{t("غير مدفوع")}</Badge>}</td>
               </tr>
             ))}
           </tbody>
@@ -175,17 +177,17 @@ function Report() {
       </section>
 
       <section className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <h2 className="p-4 font-display text-lg font-bold">تكلفة الرواتب حسب المشروع</h2>
+        <h2 className="p-4 font-display text-lg font-bold">{t("تكلفة الرواتب حسب المشروع")}</h2>
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr className="text-right">
-              {["المشروع", "عدد الموظفين", "الإنجاز", "إجمالي الرواتب"].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}
+              {[t("المشروع"), t("عدد الموظفين"), t("الإنجاز"), t("إجمالي الرواتب")].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}
             </tr>
           </thead>
           <tbody>
             {byProject.map((g) => (
               <tr key={g.name} className="border-t border-border">
-                <td className="px-4 py-3 font-medium">{g.name}</td>
+                <td className="px-4 py-3 font-medium">{t(g.name)}</td>
                 <td className="px-4 py-3">{g.count}</td>
                 <td className="px-4 py-3">{g.progress != null ? fmtPct(g.progress) : "—"}</td>
                 <td className="px-4 py-3 font-bold">{fmtMoney(g.net)}</td>

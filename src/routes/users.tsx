@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useState } from "react";
@@ -28,6 +29,7 @@ function genPassword() {
 }
 
 function UsersPage() {
+  useLanguage();
   const list = useServerFn(listUsers);
   const create = useServerFn(createUser);
   const remove = useServerFn(deleteUser);
@@ -39,7 +41,7 @@ function UsersPage() {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    try { setUsers(await list()); } catch { setMsg({ ok: false, text: "تعذر تحميل المستخدمين" }); }
+    try { setUsers(await list()); } catch { setMsg({ ok: false, text: t("تعذر تحميل المستخدمين") }); }
   }, [list]);
   useEffect(() => {
     load();
@@ -53,7 +55,7 @@ function UsersPage() {
       const r = await create({ data: form });
       if (!r.ok) setMsg({ ok: false, text: r.error });
       else {
-        setMsg({ ok: true, text: `تم إنشاء حساب ${form.name} — اسم المستخدم: ${form.username.toLowerCase()} / كلمة السر: ${form.password}` });
+        setMsg({ ok: true, text: `${t("تم إنشاء حساب")} ${form.name} — ${t("اسم المستخدم")}: ${form.username.toLowerCase()} / ${t("كلمة السر")}: ${form.password}` });
         setForm({ name: "", username: "", password: genPassword() });
         load();
       }
@@ -62,28 +64,28 @@ function UsersPage() {
   }
 
   async function onDelete(u: AppUser) {
-    if (!confirm(`حذف حساب ${u.name}؟`)) return;
+    if (!confirm(`${t("حذف حساب")} ${u.name}?`)) return;
     const r = await remove({ data: { id: u.id } });
-    setMsg(r.ok ? { ok: true, text: `تم حذف ${u.name}` } : { ok: false, text: r.error });
+    setMsg(r.ok ? { ok: true, text: `${t("تم حذف")} ${u.name}` } : { ok: false, text: r.error });
     load();
   }
 
   async function onReset(u: AppUser) {
-    const pw = prompt(`كلمة السر الجديدة لـ ${u.name} (8 أحرف على الأقل):`, genPassword());
+    const pw = prompt(`${t("كلمة السر الجديدة لـ")} ${u.name} (${t("8 أحرف على الأقل")}):`, genPassword());
     if (!pw) return;
     try {
       const r = await setPw({ data: { id: u.id, password: pw } });
-      setMsg(r.ok ? { ok: true, text: `كلمة السر الجديدة لـ ${u.name}: ${pw}` } : { ok: false, text: r.error });
+      setMsg(r.ok ? { ok: true, text: `${t("كلمة السر الجديدة لـ")} ${u.name}: ${pw}` } : { ok: false, text: r.error });
     } catch (err) { setMsg({ ok: false, text: (err as Error).message }); }
   }
 
-  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString("ar-EG", { dateStyle: "medium" }) : "لم يدخل بعد");
+  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString(locale(), { dateStyle: "medium" }) : t("لم يدخل بعد"));
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="flex items-center gap-2 font-display text-2xl font-extrabold"><Users className="text-primary" /> إدارة المستخدمين</h1>
-        <Button asChild variant="outline"><Link to="/"><ArrowRight /> لوحة المشاريع</Link></Button>
+        <h1 className="flex items-center gap-2 font-display text-2xl font-extrabold"><Users className="text-primary" /> {t("إدارة المستخدمين")}</h1>
+        <Button asChild variant="outline"><Link to="/"><ArrowRight /> {t("لوحة المشاريع")}</Link></Button>
       </div>
 
       {msg && (
@@ -91,35 +93,35 @@ function UsersPage() {
       )}
 
       <form onSubmit={onCreate} className="grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-4">
-        <h2 className="font-bold sm:col-span-4">إضافة حساب جديد</h2>
-        <Input placeholder="الاسم المعروض" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-        <Input placeholder="اسم المستخدم (إنجليزي)" dir="ltr" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
+        <h2 className="font-bold sm:col-span-4">{t("إضافة حساب جديد")}</h2>
+        <Input placeholder={t("الاسم المعروض")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+        <Input placeholder={t("اسم المستخدم (إنجليزي)")} dir="ltr" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
         <div className="flex gap-1">
-          <Input placeholder="كلمة السر" dir="ltr" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} />
-          <Button type="button" variant="ghost" size="icon" title="توليد" onClick={() => setForm({ ...form, password: genPassword() })}><RefreshCw /></Button>
+          <Input placeholder={t("كلمة السر")} dir="ltr" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} />
+          <Button type="button" variant="ghost" size="icon" title={t("توليد")} onClick={() => setForm({ ...form, password: genPassword() })}><RefreshCw /></Button>
         </div>
-        <Button type="submit" disabled={busy}><UserPlus /> {busy ? "جارٍ الإنشاء..." : "إنشاء الحساب"}</Button>
+        <Button type="submit" disabled={busy}><UserPlus /> {busy ? t("جارٍ الإنشاء...") : t("إنشاء الحساب")}</Button>
       </form>
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="w-full text-sm">
           <thead className="text-muted-foreground">
             <tr className="border-b border-border text-right">
-              <th className="p-3">الاسم</th><th className="p-3">اسم المستخدم</th><th className="p-3">تاريخ الإنشاء</th><th className="p-3">آخر دخول</th><th className="p-3" />
+              <th className="p-3">{t("الاسم")}</th><th className="p-3">{t("اسم المستخدم")}</th><th className="p-3">{t("تاريخ الإنشاء")}</th><th className="p-3">{t("آخر دخول")}</th><th className="p-3" />
             </tr>
           </thead>
           <tbody>
-            {users === null && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">جارٍ التحميل...</td></tr>}
+            {users === null && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">{t("جارٍ التحميل...")}</td></tr>}
             {users?.map((u) => (
               <tr key={u.id} className="border-b border-border last:border-0">
-                <td className="p-3 font-medium">{u.name} {u.id === me && <span className="text-xs text-primary">(أنت)</span>}</td>
+                <td className="p-3 font-medium">{u.name} {u.id === me && <span className="text-xs text-primary">{t("(أنت)")}</span>}</td>
                 <td className="p-3" dir="ltr">{u.username}</td>
                 <td className="p-3">{fmt(u.createdAt)}</td>
                 <td className="p-3">{fmt(u.lastSignIn)}</td>
                 <td className="p-3">
                   <div className="flex justify-end gap-1">
-                    <Button size="sm" variant="ghost" onClick={() => onReset(u)}><KeyRound /> كلمة السر</Button>
-                    {u.id !== me && <Button size="icon" variant="ghost" className="text-destructive" title="حذف" onClick={() => onDelete(u)}><Trash2 /></Button>}
+                    <Button size="sm" variant="ghost" onClick={() => onReset(u)}><KeyRound /> {t("كلمة السر")}</Button>
+                    {u.id !== me && <Button size="icon" variant="ghost" className="text-destructive" title={t("حذف")} onClick={() => onDelete(u)}><Trash2 /></Button>}
                   </div>
                 </td>
               </tr>
@@ -127,7 +129,7 @@ function UsersPage() {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-muted-foreground">كلمة السر تظهر مرة واحدة فقط عند الإنشاء أو التغيير — سلّمها لصاحب الحساب مباشرة.</p>
+      <p className="text-xs text-muted-foreground">{t("كلمة السر تظهر مرة واحدة فقط عند الإنشاء أو التغيير — سلّمها لصاحب الحساب مباشرة.")}</p>
     </div>
   );
 }

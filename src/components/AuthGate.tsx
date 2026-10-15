@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { LogOut, Lock, Users } from "lucide-react";
@@ -11,6 +12,7 @@ const DOMAIN = "metalfuze.local";
 export const toEmail = (u: string) => `${u.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "")}@${DOMAIN}`;
 
 export function AuthGate({ children }: { children: ReactNode }) {
+  useLanguage();
   const [session, setSession] = useState<Session | null | undefined>(undefined);
 
   useEffect(() => {
@@ -30,9 +32,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
   return (
     <>
       <div className="flex items-center justify-end gap-2 px-4 pt-3 text-sm text-muted-foreground print:hidden sm:px-6">
-        <span>مرحباً، <b className="text-foreground">{name}</b></span>
-        <Button size="sm" variant="ghost" asChild><Link to="/users"><Users /> المستخدمون</Link></Button>
-        <Button size="sm" variant="ghost" onClick={() => supabase.auth.signOut()}><LogOut /> خروج</Button>
+        <span>{t("مرحباً،")}<b className="text-foreground">{name}</b></span>
+        <Button size="sm" variant="ghost" asChild><Link to="/users"><Users /> {t("المستخدمون")}</Link></Button>
+        <Button size="sm" variant="ghost" onClick={() => supabase.auth.signOut()}><LogOut /> {t("خروج")}</Button>
       </div>
       {children}
     </>
@@ -40,6 +42,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
 }
 
 function Login() {
+  useLanguage();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -52,7 +55,7 @@ function Login() {
     setError("");
     const { error } = await supabase.auth.signInWithPassword({ email: toEmail(username), password });
     setBusy(false);
-    if (error) setError("اسم المستخدم أو كلمة المرور غير صحيحة");
+    if (error) setError(t("اسم المستخدم أو كلمة المرور غير صحيحة"));
   }
 
   async function onGoogle() {
@@ -63,7 +66,7 @@ function Login() {
     });
     if (result.error) {
       setGoogleBusy(false);
-      setError("تعذر الدخول بحساب جوجل، حاول مرة أخرى");
+      setError(t("تعذر الدخول بحساب جوجل، حاول مرة أخرى"));
       return;
     }
     if (result.redirected) return; // Browser is heading to Google
@@ -76,16 +79,16 @@ function Login() {
       <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-6 shadow-lg">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="rounded-full bg-primary/15 p-3 text-primary"><Lock /></div>
-          <h1 className="font-display text-2xl font-extrabold">تسجيل الدخول</h1>
-          <p className="text-sm text-muted-foreground">لوحة متابعة مشاريع Metal Fuze</p>
+          <h1 className="font-display text-2xl font-extrabold">{t("تسجيل الدخول")}</h1>
+          <p className="text-sm text-muted-foreground">{t("لوحة متابعة مشاريع Metal Fuze")}</p>
         </div>
-        <Input placeholder="اسم المستخدم" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" dir="ltr" required />
-        <Input placeholder="كلمة المرور" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" dir="ltr" required />
+        <Input placeholder={t("اسم المستخدم")} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" dir="ltr" required />
+        <Input placeholder={t("كلمة المرور")} type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" dir="ltr" required />
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button type="submit" className="w-full" disabled={busy || googleBusy}>{busy ? "جارٍ الدخول..." : "دخول"}</Button>
+        <Button type="submit" className="w-full" disabled={busy || googleBusy}>{busy ? t("جارٍ الدخول...") : t("دخول")}</Button>
         <div className="flex items-center gap-3 py-1">
           <div className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">أو</span>
+          <span className="text-xs text-muted-foreground">{t("أو")}</span>
           <div className="h-px flex-1 bg-border" />
         </div>
         <Button type="button" variant="outline" className="w-full" disabled={busy || googleBusy} onClick={onGoogle}>
@@ -95,7 +98,7 @@ function Login() {
             <path fill="#FBBC05" d="M5.6 14.2a6.9 6.9 0 0 1 0-4.4V6.81H1.76a11.5 11.5 0 0 0 0 10.38L5.6 14.2Z" />
             <path fill="#EA4335" d="M12 5.08c1.68 0 3.19.58 4.38 1.71l3.28-3.28C17.68 1.63 15.1.5 12 .5A11.5 11.5 0 0 0 1.76 6.81L5.6 9.8c.9-2.71 3.42-4.72 6.4-4.72Z" />
           </svg>
-          {googleBusy ? "جارٍ فتح جوجل..." : "الدخول بحساب جوجل"}
+          {googleBusy ? t("جارٍ فتح جوجل...") : t("الدخول بحساب جوجل")}
         </Button>
       </form>
     </div>

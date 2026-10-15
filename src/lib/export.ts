@@ -1,3 +1,4 @@
+import { t, currentLanguage } from "./i18n";
 import { daysLeft, deadlineAlert, type Project } from "./projects";
 
 export function downloadBlob(blob: Blob, filename: string) {
@@ -26,7 +27,7 @@ export async function exportExcel(projects: Project[]) {
   const stamp = new Date().toISOString().slice(0, 10);
 
   await exportBrandedExcel({
-    filename: `تقرير-المشاريع-${stamp}.xlsx`,
+    filename: `${currentLanguage() === "en" ? "Projects-Report" : "تقرير-المشاريع"}-${stamp}.xlsx`,
     reportTitle: "تقرير متابعة المشاريع",
     summary: [
       ["إجمالي المشاريع", projects.length, "int"],
@@ -53,7 +54,7 @@ export async function exportExcel(projects: Project[]) {
       ],
       rows: projects.map((p) => [
         p.code, p.name, p.sector, p.dept, p.manager, p.start ?? "", p.end ?? "",
-        daysLeft(p.end) ?? "", deadlineAlert(p.end), p.status, p.progress, p.planned,
+        daysLeft(p.end) ?? "", deadlineAlert(p.end), t(p.status), p.progress, p.planned,
         p.contract, p.paid, p.contract - p.paid, p.issues, p.notes,
       ]),
       totals: [12, 13, 14],

@@ -1,3 +1,4 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ const empty = (): Project => ({
 export function ProjectDialog({
   open, onOpenChange, project, managers,
 }: { open: boolean; onOpenChange: (o: boolean) => void; project: Project | null; managers: string[] }) {
+  useLanguage();
   const [f, setF] = useState<Project>(empty());
   useEffect(() => { if (open) setF(project ?? empty()); }, [open, project]);
   const set = <K extends keyof Project>(k: K, v: Project[K]) => setF((p) => ({ ...p, [k]: v }));
@@ -42,42 +44,41 @@ export function ProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent dir="rtl" className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent dir={locale() === "en-GB" ? "ltr" : "rtl"} className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">{project ? "تعديل مشروع" : "إضافة مشروع جديد"}</DialogTitle>
+          <DialogTitle className="font-display text-xl">{project ? t("تعديل مشروع") : t("إضافة مشروع جديد")}</DialogTitle>
         </DialogHeader>
         <datalist id="sectors">{SECTORS.map((s) => <option key={s} value={s} />)}</datalist>
         <datalist id="statuses">{STATUSES.map((s) => <option key={s} value={s} />)}</datalist>
         <datalist id="managers">{managers.map((s) => <option key={s} value={s} />)}</datalist>
         <div className="grid gap-4 sm:grid-cols-2">
-          {text("name", "اسم المشروع")}
-          {text("code", "رمز المشروع")}
-          {text("sector", "القطاع", "sectors")}
-          {text("dept", "الإدارة")}
-          {text("manager", "مدير المشروع", "managers")}
-          {text("owner", "مالك المشروع")}
-          {date("start", "تاريخ البداية")}
-          {date("end", "تاريخ الانتهاء")}
-          {text("status", "حالة المشروع", "statuses")}
-          {text("hasContract", "هل يوجد عقد شركة")}
-          {num("progress", "نسبة الإنجاز %", true)}
-          {num("planned", "نسبة الإنجاز المخطط %", true)}
-          {num("contract", "قيمة العقد")}
-          {num("paid", "المدفوع")}
+          {text("name", t("اسم المشروع"))}
+          {text("code", t("رمز المشروع"))}
+          {text("sector", t("القطاع"), "sectors")}
+          {text("dept", t("الإدارة"))}
+          {text("manager", t("مدير المشروع"), "managers")}
+          {text("owner", t("مالك المشروع"))}
+          {date("start", t("تاريخ البداية"))}
+          {date("end", t("تاريخ الانتهاء"))}
+          {text("status", t("حالة المشروع"), "statuses")}
+          {text("hasContract", t("هل يوجد عقد شركة"))}
+          {num("progress", t("نسبة الإنجاز %"), true)}
+          {num("planned", t("نسبة الإنجاز المخطط %"), true)}
+          {num("contract", t("قيمة العقد"))}
+          {num("paid", t("المدفوع"))}
           <div className="space-y-1.5 sm:col-span-2">
-            <Label>الإشكاليات / العوائق</Label>
+            <Label>{t("الإشكاليات / العوائق")}</Label>
             <Textarea value={f.issues} onChange={(e) => set("issues", e.target.value)} />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label>ملاحظات مهمة</Label>
+            <Label>{t("ملاحظات مهمة")}</Label>
             <Textarea value={f.notes} onChange={(e) => set("notes", e.target.value)} />
           </div>
         </div>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("إلغاء")}</Button>
           <Button disabled={!f.name.trim()} onClick={() => { projectStore.upsert(f); onOpenChange(false); }}>
-            حفظ
-          </Button>
+            {t("حفظ")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

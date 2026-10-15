@@ -1,8 +1,10 @@
+import { t, useLanguage, locale } from "@/lib/i18n";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 
 /** Branded header/footer that only appears on printed pages and saved PDFs. */
 export function PrintLetterhead() {
-  const today = new Date().toLocaleDateString("ar-SA-u-ca-gregory", { dateStyle: "long" });
+  useLanguage();
+  const today = new Date().toLocaleDateString(locale(), { dateStyle: "long" });
   return (
     <>
       <div className="print-letterhead">
@@ -10,10 +12,10 @@ export function PrintLetterhead() {
         <div className="print-letterhead-meta">
           <strong>Metal Fuze</strong>
           <span>Accuracy Has No Limit</span>
-          <span>تاريخ الإصدار: {today}</span>
+          <span>{t("تاريخ الإصدار:")}{today}</span>
         </div>
       </div>
-      <div className="print-footer">Metal Fuze — مستند رسمي صادر من نظام متابعة المشاريع</div>
+      <div className="print-footer">{t("Metal Fuze — مستند رسمي صادر من نظام متابعة المشاريع")}</div>
     </>
   );
 }
