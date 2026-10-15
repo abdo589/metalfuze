@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { EmployeeDialog } from "@/components/EmployeeDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PdfButton } from "@/components/PdfButton";
 import { fmtMoney } from "@/lib/projects";
 import { monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
 
@@ -103,6 +104,7 @@ function Payroll() {
           <Button variant="outline" onClick={onExport}>
             <FileDown /> تصدير مسير Excel
           </Button>
+          <PdfButton />
           <Button onClick={() => { setEditing(null); setOpen(true); }}>
             <Plus /> إضافة موظف
           </Button>
@@ -143,7 +145,7 @@ function Payroll() {
 
       {/* جدول الرواتب */}
       <section className="rounded-xl border border-border bg-card">
-        <div className="flex flex-wrap items-center gap-3 border-b border-border p-4">
+        <div className="flex flex-wrap items-center gap-3 border-b border-border p-4 print:hidden">
           <div className="relative min-w-56 flex-1">
             <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث بالاسم أو الإدارة أو المشروع…" className="pr-9" />

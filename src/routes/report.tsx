@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PdfButton } from "@/components/PdfButton";
 import { fmtMoney, fmtPct, useProjects } from "@/lib/projects";
 import { monthKey, monthLabel, netSalary, usePayroll } from "@/lib/payroll";
 
@@ -119,7 +120,7 @@ function Report() {
           <Button variant="outline" asChild><Link to="/payroll"><ArrowRight /> الرواتب</Link></Button>
           <Button variant="outline" asChild><Link to="/">لوحة المشاريع</Link></Button>
           <Button variant="outline" onClick={onExport}><FileDown /> تصدير Excel</Button>
-          <Button variant="outline" onClick={() => window.print()}><Printer /> طباعة / PDF</Button>
+          <PdfButton />
         </div>
         <div className="flex items-center gap-3">
           <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="الشهر السابق"><ChevronRight /></Button>

@@ -13,3 +13,4 @@
 - Light and dark mode are both driven by the CSS variables in `src/styles.css` (`:root` = light, `.dark` = dark); never hardcode colors in components so both modes stay correct.
 - The chosen mode is saved in localStorage and applied by an inline `<head>` script before paint; keep that script and `suppressHydrationWarning` on `<html>` when editing the root shell.
 - AI assistant: client sends current dashboard projects to /api/chat (server route, Lovable AI Gateway Responses via src/server/ai); chat threads live in localStorage (src/lib/threads.ts) because project data is browser-local too.
+- Company PDFs use a shared browser-only export helper and button: capture the print layout and paginate at row boundaries to omit browser URL footers and avoid cutting rows.

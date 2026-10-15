@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PdfButton } from "@/components/PdfButton";
 import {
   daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
 } from "@/lib/projects";
@@ -131,9 +132,7 @@ function Dashboard() {
           <Button variant="outline" onClick={async () => { try { await exportExcel(projects); toast.success("تم تصدير تقرير Excel"); } catch { toast.error("تعذر التصدير"); } }}>
             <FileDown /> تصدير تقرير Excel
           </Button>
-          <Button variant="outline" onClick={() => window.print()}>
-            <Printer /> طباعة / PDF
-          </Button>
+          <PdfButton />
           <Button onClick={() => { setEditing(null); setOpen(true); }}>
             <Plus /> مشروع جديد
           </Button>
@@ -247,7 +246,7 @@ function Dashboard() {
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
                 {["الرمز", "المشروع", "القطاع", "المدير", "الانتهاء", "الحالة", "الإنجاز", "قيمة العقد", "المدفوع", "المتبقي للدفع", ""].map((h) => (
-                  <th key={h} className="whitespace-nowrap px-3 py-3 text-right font-medium">{h}</th>
+                  <th key={h} className={`whitespace-nowrap px-3 py-3 text-right font-medium ${h === "" ? "print:hidden" : ""}`}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -279,7 +278,7 @@ function Dashboard() {
                     <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract)}</td>
                     <td className="px-3 py-3 tabular-nums">{fmtMoney(p.paid)}</td>
                     <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract - p.paid)}</td>
-                    <td className="whitespace-nowrap px-3 py-3">
+                    <td className="whitespace-nowrap px-3 py-3 print:hidden">
                       <Button size="icon" variant="ghost" aria-label="تعديل" onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>
                       <Button size="icon" variant="ghost" aria-label="حذف"
                         onClick={() => { if (confirm(`حذف ${p.name}؟`)) projectStore.remove(p.id); }}><Trash2 /></Button>
