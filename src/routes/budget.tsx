@@ -10,7 +10,7 @@ export const Route = createFileRoute("/budget")({
   head: () => ({
     meta: [
       { title: "لوحة الميزانية — Metal Fuze" },
-      { name: "description", content: "إجمالي العقود، الصرف الشهري والمتبقي مرتبطة تلقائياً بالمشاريع والرواتب." },
+      { name: "description", content: "إجمالي العقود، الصرف الشهري والمتبقي للدفع مرتبطة تلقائياً بالمشاريع والرواتب." },
       { property: "og:title", content: "لوحة الميزانية — Metal Fuze" },
       { property: "og:description", content: "ميزانية المشاريع والرواتب في مكان واحد." },
       { property: "og:type", content: "website" },
