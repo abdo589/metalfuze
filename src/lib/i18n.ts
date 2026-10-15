@@ -24,6 +24,13 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
+  "تاريخ الإصدار:": "Issued:", "مشاريع متأخرة (": "Overdue projects (",
+  "قريبة من الانتهاء (": "Ending soon (", "— متأخر": "— overdue ", "— باقي": "— remaining ",
+  "يوم": "days", "جميع المشاريع (": "All Projects (", "عدد المشاريع": "Project Count",
+  "تم تحديث البيانات:": "Data updated:", "مشروع": "projects",
+  "تم اعتماد صرف الرواتب": "Payroll marked paid for", "حذف حساب": "Delete account",
+  "تم حذف": "Deleted", "كلمة السر الجديدة لـ": "New password for", "8 أحرف على الأقل": "At least 8 characters",
+  "تم إنشاء حساب": "Account created",
   "لوحة متابعة المشاريع": "METAL FUZE PROJECTS",
   "لوحة المشاريع": "Projects", "اللوحة": "Projects",
   "المستشار الذكي": "AI Advisor", "الرواتب": "Payroll", "الميزانية": "Budget",

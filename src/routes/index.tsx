@@ -96,7 +96,7 @@ function Dashboard() {
     try {
       const list = await importExcel(file);
       projectStore.replaceAll(list);
-      toast.success(`تم تحديث البيانات: ${list.length} مشروع`);
+      toast.success(`${t("تم تحديث البيانات:")} ${list.length} ${t("مشروع")}`);
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -182,7 +182,7 @@ function Dashboard() {
               <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={3} stroke="none">
                 {byStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
-              <Tooltip {...tip} />
+              <Tooltip {...tip} formatter={(value: number, name: string) => [value, t(name)]} />
             </PieChart>
           </ResponsiveContainer>
           <Legend data={byStatus} />
@@ -191,7 +191,7 @@ function Dashboard() {
           <ResponsiveContainer width="100%" height={270}>
             <BarChart data={bySector}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
+              <XAxis dataKey="name" tickFormatter={t} tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
               <YAxis orientation="right" width={50} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
               <Tooltip {...tip} formatter={(v: number) => fmtMoney(v)} cursor={{ fill: "var(--muted)" }} />
               <Bar dataKey="value" name={t("القيمة")} radius={[6, 6, 0, 0]} fill="var(--chart-1)" />
@@ -218,8 +218,8 @@ function Dashboard() {
             <XAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={70} />
             <YAxis orientation="right" unit="%" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
             <Tooltip {...tip} formatter={(v: number) => `${v}%`} cursor={{ fill: "var(--muted)" }} />
-            <Bar dataKey={t("مخطط")} fill="var(--muted-foreground)" radius={[4, 4, 0, 0]} />
-            <Bar dataKey={t("فعلي")} fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="مخطط" name={t("مخطط")} fill="var(--muted-foreground)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="فعلي" name={t("فعلي")} fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </Panel>

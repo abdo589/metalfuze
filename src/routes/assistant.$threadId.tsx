@@ -30,10 +30,10 @@ export const Route = createFileRoute("/assistant/$threadId")({
 });
 
 const SUGGESTIONS = [
-  t("ما المشاريع الأكثر خطورة الآن ولماذا؟"),
-  t("قارن الإنجاز الفعلي بالمخطط لكل مشروع"),
-  t("أين توجد فجوات في التحصيل المالي؟"),
-  t("ما أولويات الإدارة لهذا الأسبوع؟"),
+  "ما المشاريع الأكثر خطورة الآن ولماذا؟",
+  "قارن الإنجاز الفعلي بالمخطط لكل مشروع",
+  "أين توجد فجوات في التحصيل المالي؟",
+  "ما أولويات الإدارة لهذا الأسبوع؟",
 ];
 
 function AssistantPage() {
@@ -50,18 +50,18 @@ function AssistantPage() {
         <Button onClick={() => navigate({ to: "/assistant/$threadId", params: { threadId: threadStore.create() } })}>
           <MessageSquarePlus /> {t("محادثة جديدة")}</Button>
         <div className="flex-1 space-y-1 overflow-y-auto">
-          {threads.map((t) => (
-            <div key={t.id} className={`group flex items-center gap-1 rounded-lg ${t.id === threadId ? "bg-accent" : "hover:bg-accent/60"}`}>
-              <Link to="/assistant/$threadId" params={{ threadId: t.id }} className="flex-1 truncate px-3 py-2 text-sm">
-                {t.title === "محادثة جديدة" ? (locale() === "en-GB" ? "New Conversation" : t.title) : t.title}
+          {threads.map((thread) => (
+            <div key={thread.id} className={`group flex items-center gap-1 rounded-lg ${thread.id === threadId ? "bg-accent" : "hover:bg-accent/60"}`}>
+              <Link to="/assistant/$threadId" params={{ threadId: thread.id }} className="flex-1 truncate px-3 py-2 text-sm">
+                {thread.title === "محادثة جديدة" ? t(thread.title) : thread.title}
               </Link>
-              <button aria-label={t("حذف المحادثة")} className="p-2 text-muted-foreground opacity-0 hover:text-destructive group-hover:opacity-100"
+              <Button variant="ghost" size="icon" aria-label={t("حذف المحادثة")} className="text-muted-foreground opacity-0 hover:text-destructive group-hover:opacity-100"
                 onClick={() => {
-                  threadStore.remove(t.id);
-                  if (t.id === threadId) navigate({ to: "/assistant" });
+                  threadStore.remove(thread.id);
+                  if (thread.id === threadId) navigate({ to: "/assistant" });
                 }}>
                 <Trash2 className="size-4" />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -132,7 +132,7 @@ function ChatWindow({ threadId }: { threadId: string }) {
               description={t("أجيبك من البيانات الموجودة في اللوحة حالياً")}>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {SUGGESTIONS.map((s) => (
-                  <Button key={s} variant="outline" className="h-auto whitespace-normal py-2 text-start" onClick={() => send(s)}>{s}</Button>
+                  <Button key={s} variant="outline" className="h-auto whitespace-normal py-2 text-start" onClick={() => send(t(s))}>{t(s)}</Button>
                 ))}
               </div>
             </ConversationEmptyState>
