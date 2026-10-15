@@ -345,4 +345,13 @@ html[dir="ltr"] [data-report-document] td .flex { flex-wrap: wrap; }
   [data-report-document] button:not(td button) { display: none !important; }
   [data-report-document] .text-3xl { font-size: 22px; }
   [data-report-document] .text-2xl { font-size: 20px; }
+  .period-report { --primary: oklch(0.483 0.072 196.3); }
+  .period-report header { gap: 4px; padding-bottom: 8px; }
+  .period-report header h2 { margin-top: 2px; }
+  .period-report header p { margin-top: 2px; margin-bottom: 2px; }
+  .period-report > * + * { margin-top: 14px; }
+  .period-report [data-pdf-keep] { font-size: 11px; }
+  .period-report [data-pdf-keep] > * + * { margin-top: 8px; }
+  .period-report [data-pdf-keep] .grid > div { padding: 10px; }
+  .period-report h2 { font-size: 18px; }
 }

@@ -37,6 +37,7 @@ export async function exportBrandedExcel(opts: {
   reportTitle: string;
   summary?: KV[];
   sheets: SheetSpec[];
+  reportLayout?: boolean;
 }) {
   const ExcelJS = (await import("exceljs")).default;
   const wb = new ExcelJS.Workbook();
@@ -90,7 +91,7 @@ export async function exportBrandedExcel(opts: {
     ws.getColumn(4).width = 26;
     opts.summary.forEach(([k, v, f], i) => {
       const r = 6 + i;
-      ws.getRow(r).height = 24;
+      ws.getRow(r).height = opts.reportLayout && typeof v === "string" ? Math.max(24, Math.ceil(v.length / 30) * 15) : 24;
       const kc = ws.getCell(r, 3);
       const vc = ws.getCell(r, 4);
       kc.value = translate(k);
@@ -103,7 +104,7 @@ export async function exportBrandedExcel(opts: {
       if (numberFormat) vc.numFmt = numberFormat;
       [kc, vc].forEach((c) => {
         c.border = allBorders;
-        c.alignment = { horizontal: "center", vertical: "middle" };
+        c.alignment = { horizontal: "center", vertical: "middle", wrapText: opts.reportLayout };
       });
     });
   }
@@ -126,7 +127,7 @@ export async function exportBrandedExcel(opts: {
     });
     sh.rows.forEach((row, ri) => {
       const r = ws.getRow(H + 1 + ri);
-      r.height = 20;
+      r.height = opts.reportLayout ? Math.max(24, ...row.map((v, ci) => Math.ceil(String(v ?? "").length / Math.max(8, (sh.columns[ci]?.width ?? 16) - 3)) * 15)) : 20;
       row.forEach((v, ci) => {
         const cell = r.getCell(ci + 1);
         cell.value = v ?? "";
@@ -144,8 +145,11 @@ export async function exportBrandedExcel(opts: {
       for (let ci = 0; ci < n; ci++) {
         const cell = r.getCell(ci + 1);
         if (ci === 0) cell.value = translate("الإجمالي");
-        else if (sh.totals.includes(ci))
-          cell.value = sh.rows.reduce((a, x) => a + (typeof x[ci] === "number" ? (x[ci] as number) : 0), 0);
+        else if (sh.totals.includes(ci)) {
+          const result = sh.rows.reduce((a, x) => a + (typeof x[ci] === "number" ? (x[ci] as number) : 0), 0);
+          const column = ws.getColumn(ci + 1).letter;
+          cell.value = opts.reportLayout ? { formula: sh.rows.length ? `SUM(${column}${H + 1}:${column}${H + sh.rows.length})` : "0", result } : result;
+        }
         const f = fmt(sh.columns[ci]?.format);
         if (f && sh.totals.includes(ci)) cell.numFmt = f;
         cell.font = { name: "Arial", bold: true, color: { argb: "FFFFFFFF" } };

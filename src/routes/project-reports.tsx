@@ -49,6 +49,7 @@ function ProjectReports() {
       await exportBrandedExcel({
         filename: `METAL-FUZE-${period}-${report.range.from}-${report.range.to}.xlsx`,
         reportTitle: `METAL FUZE PROJECTS — ${title}`,
+        reportLayout: true,
         summary: [[t("فترة التقرير"), rangeLabel], [t("تاريخ البيانات"), today], [t("عدد المشاريع"), report.rows.length, "int"], [t("إجمالي قيمة العقود"), report.contract, "money"], [t("المدفوع"), report.paid, "money"], [t("المتبقي للدفع"), report.remaining, "money"], [t("متوسط الإنجاز"), report.average, "pct"], [t("ملاحظات"), note]],
         sheets: [{ name: t("المشاريع"), title: rangeLabel, columns: [
           { header: t("الرمز"), width: 12 }, { header: t("المشروع"), width: 38 }, { header: t("المدير"), width: 24 },
@@ -63,7 +64,7 @@ function ProjectReports() {
     finally { setExporting(false); }
   }
 
-  return <div className="mx-auto max-w-7xl space-y-7 px-4 py-7 sm:px-6">
+  return <div className="period-report mx-auto max-w-7xl space-y-7 px-4 py-7 sm:px-6">
     <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
       <Button variant="outline" asChild><Link to="/"><ArrowLeft />{t("لوحة المشاريع")}</Link></Button>
       <div className="flex flex-wrap gap-2"><ThemeToggle /><Button variant="outline" disabled={exporting} onClick={exportReport}><FileSpreadsheet />{t("تصدير Excel")}</Button><PdfButton /></div>
