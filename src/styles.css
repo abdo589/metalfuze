@@ -172,6 +172,11 @@
 }
 
 /* The logo PNG is transparent, so the dark theme needs the recolored light variant. */
+.print-letterhead,
+.print-footer {
+  display: none;
+}
+
 .dark .logo-on-light {
   display: none;
 }
@@ -235,5 +240,58 @@
   td,
   th {
     break-inside: avoid;
+  }
+
+  .screen-logo {
+    display: none !important;
+  }
+
+  .print-letterhead {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    border-bottom: 3px solid oklch(0.55 0.09 185);
+  }
+
+  .print-letterhead img {
+    height: 60px;
+    width: auto;
+  }
+
+  .print-letterhead-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 10px;
+    color: #555;
+  }
+
+  .print-letterhead-meta strong {
+    font-size: 14px;
+    color: oklch(0.35 0.052 190);
+  }
+
+  .print-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9px;
+    color: #777;
+    border-top: 1px solid #ddd;
+    padding-top: 4px;
+  }
+
+  th {
+    background: oklch(0.55 0.09 185) !important;
+    color: #fff !important;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #f3f8f8 !important;
   }
 }
