@@ -33,6 +33,7 @@ function shiftMonth(key: string, delta: number) {
 }
 
 function Payroll() {
+  const canEdit = useCanEdit();
   useLanguage();
   const employees = usePayroll();
   const [month, setMonth] = useState(monthKey());

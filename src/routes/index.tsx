@@ -52,6 +52,7 @@ function groupBy(list: Project[], key: (p: Project) => string, val: (p: Project)
 }
 
 function Dashboard() {
+  const canEdit = useCanEdit();
   useLanguage();
   const projects = useProjects();
   const [q, setQ] = useState("");

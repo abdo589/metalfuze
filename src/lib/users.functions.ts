@@ -3,6 +3,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const DOMAIN = "metalfuze.local";
 
+async function assertAdmin(ctx: { supabase: any; userId: string }) {
+  const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
+  if (!data) throw new Error("صلاحية العرض فقط — لا يمكنك التعديل");
+}
+
 export type AppUser = { id: string; username: string; name: string; createdAt: string; lastSignIn: string | null };
 
 export const listUsers = createServerFn({ method: "GET" })
@@ -31,7 +36,8 @@ export const createUser = createServerFn({ method: "POST" })
     if (password.length < 8 || password.length > 72) throw new Error("كلمة السر 8 أحرف على الأقل");
     return { username, name, password };
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.admin.createUser({
       email: `${data.username}@${DOMAIN}`,
@@ -50,7 +56,8 @@ export const setUserPassword = createServerFn({ method: "POST" })
     if (password.length < 8 || password.length > 72) throw new Error("كلمة السر 8 أحرف على الأقل");
     return { id: String(d.id), password };
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.admin.updateUserById(data.id, { password: data.password });
     if (error) return { ok: false as const, error: "تعذر تغيير كلمة السر (قد تكون ضعيفة)" };
@@ -61,6 +68,7 @@ export const deleteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => ({ id: String(d.id) }))
   .handler(async ({ data, context }) => {
+    await assertAdmin(context);
     if (data.id === context.userId) return { ok: false as const, error: "لا يمكنك حذف حسابك الحالي" };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.id);
