@@ -1,3 +1,4 @@
+import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
@@ -128,14 +129,14 @@ function Dashboard() {
           <Button variant="outline" asChild>
             <Link to="/budget"><Banknote /> {t("الميزانية")}</Link>
           </Button>
-          <Button variant="outline" onClick={() => fileRef.current?.click()}>
-            <FileSpreadsheet /> {t("تحديث من ملف Excel")}</Button>
+          {canEdit && <Button variant="outline" onClick={() => fileRef.current?.click()}>
+            <FileSpreadsheet /> {t("تحديث من ملف Excel")}</Button>}
           <Button variant="outline" onClick={async () => { try { await exportExcel(projects); toast.success(t("تم تصدير تقرير Excel")); } catch { toast.error(t("تعذر التصدير")); } }}>
             <FileDown /> {t("تصدير تقرير Excel")}</Button>
           <PdfButton />
           <Button variant="outline" asChild><Link to="/project-reports"><FileSpreadsheet />{t("تقارير المشاريع")}</Link></Button>
-          <Button onClick={() => { setEditing(null); setOpen(true); }}>
-            <Plus /> {t("مشروع جديد")}</Button>
+          {canEdit && <Button onClick={() => { setEditing(null); setOpen(true); }}>
+            <Plus /> {t("مشروع جديد")}</Button>}
         </div>
       </header>
 
@@ -277,9 +278,9 @@ function Dashboard() {
                     <td className="px-3 py-3 tabular-nums">{fmtMoney(p.paid)}</td>
                     <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract - p.paid)}</td>
                     <td className="whitespace-nowrap px-3 py-3 print:hidden">
-                      <Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>
+                      {canEdit && <><Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>
                       <Button size="icon" variant="ghost" aria-label={t("حذف")}
-                        onClick={() => { if (confirm(`${t("حذف")} ${p.name}?`)) projectStore.remove(p.id); }}><Trash2 /></Button>
+                        onClick={() => { if (confirm(`${t("حذف")} ${p.name}?`)) projectStore.remove(p.id); }}><Trash2 /></Button></>}
                     </td>
                   </tr>
                 );
