@@ -16,7 +16,7 @@ import { AuthGate } from "@/components/AuthGate";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { themeScript } from "../lib/theme";
-import { initializeLanguage } from "@/lib/i18n";
+import { initializeLanguage, useLanguage } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
 function NotFoundComponent() {
@@ -111,8 +111,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const language = useLanguage();
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang={language} dir={language === "en" ? "ltr" : "rtl"} suppressHydrationWarning>
       <head>
         <HeadContent />
         {/* Applies the saved light/dark choice before first paint. */}
