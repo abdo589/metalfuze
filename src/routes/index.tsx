@@ -133,6 +133,7 @@ function Dashboard() {
           <Button variant="outline" onClick={async () => { try { await exportExcel(projects); toast.success(t("تم تصدير تقرير Excel")); } catch { toast.error(t("تعذر التصدير")); } }}>
             <FileDown /> {t("تصدير تقرير Excel")}</Button>
           <PdfButton />
+          <Button variant="outline" asChild><Link to="/project-reports"><FileSpreadsheet />{t("تقارير المشاريع")}</Link></Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }}>
             <Plus /> {t("مشروع جديد")}</Button>
         </div>
