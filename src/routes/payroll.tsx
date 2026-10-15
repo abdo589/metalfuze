@@ -1,3 +1,4 @@
+import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -32,6 +33,7 @@ function shiftMonth(key: string, delta: number) {
 }
 
 function Payroll() {
+  const canEdit = useCanEdit();
   useLanguage();
   const employees = usePayroll();
   const [month, setMonth] = useState(monthKey());
@@ -106,8 +108,8 @@ function Payroll() {
           <Button variant="outline" onClick={onExport}>
             <FileDown /> {t("تصدير مسير Excel")}</Button>
           <PdfButton />
-          <Button onClick={() => { setEditing(null); setOpen(true); }}>
-            <Plus /> {t("إضافة موظف")}</Button>
+          {canEdit && <Button onClick={() => { setEditing(null); setOpen(true); }}>
+            <Plus /> {t("إضافة موظف")}</Button>}
         </div>
       </header>
 
@@ -150,11 +152,11 @@ function Payroll() {
             <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("بحث بالاسم أو الإدارة أو المشروع…")} className="pr-9" />
           </div>
-          <Button
+          {canEdit && <Button
             variant="outline"
             onClick={() => { payrollStore.payAll(month); toast.success(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}`); }}
           >
-            <CheckCircle2 /> {t("اعتماد صرف الشهر للجميع")}</Button>
+            <CheckCircle2 /> {t("اعتماد صرف الشهر للجميع")}</Button>}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">
@@ -190,8 +192,9 @@ function Payroll() {
                     <td className="p-3">
                       {e.active ? (
                         <button
-                          onClick={() => payrollStore.togglePaid(e.id, month)}
-                          className="cursor-pointer"
+                          onClick={() => canEdit && payrollStore.togglePaid(e.id, month)}
+                          disabled={!canEdit}
+                          className={canEdit ? "cursor-pointer" : "cursor-default"}
                           title={paid ? t("إلغاء الصرف") : t("اعتماد الصرف")}
                         >
                           <Badge variant="outline" className={paid
@@ -205,7 +208,7 @@ function Payroll() {
                       )}
                     </td>
                     <td className="p-3 print:hidden">
-                      <div className="flex gap-1">
+                      {canEdit && <div className="flex gap-1">
                         <Button variant="ghost" size="icon" onClick={() => { setEditing(e); setOpen(true); }} aria-label={t("تعديل")}>
                           <Pencil className="size-4" />
                         </Button>
@@ -220,7 +223,7 @@ function Payroll() {
                         >
                           <Trash2 className="size-4 text-destructive" />
                         </Button>
-                      </div>
+                      </div>}
                     </td>
                   </tr>
                 );

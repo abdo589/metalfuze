@@ -1,3 +1,4 @@
+import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -30,6 +31,7 @@ function genPassword() {
 
 function UsersPage() {
   useLanguage();
+  const canEdit = useCanEdit();
   const list = useServerFn(listUsers);
   const create = useServerFn(createUser);
   const remove = useServerFn(deleteUser);
@@ -92,7 +94,7 @@ function UsersPage() {
         <div className={`rounded-xl border p-3 text-sm ${msg.ok ? "border-primary/40 bg-primary/10" : "border-destructive/40 bg-destructive/10 text-destructive"}`} dir="auto">{msg.text}</div>
       )}
 
-      <form onSubmit={onCreate} className="grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-4">
+      {canEdit && <form onSubmit={onCreate} className="grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-4">
         <h2 className="font-bold sm:col-span-4">{t("إضافة حساب جديد")}</h2>
         <Input placeholder={t("الاسم المعروض")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
         <Input placeholder={t("اسم المستخدم (إنجليزي)")} dir="ltr" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
@@ -101,7 +103,7 @@ function UsersPage() {
           <Button type="button" variant="ghost" size="icon" title={t("توليد")} onClick={() => setForm({ ...form, password: genPassword() })}><RefreshCw /></Button>
         </div>
         <Button type="submit" disabled={busy}><UserPlus /> {busy ? t("جارٍ الإنشاء...") : t("إنشاء الحساب")}</Button>
-      </form>
+      </form>}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="w-full text-sm">
@@ -119,10 +121,10 @@ function UsersPage() {
                 <td className="p-3">{fmt(u.createdAt)}</td>
                 <td className="p-3">{fmt(u.lastSignIn)}</td>
                 <td className="p-3">
-                  <div className="flex justify-end gap-1">
+                  {canEdit && <div className="flex justify-end gap-1">
                     <Button size="sm" variant="ghost" onClick={() => onReset(u)}><KeyRound /> {t("كلمة السر")}</Button>
                     {u.id !== me && <Button size="icon" variant="ghost" className="text-destructive" title={t("حذف")} onClick={() => onDelete(u)}><Trash2 /></Button>}
-                  </div>
+                  </div>}
                 </td>
               </tr>
             ))}
