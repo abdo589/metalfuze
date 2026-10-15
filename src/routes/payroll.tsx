@@ -57,7 +57,7 @@ function Payroll() {
       const total = active.reduce((x, e) => x + netSalary(e), 0);
       const paidN = active.filter((e) => e.paidMonths.includes(month)).reduce((x, e) => x + netSalary(e), 0);
       await exportBrandedExcel({
-        filename: `مسير-رواتب-${month}.xlsx`,
+        filename: `${locale() === "en-GB" ? "Payroll" : "مسير-رواتب"}-${month}.xlsx`,
         reportTitle: `${t("مسير الرواتب")} — ${month}`,
         summary: [
           [t("عدد الموظفين"), active.length, "int"],

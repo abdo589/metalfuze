@@ -70,7 +70,7 @@ function Report() {
     try {
       const { exportBrandedExcel } = await import("@/lib/branded-excel");
       await exportBrandedExcel({
-        filename: `تقرير-رواتب-مشاريع-${month}.xlsx`,
+        filename: `${locale() === "en-GB" ? "Payroll-Projects-Report" : "تقرير-رواتب-مشاريع"}-${month}.xlsx`,
         reportTitle: `${t("التقرير الشهري: الرواتب والمشاريع")} — ${month}`,
         summary: [
           [t("عدد الموظفين"), rows.length, "int"],
@@ -99,7 +99,7 @@ function Report() {
               { header: t("المشروع"), width: 32 }, { header: t("عدد الموظفين"), format: "int" },
               { header: t("نسبة الإنجاز"), format: "pct" }, { header: t("إجمالي الرواتب"), width: 18, format: "money" },
             ],
-            rows: byProject.map((g) => [g.name, g.count, g.progress ?? "—", g.net]),
+            rows: byProject.map((g) => [g.name === "إدارة عامة (بدون مشروع)" ? t(g.name) : g.name, g.count, g.progress ?? "—", g.net]),
             totals: [1, 3],
           },
         ],

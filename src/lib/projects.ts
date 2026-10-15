@@ -106,7 +106,7 @@ export async function importExcel(file: File): Promise<Project[]> {
   const ws = wb.Sheets[wb.SheetNames[0]!]!;
   const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: null });
   const h = rows.findIndex((r) => r.some((c) => String(c ?? "").trim() === "اسم المشروع"));
-  if (h < 0) throw new Error("لم يتم العثور على عمود اسم المشروع");
+  if (h < 0) throw new Error(t("لم يتم العثور على عمود اسم المشروع"));
   const head = rows[h]!.map((c) => String(c ?? "").trim());
   const col = (n: string) => head.indexOf(n);
   const str = (v: unknown) => (v == null ? "" : String(v).trim());
