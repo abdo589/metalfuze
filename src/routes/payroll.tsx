@@ -58,7 +58,7 @@ function Payroll() {
       const paidN = active.filter((e) => e.paidMonths.includes(month)).reduce((x, e) => x + netSalary(e), 0);
       await exportBrandedExcel({
         filename: `مسير-رواتب-${month}.xlsx`,
-        reportTitle: `مسير الرواتب — ${month}`,
+        reportTitle: `${t("مسير الرواتب")} — ${month}`,
         summary: [
           [t("عدد الموظفين"), active.length, "int"],
           [t("إجمالي صافي الرواتب"), total, "money"],
@@ -67,7 +67,7 @@ function Payroll() {
         ],
         sheets: [{
           name: t("مسير الرواتب"),
-          title: `مسير رواتب شهر ${month}`,
+          title: `${t("مسير الرواتب")} — ${monthLabel(month)}`,
           columns: [
             { header: t("الموظف"), width: 22 }, { header: t("المسمى"), width: 18 }, { header: t("الإدارة") },
             { header: t("المشروع"), width: 28 }, { header: t("الأساسي"), format: "money" },
@@ -128,10 +128,10 @@ function Payroll() {
       {/* مؤشرات */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          { label: t("إجمالي رواتب الشهر"), value: `${fmtMoney(s.total)} ر.س`, icon: Banknote },
+          { label: t("إجمالي رواتب الشهر"), value: `${fmtMoney(s.total)} ${t("ر.س")}`, icon: Banknote },
           { label: t("الموظفون النشطون"), value: active.length, icon: Users },
-          { label: t("تم صرفه"), value: `${fmtMoney(s.paidSum)} ر.س (${s.paidCount})`, icon: CheckCircle2 },
-          { label: t("المتبقي للصرف"), value: `${fmtMoney(s.remaining)} ر.س`, icon: Wallet },
+          { label: t("تم صرفه"), value: `${fmtMoney(s.paidSum)} ${t("ر.س")} (${s.paidCount})`, icon: CheckCircle2 },
+          { label: t("المتبقي للصرف"), value: `${fmtMoney(s.remaining)} ${t("ر.س")}`, icon: Wallet },
         ].map((k) => (
           <div key={k.label} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -152,7 +152,7 @@ function Payroll() {
           </div>
           <Button
             variant="outline"
-            onClick={() => { payrollStore.payAll(month); toast.success(`تم اعتماد صرف رواتب ${monthLabel(month)} للجميع`); }}
+            onClick={() => { payrollStore.payAll(month); toast.success(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}`); }}
           >
             <CheckCircle2 /> {t("اعتماد صرف الشهر للجميع")}</Button>
         </div>
@@ -212,7 +212,7 @@ function Payroll() {
                         <Button
                           variant="ghost" size="icon" aria-label={t("حذف")}
                           onClick={() => {
-                            if (confirm(`حذف ${e.name} نهائياً؟`)) {
+                            if (confirm(`${t("حذف")} ${e.name}?`)) {
                               payrollStore.remove(e.id);
                               toast.success(t("تم حذف الموظف"));
                             }

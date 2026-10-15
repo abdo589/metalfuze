@@ -55,7 +55,7 @@ function UsersPage() {
       const r = await create({ data: form });
       if (!r.ok) setMsg({ ok: false, text: r.error });
       else {
-        setMsg({ ok: true, text: `تم إنشاء حساب ${form.name} — اسم المستخدم: ${form.username.toLowerCase()} / كلمة السر: ${form.password}` });
+        setMsg({ ok: true, text: `${t("تم إنشاء حساب")} ${form.name} — ${t("اسم المستخدم")}: ${form.username.toLowerCase()} / ${t("كلمة السر")}: ${form.password}` });
         setForm({ name: "", username: "", password: genPassword() });
         load();
       }
@@ -64,18 +64,18 @@ function UsersPage() {
   }
 
   async function onDelete(u: AppUser) {
-    if (!confirm(`حذف حساب ${u.name}؟`)) return;
+    if (!confirm(`${t("حذف حساب")} ${u.name}?`)) return;
     const r = await remove({ data: { id: u.id } });
-    setMsg(r.ok ? { ok: true, text: `تم حذف ${u.name}` } : { ok: false, text: r.error });
+    setMsg(r.ok ? { ok: true, text: `${t("تم حذف")} ${u.name}` } : { ok: false, text: r.error });
     load();
   }
 
   async function onReset(u: AppUser) {
-    const pw = prompt(`كلمة السر الجديدة لـ ${u.name} (8 أحرف على الأقل):`, genPassword());
+    const pw = prompt(`${t("كلمة السر الجديدة لـ")} ${u.name} (${t("8 أحرف على الأقل")}):`, genPassword());
     if (!pw) return;
     try {
       const r = await setPw({ data: { id: u.id, password: pw } });
-      setMsg(r.ok ? { ok: true, text: `كلمة السر الجديدة لـ ${u.name}: ${pw}` } : { ok: false, text: r.error });
+      setMsg(r.ok ? { ok: true, text: `${t("كلمة السر الجديدة لـ")} ${u.name}: ${pw}` } : { ok: false, text: r.error });
     } catch (err) { setMsg({ ok: false, text: (err as Error).message }); }
   }
 

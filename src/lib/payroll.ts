@@ -1,3 +1,4 @@
+import { locale } from "./i18n";
 import { useEffect, useState } from "react";
 
 export type Employee = {
@@ -21,7 +22,7 @@ export const monthKey = (d = new Date()) =>
 
 export const monthLabel = (key: string) => {
   const [y, m] = key.split("-").map(Number);
-  return new Date(y!, (m ?? 1) - 1, 1).toLocaleDateString("ar-SA-u-ca-gregory", { month: "long", year: "numeric" });
+  return new Date(y!, (m ?? 1) - 1, 1).toLocaleDateString(locale(), { month: "long", year: "numeric" });
 };
 
 const seed: Employee[] = [

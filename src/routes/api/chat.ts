@@ -3,7 +3,7 @@ import { convertToModelMessages, type UIMessage } from "ai";
 import { createResponsesCall } from "@/server/ai/responses";
 
 const INSTRUCTIONS = `أنت "مستشار Metal Fuze"، محلل مشاريع إنشائية يساعد الإدارة.
-- أجب دائماً بالعربية وباختصار ووضوح، واستخدم عناوين ونقاطاً وجداول Markdown عند الحاجة.
+- أجب باللغة المختارة في نهاية هذه التعليمات وباختصار ووضوح، واستخدم عناوين ونقاطاً وجداول Markdown عند الحاجة.
 - اعتمد فقط على بيانات المشاريع المرفقة (JSON). لا تخترع أرقاماً؛ إذا كانت معلومة غير متوفرة فقل ذلك.
 - progress وplanned نسب من 0 إلى 1 (اعرضها كنسب مئوية). المبالغ بالريال السعودي.
 - daysLeft سالب يعني أن الموعد النهائي فات.
@@ -20,13 +20,13 @@ export const Route = createFileRoute("/api/chat")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: auth } = await supabaseAdmin.auth.getUser(token);
         if (!auth.user) return new Response("يجب تسجيل الدخول", { status: 401 });
-        let body: { messages?: UIMessage[]; projects?: unknown[]; today?: string };
+        let body: { messages?: UIMessage[]; projects?: unknown[]; today?: string; language?: string };
         try { body = await request.json(); } catch { return new Response("طلب غير صالح", { status: 400 }); }
         const messages = Array.isArray(body.messages) ? body.messages.slice(-40) : [];
         if (!messages.length) return new Response("لا توجد رسائل", { status: 400 });
         const projects = Array.isArray(body.projects) ? body.projects.slice(0, 500) : [];
         const data = JSON.stringify(projects).slice(0, 150_000);
-        const instructions = `${INSTRUCTIONS}\n\nتاريخ اليوم: ${body.today ?? new Date().toISOString().slice(0, 10)}\nبيانات المشاريع الحالية من اللوحة:\n${data}`;
+        const instructions = `${INSTRUCTIONS}\nResponse language: ${body.language === "en" ? "English. End with Practical Recommendations." : "Arabic."}\n\nتاريخ اليوم: ${body.today ?? new Date().toISOString().slice(0, 10)}\nبيانات المشاريع الحالية من اللوحة:\n${data}`;
         const call = createResponsesCall(
           request,
           { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, model: "openai/gpt-6-astra" },

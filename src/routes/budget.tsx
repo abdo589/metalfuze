@@ -53,7 +53,7 @@ function Budget() {
     [t("إجمالي العقود"), fmtMoney(data.contracts), undefined],
     [t("المصروف من العقود"), fmtMoney(data.paid), data.contracts ? fmtPct(data.paid / data.contracts) : undefined],
     [t("المتبقي للدفع"), fmtMoney(data.contracts - data.paid), undefined],
-    [t("صرف الرواتب الشهري"), fmtMoney(data.payroll), `مدفوع ${fmtMoney(data.payrollPaid)}`],
+    [t("صرف الرواتب الشهري"), fmtMoney(data.payroll), `${t("مدفوع")} ${fmtMoney(data.payrollPaid)}`],
   ];
 
   return (

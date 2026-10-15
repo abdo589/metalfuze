@@ -139,11 +139,11 @@ function Dashboard() {
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi icon={<FolderKanban />} label={t("إجمالي المشاريع")} value={String(projects.length)} sub={`${s.late} متأخر`} />
+        <Kpi icon={<FolderKanban />} label={t("إجمالي المشاريع")} value={String(projects.length)} sub={`${s.late} ${t("متأخر")}`} />
         <Kpi icon={<Banknote />} label={t("إجمالي قيمة العقود")} value={fmtMoney(s.contract)} sub={t("ريال")} accent />
         <Kpi icon={<TrendingUp />} label={t("المدفوع")} value={fmtMoney(s.paid)}
-          sub={`نسبة الصرف ${fmtPct(s.contract ? s.paid / s.contract : 0)}`} />
-        <Kpi icon={<Banknote />} label={t("المتبقي للدفع")} value={fmtMoney(s.remaining)} sub={`متوسط الإنجاز ${fmtPct(s.avg)}`} />
+          sub={`${t("نسبة الصرف")} ${fmtPct(s.contract ? s.paid / s.contract : 0)}`} />
+        <Kpi icon={<Banknote />} label={t("المتبقي للدفع")} value={fmtMoney(s.remaining)} sub={`${t("متوسط الإنجاز")} ${fmtPct(s.avg)}`} />
       </section>
 
       {(s.overdue.length > 0 || s.soon.length > 0) && (
@@ -155,7 +155,7 @@ function Dashboard() {
               {s.overdue.map((p) => (
                 <button key={p.id} onClick={() => scrollToTable()} className="transition-transform hover:scale-105">
                   <Badge variant="outline" className="cursor-pointer border-destructive/40 text-destructive">
-                    {p.name} {t("— متأخر")}{Math.abs(daysLeft(p.end)!)} {t("يوم")}</Badge>
+                    {p.name} {t("— متأخر")}{Math.abs(daysLeft(p.end) ?? 0)} {t("يوم")}</Badge>
                 </button>
               ))}
             </div>
@@ -278,7 +278,7 @@ function Dashboard() {
                     <td className="whitespace-nowrap px-3 py-3 print:hidden">
                       <Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>
                       <Button size="icon" variant="ghost" aria-label={t("حذف")}
-                        onClick={() => { if (confirm(`حذف ${p.name}؟`)) projectStore.remove(p.id); }}><Trash2 /></Button>
+                        onClick={() => { if (confirm(`${t("حذف")} ${p.name}?`)) projectStore.remove(p.id); }}><Trash2 /></Button>
                     </td>
                   </tr>
                 );
@@ -324,7 +324,7 @@ function Legend({ data }: { data: { name: string; value: number }[] }) {
       {data.map((d, i) => (
         <span key={d.name} className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-          {d.name} ({d.value})
+          {t(d.name)} ({d.value})
         </span>
       ))}
     </div>

@@ -1,3 +1,4 @@
+import { t as translate, currentLanguage, locale } from "./i18n";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import { downloadBlob } from "./export";
 
@@ -25,7 +26,7 @@ async function getLogo() {
 }
 
 const fmt = (f?: Col["format"]) =>
-  f === "money" ? '#,##0 "ر.س"' : f === "pct" ? "0%" : f === "int" ? "#,##0" : undefined;
+  f === "money" ? `#,##0 "${currentLanguage() === 'en' ? 'SAR' : 'ر.س'}"` : f === "pct" ? "0%" : f === "int" ? "#,##0" : undefined;
 
 /**
  * Build a branded, RTL Excel workbook: company logo on top, report title and date,
@@ -42,10 +43,10 @@ export async function exportBrandedExcel(opts: {
   wb.creator = "Metal Fuze";
   wb.created = new Date();
   const logoId = wb.addImage({ buffer: await getLogo(), extension: "png" });
-  const today = new Date().toLocaleDateString("ar-SA-u-ca-gregory", { dateStyle: "full" });
+  const today = new Date().toLocaleDateString(locale(), { dateStyle: "full" });
 
   const letterhead = (ws: import("exceljs").Worksheet, span: number, title: string) => {
-    ws.views = [{ rightToLeft: true, showGridLines: false }];
+    ws.views = [{ rightToLeft: currentLanguage() === "ar", showGridLines: false }];
     ws.getRow(1).height = 30;
     ws.getRow(2).height = 30;
     ws.getRow(3).height = 22;
@@ -53,17 +54,17 @@ export async function exportBrandedExcel(opts: {
     const last = Math.max(span, 3);
     ws.mergeCells(1, 3, 1, last);
     const t = ws.getCell(1, 3);
-    t.value = opts.reportTitle;
+    t.value = translate(opts.reportTitle);
     t.font = { name: "Arial", size: 18, bold: true, color: { argb: DARK } };
     t.alignment = { horizontal: "center", vertical: "middle" };
     ws.mergeCells(2, 3, 2, last);
     const s = ws.getCell(2, 3);
-    s.value = title;
+    s.value = translate(title);
     s.font = { name: "Arial", size: 13, bold: true, color: { argb: TEAL } };
     s.alignment = { horizontal: "center", vertical: "middle" };
     ws.mergeCells(3, 3, 3, last);
     const d = ws.getCell(3, 3);
-    d.value = `تاريخ الإصدار: ${today}`;
+    d.value = `${translate("تاريخ الإصدار:")} ${today}`;
     d.font = { name: "Arial", size: 10, color: { argb: "FF666666" } };
     d.alignment = { horizontal: "center" };
     ws.mergeCells(4, 1, 4, last);
@@ -74,14 +75,14 @@ export async function exportBrandedExcel(opts: {
       fitToPage: true, fitToWidth: 1, fitToHeight: 0,
       margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
     };
-    ws.headerFooter.oddFooter = "&LMetal Fuze — Accuracy Has No Limit&Rصفحة &P من &N";
+    ws.headerFooter.oddFooter = currentLanguage() === "en" ? "&LMetal Fuze — Accuracy Has No Limit&RPage &P of &N" : "&LMetal Fuze — Accuracy Has No Limit&Rصفحة &P من &N";
   };
 
   const border = { style: "thin" as const, color: { argb: BORDER } };
   const allBorders = { top: border, left: border, bottom: border, right: border };
 
   if (opts.summary?.length) {
-    const ws = wb.addWorksheet("ملخص");
+    const ws = wb.addWorksheet(translate("ملخص"));
     letterhead(ws, 4, "الملخص التنفيذي");
     ws.getColumn(1).width = 16;
     ws.getColumn(2).width = 16;
@@ -92,13 +93,14 @@ export async function exportBrandedExcel(opts: {
       ws.getRow(r).height = 24;
       const kc = ws.getCell(r, 3);
       const vc = ws.getCell(r, 4);
-      kc.value = k;
+      kc.value = translate(k);
       vc.value = v;
       kc.font = { name: "Arial", bold: true, color: { argb: "FFFFFFFF" } };
       kc.fill = { type: "pattern", pattern: "solid", fgColor: { argb: DARK } };
       vc.font = { name: "Arial", bold: true, size: 12, color: { argb: DARK } };
       vc.fill = { type: "pattern", pattern: "solid", fgColor: { argb: ZEBRA } };
-      if (fmt(f)) vc.numFmt = fmt(f)!;
+      const numberFormat = fmt(f);
+      if (numberFormat) vc.numFmt = numberFormat;
       [kc, vc].forEach((c) => {
         c.border = allBorders;
         c.alignment = { horizontal: "center", vertical: "middle" };
@@ -107,7 +109,7 @@ export async function exportBrandedExcel(opts: {
   }
 
   for (const sh of opts.sheets) {
-    const ws = wb.addWorksheet(sh.name.slice(0, 31));
+    const ws = wb.addWorksheet(translate(sh.name).slice(0, 31));
     const n = sh.columns.length;
     letterhead(ws, n, sh.title);
     const H = 6;
@@ -116,7 +118,7 @@ export async function exportBrandedExcel(opts: {
     hr.height = 28;
     sh.columns.forEach((c, i) => {
       const cell = hr.getCell(i + 1);
-      cell.value = c.header;
+      cell.value = translate(c.header);
       cell.font = { name: "Arial", bold: true, color: { argb: "FFFFFFFF" } };
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: TEAL } };
       cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
@@ -141,7 +143,7 @@ export async function exportBrandedExcel(opts: {
       r.height = 24;
       for (let ci = 0; ci < n; ci++) {
         const cell = r.getCell(ci + 1);
-        if (ci === 0) cell.value = "الإجمالي";
+        if (ci === 0) cell.value = translate("الإجمالي");
         else if (sh.totals.includes(ci))
           cell.value = sh.rows.reduce((a, x) => a + (typeof x[ci] === "number" ? (x[ci] as number) : 0), 0);
         const f = fmt(sh.columns[ci]?.format);
@@ -152,7 +154,7 @@ export async function exportBrandedExcel(opts: {
         cell.border = allBorders;
       }
     }
-    ws.views = [{ rightToLeft: true, showGridLines: false, state: "frozen", ySplit: H }];
+    ws.views = [{ rightToLeft: currentLanguage() === "ar", showGridLines: false, state: "frozen", ySplit: H }];
     ws.autoFilter = { from: { row: H, column: 1 }, to: { row: H, column: n } };
   }
 

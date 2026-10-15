@@ -71,7 +71,7 @@ function Report() {
       const { exportBrandedExcel } = await import("@/lib/branded-excel");
       await exportBrandedExcel({
         filename: `تقرير-رواتب-مشاريع-${month}.xlsx`,
-        reportTitle: `التقرير الشهري للرواتب والمشاريع — ${month}`,
+        reportTitle: `${t("التقرير الشهري: الرواتب والمشاريع")} — ${month}`,
         summary: [
           [t("عدد الموظفين"), rows.length, "int"],
           [t("إجمالي صافي الرواتب"), total, "money"],
@@ -187,7 +187,7 @@ function Report() {
           <tbody>
             {byProject.map((g) => (
               <tr key={g.name} className="border-t border-border">
-                <td className="px-4 py-3 font-medium">{g.name}</td>
+                <td className="px-4 py-3 font-medium">{t(g.name)}</td>
                 <td className="px-4 py-3">{g.count}</td>
                 <td className="px-4 py-3">{g.progress != null ? fmtPct(g.progress) : "—"}</td>
                 <td className="px-4 py-3 font-bold">{fmtMoney(g.net)}</td>

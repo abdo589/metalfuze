@@ -53,7 +53,7 @@ function AssistantPage() {
           {threads.map((t) => (
             <div key={t.id} className={`group flex items-center gap-1 rounded-lg ${t.id === threadId ? "bg-accent" : "hover:bg-accent/60"}`}>
               <Link to="/assistant/$threadId" params={{ threadId: t.id }} className="flex-1 truncate px-3 py-2 text-sm">
-                {t.title}
+                {t.title === "محادثة جديدة" ? (locale() === "en-GB" ? "New Conversation" : t.title) : t.title}
               </Link>
               <button aria-label={t("حذف المحادثة")} className="p-2 text-muted-foreground opacity-0 hover:text-destructive group-hover:opacity-100"
                 onClick={() => {
@@ -100,6 +100,7 @@ function ChatWindow({ threadId }: { threadId: string }) {
     },
     body: () => ({
       threadId,
+      language: locale() === "en-GB" ? "en" : "ar",
       today: new Date().toISOString().slice(0, 10),
       projects: projectStore.all().map(({ id: _id, ...p }) => ({ ...p, daysLeft: daysLeft(p.end) })),
     }),
