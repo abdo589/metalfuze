@@ -16,6 +16,8 @@ import { AuthGate } from "@/components/AuthGate";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { themeScript } from "../lib/theme";
+import { initializeLanguage } from "@/lib/i18n";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 function NotFoundComponent() {
   return (
@@ -126,9 +128,11 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => { initializeLanguage(); }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
+      <div className="flex justify-end px-4 pt-3 print:hidden"><LanguageToggle /></div>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AuthGate>
         <div data-report-document>

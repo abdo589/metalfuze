@@ -185,6 +185,9 @@
   display: block;
 }
 
+html[dir="ltr"] .text-right { text-align: left; }
+html[dir="ltr"] [data-report-document] td .flex { flex-wrap: wrap; }
+
 @media print {
   @page {
     size: A4 landscape;
