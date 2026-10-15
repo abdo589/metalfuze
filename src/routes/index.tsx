@@ -145,7 +145,7 @@ function Dashboard() {
         <Kpi icon={<Banknote />} label="إجمالي قيمة العقود" value={fmtMoney(s.contract)} sub="ريال" accent />
         <Kpi icon={<TrendingUp />} label="المدفوع" value={fmtMoney(s.paid)}
           sub={`نسبة الصرف ${fmtPct(s.contract ? s.paid / s.contract : 0)}`} />
-        <Kpi icon={<Banknote />} label="المتبقي" value={fmtMoney(s.remaining)} sub={`متوسط الإنجاز ${fmtPct(s.avg)}`} />
+        <Kpi icon={<Banknote />} label="المتبقي للدفع" value={fmtMoney(s.remaining)} sub={`متوسط الإنجاز ${fmtPct(s.avg)}`} />
       </section>
 
       {(s.overdue.length > 0 || s.soon.length > 0) && (
@@ -246,7 +246,7 @@ function Dashboard() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                {["الرمز", "المشروع", "القطاع", "المدير", "الانتهاء", "الحالة", "الإنجاز", "قيمة العقد", "المدفوع", "المتبقي", ""].map((h) => (
+                {["الرمز", "المشروع", "القطاع", "المدير", "الانتهاء", "الحالة", "الإنجاز", "قيمة العقد", "المدفوع", "المتبقي للدفع", ""].map((h) => (
                   <th key={h} className="whitespace-nowrap px-3 py-3 text-right font-medium">{h}</th>
                 ))}
               </tr>
