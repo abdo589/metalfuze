@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PdfButton } from "@/components/PdfButton";
 import { fmtMoney, fmtPct, useProjects } from "@/lib/projects";
 import { monthKey, monthLabel, netSalary, usePayroll } from "@/lib/payroll";
 
@@ -65,7 +66,7 @@ function Budget() {
           <Button variant="outline" asChild><Link to="/"><ArrowRight /> لوحة المشاريع</Link></Button>
           <Button variant="outline" asChild><Link to="/payroll">الرواتب</Link></Button>
           <Button variant="outline" asChild><Link to="/report">التقرير الشهري</Link></Button>
-          <Button variant="outline" onClick={() => window.print()}><Printer /> طباعة / PDF</Button>
+          <PdfButton />
         </div>
         <div className="flex items-center gap-3">
           <Button size="icon" variant="ghost" className="print:hidden" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="الشهر السابق"><ChevronRight /></Button>
