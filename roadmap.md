@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Add Arabic/English selection throughout the site and exports; rename projects dashboard to METAL FUZE PROJECTS.
+- [x] Add Arabic/English selection throughout the site and exports; rename projects dashboard to METAL FUZE PROJECTS (signed-in switching, persistence, six pages, PDF and Excel exports verified).
 
 - [x] Make company PDF exports readable, unclipped, and free of website links (all four downloads and pages visually verified; payroll status visibility corrected).
 
