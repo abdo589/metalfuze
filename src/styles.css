@@ -339,7 +339,7 @@
   h1 { font-size: 24px !important; }
   h2 { break-after: avoid; }
   [data-report-document] .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  [data-report-document] button:not(:has([data-slot="badge"])) { display: none !important; }
+  [data-report-document] button:not(td button) { display: none !important; }
   [data-report-document] .text-3xl { font-size: 22px; }
   [data-report-document] .text-2xl { font-size: 20px; }
 }
