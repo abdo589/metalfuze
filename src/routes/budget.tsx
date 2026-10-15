@@ -10,7 +10,7 @@ export const Route = createFileRoute("/budget")({
   head: () => ({
     meta: [
       { title: "لوحة الميزانية — Metal Fuze" },
-      { name: "description", content: "إجمالي العقود، الصرف الشهري والمتبقي مرتبطة تلقائياً بالمشاريع والرواتب." },
+      { name: "description", content: "إجمالي العقود، الصرف الشهري والمتبقي للدفع مرتبطة تلقائياً بالمشاريع والرواتب." },
       { property: "og:title", content: "لوحة الميزانية — Metal Fuze" },
       { property: "og:description", content: "ميزانية المشاريع والرواتب في مكان واحد." },
       { property: "og:type", content: "website" },
@@ -49,7 +49,7 @@ function Budget() {
   const kpis: [string, string, string | undefined][] = [
     ["إجمالي العقود", fmtMoney(data.contracts), undefined],
     ["المصروف من العقود", fmtMoney(data.paid), data.contracts ? fmtPct(data.paid / data.contracts) : undefined],
-    ["المتبقي من العقود", fmtMoney(data.contracts - data.paid), undefined],
+    ["المتبقي للدفع", fmtMoney(data.contracts - data.paid), undefined],
     ["صرف الرواتب الشهري", fmtMoney(data.payroll), `مدفوع ${fmtMoney(data.payrollPaid)}`],
   ];
 
@@ -89,7 +89,7 @@ function Budget() {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr className="text-right">
-              {["المشروع", "قيمة العقد", "المصروف", "المتبقي", "نسبة الصرف", "الإنجاز", "موظفون", "رواتب الشهر"].map((h) => (
+              {["المشروع", "قيمة العقد", "المصروف", "المتبقي للدفع", "نسبة الصرف", "الإنجاز", "موظفون", "رواتب الشهر"].map((h) => (
                 <th key={h} className="px-4 py-3 font-medium">{h}</th>
               ))}
             </tr>

@@ -36,7 +36,7 @@ export async function exportExcel(projects: Project[]) {
     ["متوسط الإنجاز", fmtPct(avg)],
     ["إجمالي قيمة العقود (ريال)", contract],
     ["إجمالي المدفوع (ريال)", paid],
-    ["المتبقي (ريال)", contract - paid],
+    ["المتبقي للدفع (ريال)", contract - paid],
     ["نسبة الصرف", fmtPct(contract ? paid / contract : 0)],
   ];
   const wsSummary = XLSX.utils.aoa_to_sheet(summary);
@@ -46,7 +46,7 @@ export async function exportExcel(projects: Project[]) {
   const head = [
     "رمز المشروع", "اسم المشروع", "القطاع", "الإدارة", "مدير المشروع",
     "تاريخ البداية", "تاريخ الانتهاء", "الأيام المتبقية", "حالة الموعد", "حالة المشروع",
-    "نسبة الإنجاز", "نسبة الإنجاز المخطط", "قيمة العقد", "المدفوع", "المتبقي",
+    "نسبة الإنجاز", "نسبة الإنجاز المخطط", "قيمة العقد", "المدفوع", "المتبقي للدفع",
     "الإشكاليات / العوائق", "ملاحظات",
   ];
   const rows = projects.map((p) => {

@@ -128,7 +128,7 @@ function Report() {
         {[
           ["إجمالي الرواتب الصافية", fmtMoney(total)],
           ["المصروف من الرواتب", fmtMoney(paid)],
-          ["المتبقي", fmtMoney(total - paid)],
+          ["المتبقي للدفع", fmtMoney(total - paid)],
         ].map(([l, v]) => (
           <div key={l} className="rounded-2xl border border-border bg-card p-5">
             <div className="text-sm text-muted-foreground">{l}</div>
