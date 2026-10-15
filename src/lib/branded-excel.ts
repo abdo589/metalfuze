@@ -104,7 +104,7 @@ export async function exportBrandedExcel(opts: {
       if (numberFormat) vc.numFmt = numberFormat;
       [kc, vc].forEach((c) => {
         c.border = allBorders;
-        c.alignment = { horizontal: "center", vertical: "middle", wrapText: opts.reportLayout };
+        c.alignment = { horizontal: "center", vertical: "middle", wrapText: opts.reportLayout ?? false };
       });
     });
   }
