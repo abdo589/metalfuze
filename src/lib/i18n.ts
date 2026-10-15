@@ -24,6 +24,17 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
+  "تقارير المشاريع": "Project Reports", "أسبوعي": "Weekly", "شهري": "Monthly", "سنوي": "Yearly",
+  "التقرير الأسبوعي": "Weekly Report", "التقرير السنوي": "Annual Report",
+  "الفترة السابقة": "Previous Period", "الفترة التالية": "Next Period", "الفترة الحالية": "Current Period",
+  "اختيار تاريخ التقرير": "Select Report Date", "فترة التقرير": "Reporting Period",
+  "ملخص الإدارة": "Management Summary", "مواعيد الانتهاء خلال الفترة": "Deadlines in Period",
+  "أولويات المتابعة": "Follow-up Priorities", "فجوة الإنجاز": "Progress Gap",
+  "لا توجد مشاريع خلال هذه الفترة": "No projects in this period", "لا توجد أولويات معلقة": "No outstanding priorities",
+  "أرقام العقود والمدفوعات والإنجاز لقطة حالية تراكمية، وليست حركة مالية تاريخية للفترة.": "Contract, payment and progress figures are current cumulative snapshots, not historical transactions for the period.",
+  "مشاريع دون تواريخ": "Projects without dates", "متابعة التحصيل": "Follow up payment collection",
+  "معالجة تأخر التنفيذ": "Resolve execution delay", "المشاريع المتداخلة مع الفترة": "Projects overlapping period",
+  "تاريخ البيانات": "Data Date", "لا توجد عوائق مسجلة": "No recorded obstacles",
   "تاريخ الإصدار:": "Issued:", "مشاريع متأخرة (": "Overdue projects (",
   "قريبة من الانتهاء (": "Ending soon (", "— متأخر": "— overdue ", "— باقي": "— remaining ",
   "يوم": "days", "جميع المشاريع (": "All Projects (", "عدد المشاريع": "Project Count",
