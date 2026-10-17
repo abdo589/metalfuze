@@ -46,6 +46,7 @@ export const translations: Record<string, string> = {
   "سجل الحركات": "Transaction history",
   "الختم والاعتماد": "Stamp & approval",
   "الدفع والتحصيل": "Payments & Collections", "تحصيل من العملاء ودفع للموردين لكل مسؤول مشروع": "Client collections and supplier payments per project manager",
+  "جدول الحضور والانصراف الشهري": "Monthly attendance sheet", "عطلة": "Weekend", "غ": "A",
   "رصيد البنك": "Bank balance", "بنك الرياض": "Riyad Bank", "تحديث الآن": "Update now", "ربط بنك الرياض": "Connect Riyad Bank", "فصل الحساب": "Disconnect",
   "لم يتم الربط بعد — بانتظار بيانات خدمة Lean من الإدارة": "Not connected yet — waiting for the Lean service keys", "الرصيد الحالي": "Current balance", "الرصيد المتاح": "Available balance",
   "آخر تحديث": "Last update", "آخر الحركات": "Latest transactions", "وارد": "In", "صادر": "Out",
