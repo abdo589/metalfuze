@@ -99,7 +99,7 @@ export const translations: Record<string, string> = {
   "اعتماد صرف الشهر للجميع": "Mark Month Paid for All", "الموظف": "Employee", "الإدارة / المشروع": "Department / Project",
   "الأساسي": "Base Salary", "البدلات": "Allowances", "الخصومات": "Deductions", "الصافي": "Net Salary",
   "إجراءات": "Actions", "إلغاء الصرف": "Undo Payment", "اعتماد الصرف": "Mark Paid", "مدفوع ✓": "Paid ✓",
-  "قيد الصرف": "Pending", "غير نشط": "Inactive", "لا توجد نتائج مطابقة": "No matching results",
+  "قيد الصرف": "Pending", "نشط": "Active", "غير نشط": "Inactive", "لا توجد نتائج مطابقة": "No matching results",
   "تم حذف الموظف": "Employee deleted", "تم تحديث بيانات الموظف": "Employee updated", "تمت إضافة الموظف": "Employee added",
   "تعديل موظف": "Edit Employee", "اسم الموظف": "Employee Name", "المسمى الوظيفي": "Job Title",
   "المشروع (اختياري)": "Project (Optional)", "الراتب الأساسي": "Base Salary", "تاريخ التعيين": "Joining Date",
