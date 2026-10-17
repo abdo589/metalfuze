@@ -53,6 +53,9 @@ function Payments() {
   const shown = txns.filter((x) => manager === "all" || x.manager === manager)
     .sort((a, b) => b.date.localeCompare(a.date));
   const sum = totals(shown);
+  const scoped = projects.filter((p) => manager === "all" || p.manager.trim() === manager);
+  const contractSum = scoped.reduce((a, p) => a + p.contract, 0);
+  const collectedSum = scoped.reduce((a, p) => a + p.paid, 0);
 
   useEffect(() => {
     if (!doc || !paperRef.current) return;
@@ -108,11 +111,12 @@ function Payments() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          { label: t("إجمالي التحصيل"), value: sar(sum.collected), icon: ArrowDownCircle },
-          { label: t("إجمالي الدفع"), value: sar(sum.paid), icon: ArrowUpCircle },
-          { label: t("الرصيد"), value: sar(sum.balance), icon: Scale },
+          { label: t("قيمة العقود"), value: sar(contractSum), icon: Scale },
+          { label: t("تم تحصيله"), value: sar(collectedSum), icon: ArrowDownCircle },
+          { label: t("المتبقي للتحصيل"), value: sar(contractSum - collectedSum), icon: Scale },
+          { label: t("تم دفعه للموردين"), value: sar(sum.paid), icon: ArrowUpCircle },
         ].map((k) => (
           <div key={k.label} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 text-muted-foreground"><k.icon className="size-4" /><span className="text-xs">{k.label}</span></div>
@@ -128,23 +132,28 @@ function Payments() {
           <table className="w-full min-w-[720px] text-sm">
             <thead><tr className="border-b border-border text-start text-xs text-muted-foreground">
               <th className="p-3 text-start font-medium">{t("مدير المشروع")}</th>
-              <th className="p-3 text-start font-medium">{t("عدد الحركات")}</th>
-              <th className="p-3 text-start font-medium">{t("تحصيل")}</th>
-              <th className="p-3 text-start font-medium">{t("دفع")}</th>
-              <th className="p-3 text-start font-medium">{t("الرصيد")}</th>
+              <th className="p-3 text-start font-medium">{t("عدد المشاريع")}</th>
+              <th className="p-3 text-start font-medium">{t("قيمة العقود")}</th>
+              <th className="p-3 text-start font-medium">{t("تم تحصيله")}</th>
+              <th className="p-3 text-start font-medium">{t("المتبقي للتحصيل")}</th>
+              <th className="p-3 text-start font-medium">{t("تم دفعه للموردين")}</th>
               <th className="p-3 text-start font-medium">{t("كشف حساب")}</th>
             </tr></thead>
             <tbody>
               {managers.filter((m) => manager === "all" || m === manager).map((m) => {
                 const list = txns.filter((x) => x.manager === m);
                 const s = totals(list);
+                const mp = projects.filter((p) => p.manager.trim() === m);
+                const contract = mp.reduce((a, p) => a + p.contract, 0);
+                const got = mp.reduce((a, p) => a + p.paid, 0);
                 return (
                   <tr key={m} className="border-b border-border/60">
                     <td className="p-3 font-medium">{m}</td>
-                    <td className="p-3">{list.length}</td>
-                    <td className="p-3 text-primary">{sar(s.collected)}</td>
+                    <td className="p-3">{mp.length}</td>
+                    <td className="p-3">{sar(contract)}</td>
+                    <td className="p-3 text-primary">{sar(got)}</td>
+                    <td className="p-3 font-bold">{sar(contract - got)}</td>
                     <td className="p-3 text-destructive">{sar(s.paid)}</td>
-                    <td className="p-3 font-bold">{sar(s.balance)}</td>
                     <td className="p-3">
                       <div className="flex gap-1">
                         <Button size="sm" variant="outline" disabled={!list.length || !!doc} onClick={() => setDoc({ kind: "statement", manager: m })}><FileText /> PDF</Button>
@@ -176,10 +185,10 @@ function Payments() {
                     <td className="p-3 font-medium">{p.name}</td>
                     <td className="p-3">{p.manager}</td>
                     <td className="p-3">{sar(p.contract)}</td>
-                    <td className="p-3 text-primary">{sar(s.collected)}</td>
+                    <td className="p-3 text-primary">{sar(p.paid)}</td>
                     <td className="p-3 text-destructive">{sar(s.paid)}</td>
-                    <td className="p-3 font-bold">{sar(p.contract - s.collected)}</td>
-                    <td className="p-3">{sar(s.balance)}</td>
+                    <td className="p-3 font-bold">{sar(p.contract - p.paid)}</td>
+                    <td className="p-3">{sar(p.paid - s.paid)}</td>
                   </tr>
                 );
               })}
