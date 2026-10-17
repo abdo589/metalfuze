@@ -22,6 +22,7 @@ import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
 import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
 import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
+import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -88,6 +89,11 @@ const IclockGetrequestRoute = IclockGetrequestRouteImport.update({
   path: '/iclock/getrequest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCheckinRoute = ApiPublicCheckinRouteImport.update({
+  id: '/api/public/checkin',
+  path: '/api/public/checkin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
+  '/api/public/checkin': typeof ApiPublicCheckinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant': typeof AssistantIndexRoute
+  '/api/public/checkin': typeof ApiPublicCheckinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
+  '/api/public/checkin': typeof ApiPublicCheckinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/assistant/'
+    | '/api/public/checkin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/assistant'
+    | '/api/public/checkin'
   id:
     | '__root__'
     | '/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/assistant/'
+    | '/api/public/checkin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,6 +209,7 @@ export interface RootRouteChildren {
   IclockCdataRoute: typeof IclockCdataRoute
   IclockGetrequestRoute: typeof IclockGetrequestRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
+  ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IclockGetrequestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/checkin': {
+      id: '/api/public/checkin'
+      path: '/api/public/checkin'
+      fullPath: '/api/public/checkin'
+      preLoaderRoute: typeof ApiPublicCheckinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,6 +329,7 @@ const rootRouteChildren: RootRouteChildren = {
   IclockCdataRoute: IclockCdataRoute,
   IclockGetrequestRoute: IclockGetrequestRoute,
   AssistantIndexRoute: AssistantIndexRoute,
+  ApiPublicCheckinRoute: ApiPublicCheckinRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
