@@ -83,6 +83,77 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_connections: {
+        Row: {
+          bank_name: string
+          connected_at: string | null
+          created_at: string
+          customer_id: string
+          entity_id: string | null
+          id: string
+          status: string
+        }
+        Insert: {
+          bank_name?: string
+          connected_at?: string | null
+          created_at?: string
+          customer_id: string
+          entity_id?: string | null
+          id?: string
+          status?: string
+        }
+        Update: {
+          bank_name?: string
+          connected_at?: string | null
+          created_at?: string
+          customer_id?: string
+          entity_id?: string | null
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      bank_snapshots: {
+        Row: {
+          account_name: string
+          available: number | null
+          balance: number
+          connection_id: string
+          currency: string
+          fetched_at: string
+          id: string
+          transactions: Json
+        }
+        Insert: {
+          account_name?: string
+          available?: number | null
+          balance?: number
+          connection_id: string
+          currency?: string
+          fetched_at?: string
+          id?: string
+          transactions?: Json
+        }
+        Update: {
+          account_name?: string
+          available?: number | null
+          balance?: number
+          connection_id?: string
+          currency?: string
+          fetched_at?: string
+          id?: string
+          transactions?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_snapshots_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "bank_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           active: boolean
