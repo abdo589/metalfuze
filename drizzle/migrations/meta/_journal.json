@@ -36,6 +36,13 @@
       "when": 1792261459350,
       "tag": "0004_remote_attendance",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792265642168,
+      "tag": "0005_bank_balance",
+      "breakpoints": true
     }
   ]
 }
