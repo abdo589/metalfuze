@@ -168,7 +168,7 @@ function Payroll() {
                 <th className="p-3 font-medium">{t("البدلات")}</th>
                 <th className="p-3 font-medium">{t("الخصومات")}</th>
                 <th className="p-3 font-medium">{t("الصافي")}</th>
-                <th className="p-3 font-medium">{t("حالة")}{monthLabel(month)}</th>
+                <th className="p-3 font-medium">{t("حالة")} {monthLabel(month)}</th>
                 <th className="p-3 font-medium print:hidden">{t("إجراءات")}</th>
               </tr>
             </thead>

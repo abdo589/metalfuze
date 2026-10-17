@@ -20,6 +20,8 @@ export async function exportPdf() {
     } catch { /* Cross-origin font styles are already loaded. */ }
   }
   let protectedBlocks: { top: number; bottom: number }[] = [];
+  let tables: { top: number; bottom: number; headTop: number; headBottom: number }[] = [];
+  let contentBottom = 0;
   const canvas = await html2canvas(root, {
     scale: 2, useCORS: true, windowWidth: 1120, scrollX: 0, scrollY: 0,
     onclone: (doc) => {
@@ -34,25 +36,52 @@ export async function exportPdf() {
       protectedBlocks = Array.from(copy.querySelectorAll<HTMLElement>("tr, header, .print-letterhead, .surface:not(:has(table)), [data-pdf-keep]"))
         .filter((el) => el.getBoundingClientRect().height > 0)
         .map((el) => ({ top: el.getBoundingClientRect().top - origin, bottom: el.getBoundingClientRect().bottom - origin }));
+      tables = Array.from(copy.querySelectorAll("table"))
+        .filter((tb) => tb.getBoundingClientRect().height > 0)
+        .map((tb) => {
+          const r = tb.getBoundingClientRect();
+          const head = tb.querySelector("thead") ?? tb.rows[0] ?? null;
+          const hr = head?.getBoundingClientRect();
+          return {
+            top: r.top - origin, bottom: r.bottom - origin,
+            headTop: hr ? hr.top - origin : r.top - origin,
+            headBottom: hr ? hr.bottom - origin : r.top - origin,
+          };
+        });
+      copy.querySelectorAll("*").forEach((el) => {
+        if (el.children.length) return;
+        const r = el.getBoundingClientRect();
+        if (r.height > 0 && (el.textContent?.trim() || el.tagName === "IMG")) contentBottom = Math.max(contentBottom, r.bottom - origin);
+      });
     },
   });
   const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const width = 277;
   const pagePixels = Math.floor(180 * canvas.width / width);
   const scale = canvas.width / 1050;
+  // Stop at the last visible content so trailing whitespace never yields a blank page.
+  const total = Math.min(canvas.height, Math.ceil(contentBottom * scale) + Math.ceil(6 * scale));
   let start = 0;
   let page = 0;
-  while (start < canvas.height) {
-    let end = Math.min(start + pagePixels, canvas.height);
+  while (start < total) {
+    // When a page starts inside a table, repeat that table's header row on top.
+    const startCss = start / scale;
+    const spanning = tables.find((tb) => tb.top < startCss - 2 && tb.bottom > startCss + 2);
+    const headH = spanning && spanning.headBottom > spanning.headTop ? Math.ceil((spanning.headBottom - spanning.headTop) * scale) : 0;
+    const gap = headH ? Math.ceil(6 * scale) : 0;
+    const avail = pagePixels - headH - gap;
+    let end = Math.min(start + avail, total);
     const crossing = protectedBlocks.find((b) => b.top * scale < end && b.bottom * scale > end && b.top * scale > start);
     if (crossing) end = Math.floor(crossing.top * scale);
-    if (end <= start) end = Math.min(start + pagePixels, canvas.height);
+    if (end <= start) end = Math.min(start + avail, total);
+    const sliceH = end - start;
     const slice = document.createElement("canvas");
     slice.width = canvas.width;
-    slice.height = end - start;
+    slice.height = headH + gap + sliceH;
     const ctx = slice.getContext("2d");
     if (!ctx) throw new Error("Canvas unavailable");
-    ctx.drawImage(canvas, 0, start, canvas.width, slice.height, 0, 0, canvas.width, slice.height);
+    if (headH && spanning) ctx.drawImage(canvas, 0, Math.floor(spanning.headTop * scale), canvas.width, headH, 0, 0, canvas.width, headH);
+    ctx.drawImage(canvas, 0, start, canvas.width, sliceH, 0, headH + gap, canvas.width, sliceH);
     if (page > 0) pdf.addPage();
     pdf.addImage(slice.toDataURL("image/png"), "PNG", 10, 10, width, slice.height * width / canvas.width);
     pdf.setFontSize(9);
