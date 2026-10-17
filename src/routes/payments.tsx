@@ -9,7 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCanEdit } from "@/lib/permissions";
-import { t, useLanguage, locale } from "@/lib/i18n";
+import { t, useLanguage, locale, translations } from "@/lib/i18n";
+/** Bilingual label for invoices: Arabic / English. */
+const bi = (k: string) => (translations[k] ? `${k} / ${translations[k]}` : k);
 import { fmtMoney, newId, useProjects } from "@/lib/projects";
 import { totals, txnStore, useTransactions, type Txn, type TxnType } from "@/lib/transactions";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
@@ -263,7 +265,7 @@ function PaperHeader({ title, number }: { title: string; number?: string }) {
       <div className="text-end">
         <div className="inv-accent text-2xl font-extrabold">{title}</div>
         {number && <div className="font-mono text-lg" dir="ltr">{number}</div>}
-        <div className="inv-muted text-xs">{t("تاريخ الإصدار:")}{new Date().toLocaleDateString(locale(), { dateStyle: "long" })}</div>
+        <div className="inv-muted text-xs">{bi("تاريخ الإصدار:")}{new Date().toLocaleDateString(locale(), { dateStyle: "long" })}</div>
       </div>
     </div>
   );
@@ -271,28 +273,28 @@ function PaperHeader({ title, number }: { title: string; number?: string }) {
 
 function InvoicePaper({ x }: { x: Txn }) {
   const rows: [string, string][] = [
-    [t("التاريخ"), fmtDate(x.date)],
-    [t("مدير المشروع"), x.manager],
-    [t("المشروع"), x.project || "—"],
-    [x.type === "collect" ? t("استلمنا من (العميل)") : t("دفعنا إلى (المورد)"), x.party || "—"],
-    [t("طريقة الدفع"), x.method || "—"],
+    [bi("التاريخ"), fmtDate(x.date)],
+    [bi("مدير المشروع"), x.manager],
+    [bi("المشروع"), x.project || "—"],
+    [x.type === "collect" ? bi("استلمنا من (العميل)") : bi("دفعنا إلى (المورد)"), x.party || "—"],
+    [bi("طريقة الدفع"), x.method || "—"],
   ];
   return (
     <div className="space-y-6 p-10" style={{ minHeight: 1000 }}>
-      <PaperHeader title={x.type === "collect" ? t("سند تحصيل") : t("سند دفع")} number={x.number} />
+      <PaperHeader title={x.type === "collect" ? bi("سند تحصيل") : bi("سند دفع")} number={x.number} />
       <table className="w-full text-sm"><tbody>
         {rows.map(([k, v]) => (
           <tr key={k} className="inv-border inv-zebra border-b"><td className="inv-muted w-48 p-3">{k}</td><td className="p-3 font-medium">{v}</td></tr>
         ))}
       </tbody></table>
       <div className="inv-head flex items-center justify-between rounded-lg p-5">
-        <span className="text-lg font-bold">{t("المبلغ")}</span>
+        <span className="text-lg font-bold">{bi("المبلغ")}</span>
         <span className="text-3xl font-extrabold">{sar(x.amount)}</span>
       </div>
-      {x.notes && <div><div className="inv-muted mb-1 text-xs">{t("ملاحظات")}</div><p className="text-sm">{x.notes}</p></div>}
+      {x.notes && <div><div className="inv-muted mb-1 text-xs">{bi("ملاحظات")}</div><p className="text-sm">{x.notes}</p></div>}
       <div className="grid grid-cols-2 gap-10 pt-16 text-center text-sm">
-        <div className="inv-border border-t pt-2">{x.type === "collect" ? t("توقيع المستلم") : t("توقيع المحاسب")}</div>
-        <div className="inv-border border-t pt-2">{x.manager} — {t("مدير المشروع")}</div>
+        <div className="inv-border border-t pt-2">{x.type === "collect" ? bi("توقيع المستلم") : bi("توقيع المحاسب")}</div>
+        <div className="inv-border border-t pt-2">{x.manager} — {bi("مدير المشروع")}</div>
       </div>
       <div className="inv-muted pt-10 text-center text-xs">Metal Fuze — Accuracy Has No Limit</div>
     </div>
@@ -304,16 +306,16 @@ function StatementPaper({ m, list }: { m: string; list: Txn[] }) {
   let run = 0;
   return (
     <div className="space-y-6 p-10">
-      <PaperHeader title={t("كشف حساب")} />
-      <div className="inv-accent text-lg font-bold">{t("مدير المشروع")}: {m}</div>
+      <PaperHeader title={bi("كشف حساب")} />
+      <div className="inv-accent text-lg font-bold">{bi("مدير المشروع")}: {m}</div>
       <div className="grid grid-cols-3 gap-3 text-center">
-        {[[t("إجمالي التحصيل"), s.collected], [t("إجمالي الدفع"), s.paid], [t("الرصيد"), s.balance]].map(([k, v]) => (
+        {[[bi("إجمالي التحصيل"), s.collected], [bi("إجمالي الدفع"), s.paid], [bi("الرصيد"), s.balance]].map(([k, v]) => (
           <div key={k as string} className="inv-border rounded-lg border p-3"><div className="inv-muted text-xs">{k}</div><div className="text-lg font-bold">{sar(v as number)}</div></div>
         ))}
       </div>
       <table className="w-full text-xs">
         <thead><tr className="inv-head">
-          {["رقم الفاتورة", "التاريخ", "المشروع", "العميل / المورد", "تحصيل", "دفع", "الرصيد"].map((h) => <th key={h} className="p-2 text-start">{t(h)}</th>)}
+          {["رقم الفاتورة", "التاريخ", "المشروع", "العميل / المورد", "تحصيل", "دفع", "الرصيد"].map((h) => <th key={h} className="p-2 text-start">{bi(h)}</th>)}
         </tr></thead>
         <tbody>
           {list.map((x) => {
@@ -382,37 +384,37 @@ function ProjectInvoice({ p, list }: { p: { name: string; code: string; manager:
   const no = `INV-${p.code || "000"}-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}`;
   return (
     <div className="space-y-6 p-10" style={{ minHeight: 1080 }}>
-      <PaperHeader title={t("فاتورة مشروع")} number={no} />
+      <PaperHeader title={bi("فاتورة مشروع")} number={no} />
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div className="inv-border rounded-lg border p-4 space-y-1">
-          <div className="inv-muted text-xs">{t("المشروع")}</div>
+          <div className="inv-muted text-xs">{bi("المشروع")}</div>
           <div className="inv-accent text-lg font-bold">{p.name}</div>
-          <div>{t("رمز المشروع")}: <span dir="ltr">{p.code || "—"}</span></div>
+          <div>{bi("رمز المشروع")}: <span dir="ltr">{p.code || "—"}</span></div>
         </div>
         <div className="inv-border rounded-lg border p-4 space-y-1">
-          <div className="inv-muted text-xs">{t("مدير المشروع")}</div>
+          <div className="inv-muted text-xs">{bi("مدير المشروع")}</div>
           <div className="text-lg font-bold">{p.manager || "—"}</div>
-          <div>{t("نسبة الإنجاز")}: {Math.round(p.progress * 100)}%</div>
+          <div>{bi("نسبة الإنجاز")}: {Math.round(p.progress * 100)}%</div>
         </div>
       </div>
       <table className="w-full text-sm">
-        <thead><tr className="inv-head"><th className="p-3 text-start">{t("البند")}</th><th className="p-3 text-end">{t("المبلغ")}</th></tr></thead>
+        <thead><tr className="inv-head"><th className="p-3 text-start">{bi("البند")}</th><th className="p-3 text-end">{bi("المبلغ")}</th></tr></thead>
         <tbody>
-          {([[t("قيمة العقد"), p.contract], [t("تم تحصيله"), p.paid], [t("تم دفعه للموردين"), sup]] as [string, number][]).map(([k, v]) => (
+          {([[bi("قيمة العقد"), p.contract], [bi("تم تحصيله"), p.paid], [bi("تم دفعه للموردين"), sup]] as [string, number][]).map(([k, v]) => (
             <tr key={k} className="inv-border inv-zebra border-b"><td className="p-3">{k}</td><td className="p-3 text-end font-medium">{sar(v)}</td></tr>
           ))}
         </tbody>
       </table>
       <div className="inv-head flex items-center justify-between rounded-lg p-5">
-        <span className="text-lg font-bold">{t("المتبقي للتحصيل")}</span>
+        <span className="text-lg font-bold">{bi("المتبقي للتحصيل")}</span>
         <span className="text-3xl font-extrabold">{sar(remaining)}</span>
       </div>
-      <div className="inv-muted text-sm">{t("نسبة التحصيل")}: {pct}%</div>
+      <div className="inv-muted text-sm">{bi("نسبة التحصيل")}: {pct}%</div>
       {list.length > 0 && (
         <div>
-          <div className="inv-accent mb-2 font-bold">{t("سجل الحركات")}</div>
+          <div className="inv-accent mb-2 font-bold">{bi("سجل الحركات")}</div>
           <table className="w-full text-xs">
-            <thead><tr className="inv-head">{["رقم الفاتورة", "التاريخ", "النوع", "العميل / المورد", "المبلغ"].map((h) => <th key={h} className="p-2 text-start">{t(h)}</th>)}</tr></thead>
+            <thead><tr className="inv-head">{["رقم الفاتورة", "التاريخ", "النوع", "العميل / المورد", "المبلغ"].map((h) => <th key={h} className="p-2 text-start">{bi(h)}</th>)}</tr></thead>
             <tbody>{list.map((x) => (
               <tr key={x.id} className="inv-border inv-zebra border-b">
                 <td className="p-2 font-mono" dir="ltr">{x.number}</td><td className="p-2">{fmtDate(x.date)}</td>
@@ -422,8 +424,8 @@ function ProjectInvoice({ p, list }: { p: { name: string; code: string; manager:
         </div>
       )}
       <div className="grid grid-cols-2 gap-10 pt-16 text-center text-sm">
-        <div className="inv-border border-t pt-2">{t("توقيع المحاسب")}</div>
-        <div className="inv-border border-t pt-2">{t("الختم والاعتماد")}</div>
+        <div className="inv-border border-t pt-2">{bi("توقيع المحاسب")}</div>
+        <div className="inv-border border-t pt-2">{bi("الختم والاعتماد")}</div>
       </div>
       <div className="inv-muted pt-6 text-center text-xs">Metal Fuze — Accuracy Has No Limit</div>
     </div>
