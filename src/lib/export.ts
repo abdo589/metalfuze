@@ -45,19 +45,20 @@ export async function exportExcel(projects: Project[]) {
       columns: [
         { header: "رمز المشروع", width: 13 }, { header: "اسم المشروع", width: 34 },
         { header: "القطاع" }, { header: "الإدارة" }, { header: "مدير المشروع", width: 18 },
+        { header: "مالك المشروع", width: 18 },
         { header: "تاريخ البداية", width: 13 }, { header: "تاريخ الانتهاء", width: 13 },
         { header: "الأيام المتبقية", width: 12, format: "int" }, { header: "حالة الموعد" },
         { header: "حالة المشروع", width: 13 }, { header: "نسبة الإنجاز", width: 12, format: "pct" },
         { header: "الإنجاز المخطط", width: 12, format: "pct" }, { header: "قيمة العقد", width: 17, format: "money" },
         { header: "المدفوع", width: 17, format: "money" }, { header: "المتبقي للدفع", width: 17, format: "money" },
-        { header: "الإشكاليات / العوائق", width: 30 }, { header: "ملاحظات", width: 30 },
+        { header: "هل يوجد عقد شركة", width: 15 }, { header: "الإشكاليات / العوائق", width: 30 }, { header: "ملاحظات", width: 30 },
       ],
       rows: projects.map((p) => [
-        p.code, p.name, p.sector, p.dept, p.manager, p.start ?? "", p.end ?? "",
+        p.code, p.name, p.sector, p.dept, p.manager, p.owner, p.start ?? "", p.end ?? "",
         daysLeft(p.end) ?? "", deadlineAlert(p.end), t(p.status), p.progress, p.planned,
-        p.contract, p.paid, p.contract - p.paid, p.issues, p.notes,
+        p.contract, p.paid, p.contract - p.paid, p.hasContract, p.issues, p.notes,
       ]),
-      totals: [12, 13, 14],
+      totals: [13, 14, 15],
     }],
   });
 }
