@@ -17,6 +17,7 @@ import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as ProjectReportsRouteImport } from './routes/project-reports'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as UsersRouteImport } from './routes/users'
+import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
@@ -65,6 +66,11 @@ const UsersRoute = UsersRouteImport.update({
   path: '/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkersCheckinRoute = WorkersCheckinRouteImport.update({
+  id: '/workers-checkin',
+  path: '/workers-checkin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/users': typeof UsersRoute
+  '/workers-checkin': typeof WorkersCheckinRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/checkin/$token': typeof CheckinTokenRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/users': typeof UsersRoute
+  '/workers-checkin': typeof WorkersCheckinRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/checkin/$token': typeof CheckinTokenRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/users': typeof UsersRoute
+  '/workers-checkin': typeof WorkersCheckinRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/checkin/$token': typeof CheckinTokenRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/users'
+    | '/workers-checkin'
     | '/api/chat'
     | '/assistant/$threadId'
     | '/checkin/$token'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/users'
+    | '/workers-checkin'
     | '/api/chat'
     | '/assistant/$threadId'
     | '/checkin/$token'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/users'
+    | '/workers-checkin'
     | '/api/chat'
     | '/assistant/$threadId'
     | '/checkin/$token'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   ProjectReportsRoute: typeof ProjectReportsRoute
   ReportRoute: typeof ReportRoute
   UsersRoute: typeof UsersRoute
+  WorkersCheckinRoute: typeof WorkersCheckinRoute
   ApiChatRoute: typeof ApiChatRoute
   AssistantThreadIdRoute: typeof AssistantThreadIdRoute
   CheckinTokenRoute: typeof CheckinTokenRoute
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workers-checkin': {
+      id: '/workers-checkin'
+      path: '/workers-checkin'
+      fullPath: '/workers-checkin'
+      preLoaderRoute: typeof WorkersCheckinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -344,6 +364,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectReportsRoute: ProjectReportsRoute,
   ReportRoute: ReportRoute,
   UsersRoute: UsersRoute,
+  WorkersCheckinRoute: WorkersCheckinRoute,
   ApiChatRoute: ApiChatRoute,
   AssistantThreadIdRoute: AssistantThreadIdRoute,
   CheckinTokenRoute: CheckinTokenRoute,
