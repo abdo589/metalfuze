@@ -53,10 +53,12 @@ function ProjectReports() {
         summary: [[t("فترة التقرير"), rangeLabel], [t("تاريخ البيانات"), today], [t("عدد المشاريع"), report.rows.length, "int"], [t("إجمالي قيمة العقود"), report.contract, "money"], [t("المدفوع"), report.paid, "money"], [t("المتبقي للدفع"), report.remaining, "money"], [t("متوسط الإنجاز"), report.average, "pct"], [t("ملاحظات"), note]],
         sheets: [{ name: t("المشاريع"), title: rangeLabel, columns: [
           { header: t("الرمز"), width: 12 }, { header: t("المشروع"), width: 38 }, { header: t("المدير"), width: 24 },
+          { header: t("مالك المشروع"), width: 24 },
           { header: t("تاريخ البداية"), width: 16 }, { header: t("تاريخ الانتهاء"), width: 16 }, { header: t("الحالة"), width: 18 },
           { header: t("الإنجاز"), format: "pct" }, { header: t("مخطط"), format: "pct" },
           { header: t("قيمة العقد"), width: 22, format: "money" }, { header: t("المدفوع"), width: 22, format: "money" }, { header: t("المتبقي للدفع"), width: 22, format: "money" },
-        ], rows: report.rows.map((p) => [p.code, p.name, p.manager, p.start, p.end, t(p.status), p.progress, p.planned, p.contract, p.paid, p.contract - p.paid]), totals: [8, 9, 10] },
+          { header: t("هل يوجد عقد شركة"), width: 15 },
+        ], rows: report.rows.map((p) => [p.code, p.name, p.manager, p.owner, p.start, p.end, t(p.status), p.progress, p.planned, p.contract, p.paid, p.contract - p.paid, p.hasContract]), totals: [9, 10, 11] },
         { name: t("أولويات المتابعة"), title: rangeLabel, columns: [{ header: t("المشروع"), width: 40 }, { header: t("المدير"), width: 25 }, { header: t("ملاحظات"), width: 85 }], rows: priorities.map((p) => [p.name, p.manager, p.issues || t(report.delayed.includes(p) ? "معالجة تأخر التنفيذ" : "متابعة التحصيل")]) }],
       });
       toast.success(t("تم تصدير التقرير"));
