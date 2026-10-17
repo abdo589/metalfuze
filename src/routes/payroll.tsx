@@ -11,6 +11,8 @@ import { EmployeeDialog } from "@/components/EmployeeDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PdfButton } from "@/components/PdfButton";
 import { fmtMoney } from "@/lib/projects";
+import { summarize } from "@/lib/attendance";
+import { useMonthPunches } from "@/lib/attendance-data";
 import { monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
 
 export const Route = createFileRoute("/payroll")({
@@ -37,6 +39,7 @@ function Payroll() {
   useLanguage();
   const employees = usePayroll();
   const [month, setMonth] = useState(monthKey());
+  const punches = useMonthPunches(month);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
@@ -181,6 +184,7 @@ function Payroll() {
                 <th className="p-3 font-medium">{t("البدلات")}</th>
                 <th className="p-3 font-medium">{t("الخصومات")}</th>
                 <th className="p-3 font-medium">{t("الصافي")}</th>
+                <th className="p-3 font-medium">{t("الحضور والانصراف")}</th>
                 <th className="p-3 font-medium">{t("حالة")} {monthLabel(month)}</th>
                 <th className="p-3 font-medium print:hidden">{t("إجراءات")}</th>
               </tr>
@@ -202,6 +206,11 @@ function Payroll() {
                     <td className="p-3 text-success">{fmtMoney(e.allowances)}</td>
                     <td className="p-3 text-destructive">{fmtMoney(e.deductions)}</td>
                     <td className="p-3 font-bold">{fmtMoney(netSalary(e))}</td>
+                    <td className="p-3 text-xs">{(() => { const a = summarize(e, punches, month); return a.linked ? (
+                      <div className="space-y-0.5"><div>{t("حضور")}: <b>{a.present}</b></div>
+                        <div className="text-warning">{t("تأخير")}: {a.late}</div>
+                        <div className="text-destructive">{t("غياب")}: {a.absent}</div></div>
+                    ) : <span className="text-muted-foreground">{t("غير مربوط بالبصمة")}</span>; })()}</td>
                     <td className="p-3">
                       {e.active ? (
                         <button

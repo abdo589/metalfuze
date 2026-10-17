@@ -16,3 +16,4 @@
 - Company PDFs use a shared browser-only export helper and button: capture the print layout and paginate at row boundaries to omit browser URL footers and avoid cutting rows.
 - Use the shared i18n store and translation function for labels, dates, dialogs and export headings; keep user-entered names, project links, notes and credentials unchanged so language switching never changes business data.
 - Period project reports select projects whose scheduled dates overlap the calendar period (Monday-start weeks); undated projects remain included, and financial/progress figures are explicitly current cumulative snapshots, not fabricated historical movements.
+- Employees and attendance live in Lovable Cloud tables (employees, attendance_devices, attendance_logs); ZKTeco devices push via ADMS to the fixed /iclock/cdata route, which stores punches only for admin-approved serial numbers.

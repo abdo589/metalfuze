@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
@@ -19,10 +20,17 @@ import { Route as UsersRouteImport } from './routes/users'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
+import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
+import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AttendanceRoute = AttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BudgetRoute = BudgetRouteImport.update({
@@ -70,9 +78,20 @@ const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
   path: '/assistant/$threadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IclockCdataRoute = IclockCdataRouteImport.update({
+  id: '/iclock/cdata',
+  path: '/iclock/cdata',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IclockGetrequestRoute = IclockGetrequestRouteImport.update({
+  id: '/iclock/getrequest',
+  path: '/iclock/getrequest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/attendance': typeof AttendanceRoute
   '/budget': typeof BudgetRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -81,10 +100,13 @@ export interface FileRoutesByFullPath {
   '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/iclock/cdata': typeof IclockCdataRoute
+  '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/attendance': typeof AttendanceRoute
   '/budget': typeof BudgetRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -93,11 +115,14 @@ export interface FileRoutesByTo {
   '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/iclock/cdata': typeof IclockCdataRoute
+  '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant': typeof AssistantIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/attendance': typeof AttendanceRoute
   '/budget': typeof BudgetRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -106,12 +131,15 @@ export interface FileRoutesById {
   '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/iclock/cdata': typeof IclockCdataRoute
+  '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/attendance'
     | '/budget'
     | '/payments'
     | '/payroll'
@@ -120,10 +148,13 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/iclock/cdata'
+    | '/iclock/getrequest'
     | '/assistant/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/attendance'
     | '/budget'
     | '/payments'
     | '/payroll'
@@ -132,10 +163,13 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/iclock/cdata'
+    | '/iclock/getrequest'
     | '/assistant'
   id:
     | '__root__'
     | '/'
+    | '/attendance'
     | '/budget'
     | '/payments'
     | '/payroll'
@@ -144,11 +178,14 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/iclock/cdata'
+    | '/iclock/getrequest'
     | '/assistant/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AttendanceRoute: typeof AttendanceRoute
   BudgetRoute: typeof BudgetRoute
   PaymentsRoute: typeof PaymentsRoute
   PayrollRoute: typeof PayrollRoute
@@ -157,6 +194,8 @@ export interface RootRouteChildren {
   UsersRoute: typeof UsersRoute
   ApiChatRoute: typeof ApiChatRoute
   AssistantThreadIdRoute: typeof AssistantThreadIdRoute
+  IclockCdataRoute: typeof IclockCdataRoute
+  IclockGetrequestRoute: typeof IclockGetrequestRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
 }
 
@@ -167,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/attendance': {
+      id: '/attendance'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof AttendanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/budget': {
@@ -232,11 +278,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistantThreadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/iclock/cdata': {
+      id: '/iclock/cdata'
+      path: '/iclock/cdata'
+      fullPath: '/iclock/cdata'
+      preLoaderRoute: typeof IclockCdataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/iclock/getrequest': {
+      id: '/iclock/getrequest'
+      path: '/iclock/getrequest'
+      fullPath: '/iclock/getrequest'
+      preLoaderRoute: typeof IclockGetrequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AttendanceRoute: AttendanceRoute,
   BudgetRoute: BudgetRoute,
   PaymentsRoute: PaymentsRoute,
   PayrollRoute: PayrollRoute,
@@ -245,6 +306,8 @@ const rootRouteChildren: RootRouteChildren = {
   UsersRoute: UsersRoute,
   ApiChatRoute: ApiChatRoute,
   AssistantThreadIdRoute: AssistantThreadIdRoute,
+  IclockCdataRoute: IclockCdataRoute,
+  IclockGetrequestRoute: IclockGetrequestRoute,
   AssistantIndexRoute: AssistantIndexRoute,
 }
 export const routeTree = rootRouteImport

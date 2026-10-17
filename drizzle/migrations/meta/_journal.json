@@ -15,6 +15,13 @@
       "when": 1792241004578,
       "tag": "0001_lock_has_role",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792246277648,
+      "tag": "0002_attendance_and_employees",
+      "breakpoints": true
     }
   ]
 }

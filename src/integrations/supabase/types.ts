@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance_devices: {
+        Row: {
+          approved: boolean
+          created_at: string
+          last_seen: string | null
+          name: string
+          serial_number: string
+        }
+        Insert: {
+          approved?: boolean
+          created_at?: string
+          last_seen?: string | null
+          name?: string
+          serial_number: string
+        }
+        Update: {
+          approved?: boolean
+          created_at?: string
+          last_seen?: string | null
+          name?: string
+          serial_number?: string
+        }
+        Relationships: []
+      }
+      attendance_logs: {
+        Row: {
+          created_at: string
+          device_sn: string
+          device_user_id: string
+          id: string
+          punched_at: string
+          status: number | null
+        }
+        Insert: {
+          created_at?: string
+          device_sn: string
+          device_user_id: string
+          id?: string
+          punched_at: string
+          status?: number | null
+        }
+        Update: {
+          created_at?: string
+          device_sn?: string
+          device_user_id?: string
+          id?: string
+          punched_at?: string
+          status?: number | null
+        }
+        Relationships: []
+      }
+      employees: {
+        Row: {
+          active: boolean
+          allowances: number
+          base: number
+          created_at: string
+          deductions: number
+          dept: string
+          device_user_id: string | null
+          id: string
+          joined: string | null
+          name: string
+          paid_months: string[]
+          project: string
+          role: string
+        }
+        Insert: {
+          active?: boolean
+          allowances?: number
+          base?: number
+          created_at?: string
+          deductions?: number
+          dept?: string
+          device_user_id?: string | null
+          id: string
+          joined?: string | null
+          name: string
+          paid_months?: string[]
+          project?: string
+          role?: string
+        }
+        Update: {
+          active?: boolean
+          allowances?: number
+          base?: number
+          created_at?: string
+          deductions?: number
+          dept?: string
+          device_user_id?: string | null
+          id?: string
+          joined?: string | null
+          name?: string
+          paid_months?: string[]
+          project?: string
+          role?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

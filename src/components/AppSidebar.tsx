@@ -12,6 +12,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PieChart,
+  Fingerprint,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 const items = [
   { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
+  { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
   { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
   { to: "/report", label: "التقرير الشهري", icon: FileText },
   { to: "/budget", label: "الميزانية", icon: PieChart },
