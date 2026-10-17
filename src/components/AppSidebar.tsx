@@ -12,7 +12,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PieChart,
-  Fingerprint,
+  Fingerprint, Smartphone,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ const items = [
   { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
+  { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Smartphone },
   { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
   { to: "/report", label: "التقرير الشهري", icon: FileText },
   { to: "/budget", label: "الميزانية", icon: PieChart },
