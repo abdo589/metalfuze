@@ -11,7 +11,7 @@ type Leaflet = typeof import("leaflet");
 type MapState = { map: L.Map; L: Leaflet; layer: L.LayerGroup };
 
 const esc = (s: string) =>
-  s.replace(/[&<>"']/g, (c) => ({ "&": "&", "<": "<", ">": ">", '"': """, "'": "&#39;" }[c]!));
+  s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 /** One map for the attendance page: work sites with their radius, plus every phone punch at its exact spot. */
 export function AttendanceMap({ sites, punches, nameOf }: { sites: Site[]; punches: Punch[]; nameOf: (id: string) => string }) {
