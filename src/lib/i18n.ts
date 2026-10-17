@@ -24,6 +24,15 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
+  "الدفع والتحصيل": "Payments & Collections", "تحصيل من العملاء ودفع للموردين لكل مسؤول مشروع": "Client collections and supplier payments per project manager",
+  "كل المسؤولين": "All managers", "حركة جديدة": "New transaction", "تعديل حركة": "Edit transaction", "إجمالي التحصيل": "Total collected",
+  "إجمالي الدفع": "Total paid", "الرصيد": "Balance", "حسب مسؤول المشروع": "By project manager", "عدد الحركات": "Transactions",
+  "تحصيل": "Collected", "دفع": "Paid", "استلم": "Received", "كشف حساب": "Statement", "الفواتير": "Invoices", "لا توجد حركات بعد": "No transactions yet",
+  "رقم الفاتورة": "Invoice no.", "التاريخ": "Date", "النوع": "Type", "العميل / المورد": "Client / Supplier", "المبلغ": "Amount", "الفاتورة": "Invoice",
+  "حذف هذه الحركة؟": "Delete this transaction?", "استلمنا من (العميل)": "Received from (client)", "دفعنا إلى (المورد)": "Paid to (supplier)",
+  "طريقة الدفع": "Payment method", "سند تحصيل": "Receipt Voucher", "سند دفع": "Payment Voucher", "توقيع المستلم": "Receiver signature",
+  "توقيع المحاسب": "Accountant signature", "تحصيل من العميل": "Collect from client", "دفع للمورد": "Pay supplier", "العميل": "Client", "المورد": "Supplier",
+  "تحويل بنكي": "Bank transfer", "تم الحفظ": "Saved", "تم التصدير": "Exported",
   "تقارير المشاريع": "Project Reports", "أسبوعي": "Weekly", "شهري": "Monthly", "سنوي": "Yearly",
   "التقرير الأسبوعي": "Weekly Report", "التقرير السنوي": "Annual Report",
   "الفترة السابقة": "Previous Period", "الفترة التالية": "Next Period", "الفترة الحالية": "Current Period",

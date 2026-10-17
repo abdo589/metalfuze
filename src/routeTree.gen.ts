@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BudgetRouteImport } from './routes/budget'
+import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as ProjectReportsRouteImport } from './routes/project-reports'
 import { Route as ReportRouteImport } from './routes/report'
@@ -27,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
 const BudgetRoute = BudgetRouteImport.update({
   id: '/budget',
   path: '/budget',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsRoute = PaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PayrollRoute = PayrollRouteImport.update({
@@ -68,6 +74,7 @@ const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/budget': typeof BudgetRoute
+  '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/budget': typeof BudgetRoute
+  '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/budget': typeof BudgetRoute
+  '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/budget'
+    | '/payments'
     | '/payroll'
     | '/project-reports'
     | '/report'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/budget'
+    | '/payments'
     | '/payroll'
     | '/project-reports'
     | '/report'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/budget'
+    | '/payments'
     | '/payroll'
     | '/project-reports'
     | '/report'
@@ -138,6 +150,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BudgetRoute: typeof BudgetRoute
+  PaymentsRoute: typeof PaymentsRoute
   PayrollRoute: typeof PayrollRoute
   ProjectReportsRoute: typeof ProjectReportsRoute
   ReportRoute: typeof ReportRoute
@@ -161,6 +174,13 @@ declare module '@tanstack/react-router' {
       path: '/budget'
       fullPath: '/budget'
       preLoaderRoute: typeof BudgetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments': {
+      id: '/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof PaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payroll': {
@@ -218,6 +238,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BudgetRoute: BudgetRoute,
+  PaymentsRoute: PaymentsRoute,
   PayrollRoute: PayrollRoute,
   ProjectReportsRoute: ProjectReportsRoute,
   ReportRoute: ReportRoute,

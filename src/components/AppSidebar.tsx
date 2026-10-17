@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Banknote,
+  HandCoins,
   BrainCircuit,
   FileSpreadsheet,
   FileText,
@@ -24,6 +25,7 @@ import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 const items = [
   { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
+  { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
   { to: "/report", label: "التقرير الشهري", icon: FileText },
   { to: "/budget", label: "الميزانية", icon: PieChart },
   { to: "/project-reports", label: "تقارير المشاريع", icon: FileSpreadsheet },

@@ -63,3 +63,24 @@ export async function exportPdf() {
   pdf.setProperties({ title: document.title, author: "Metal Fuze", creator: "Metal Fuze" });
   downloadBlob(pdf.output("blob"), `Metal-Fuze-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
+/** Save one standalone element (invoice / statement) as a portrait A4 PDF. */
+export async function exportElementPdf(el: HTMLElement, filename: string) {
+  await document.fonts.ready;
+  await Promise.all(Array.from(el.querySelectorAll("img")).map((img) => img.decode().catch(() => undefined)));
+  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import("html2canvas-pro"), import("jspdf")]);
+  const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const width = 190;
+  const pagePx = Math.floor(267 * canvas.width / width);
+  for (let start = 0, page = 0; start < canvas.height; start += pagePx, page++) {
+    const h = Math.min(pagePx, canvas.height - start);
+    const slice = document.createElement("canvas");
+    slice.width = canvas.width; slice.height = h;
+    slice.getContext("2d")!.drawImage(canvas, 0, start, canvas.width, h, 0, 0, canvas.width, h);
+    if (page > 0) pdf.addPage();
+    pdf.addImage(slice.toDataURL("image/png"), "PNG", 10, 10, width, h * width / canvas.width);
+    pdf.setFontSize(9);
+    pdf.text(`Metal Fuze | ${page + 1}`, 105, 290, { align: "center" });
+  }
+  downloadBlob(pdf.output("blob"), filename);
+}
