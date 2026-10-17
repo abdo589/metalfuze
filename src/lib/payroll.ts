@@ -1,5 +1,7 @@
 import { locale } from "./i18n";
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export type Employee = {
   id: string;
@@ -7,12 +9,13 @@ export type Employee = {
   role: string;
   dept: string;
   project: string;
-  base: number; // الراتب الأساسي
-  allowances: number; // البدلات
-  deductions: number; // الخصومات
-  joined: string | null; // تاريخ التعيين
+  base: number;
+  allowances: number;
+  deductions: number;
+  joined: string | null;
   active: boolean;
-  paidMonths: string[]; // أشهر مدفوعة بصيغة YYYY-MM
+  paidMonths: string[];
+  deviceUserId?: string; // رقم الموظف في جهاز البصمة
 };
 
 export const netSalary = (e: Employee) => (e.base || 0) + (e.allowances || 0) - (e.deductions || 0);
@@ -25,99 +28,78 @@ export const monthLabel = (key: string) => {
   return new Date(y!, (m ?? 1) - 1, 1).toLocaleDateString(locale(), { month: "long", year: "numeric" });
 };
 
-const seed: Employee[] = [
-  { id: "e1", name: "م. أحمد الشهري", role: "مدير مشاريع", dept: "إدارة المشاريع", project: "أبراج العليا أصول", base: 22000, allowances: 3000, deductions: 0, joined: "2021-03-01", active: true, paidMonths: [] },
-  { id: "e2", name: "م. سارة العتيبي", role: "مهندسة موقع", dept: "الهندسة", project: "الدرعية", base: 14500, allowances: 1500, deductions: 0, joined: "2022-06-15", active: true, paidMonths: [] },
-  { id: "e3", name: "خالد المطيري", role: "محاسب مشاريع", dept: "المالية", project: "الهيلتون - جازان", base: 11000, allowances: 800, deductions: 500, joined: "2020-01-10", active: true, paidMonths: [] },
-  { id: "e4", name: "م. فهد القحطاني", role: "مهندس تنفيذ", dept: "الهندسة", project: "عمارة فندقية 1", base: 13500, allowances: 1200, deductions: 0, joined: "2023-02-01", active: true, paidMonths: [] },
-  { id: "e5", name: "نورة الدوسري", role: "مسؤولة موارد بشرية", dept: "الموارد البشرية", project: "", base: 10500, allowances: 700, deductions: 0, joined: "2022-09-01", active: true, paidMonths: [] },
-  { id: "e6", name: "م. عبدالله الغامدي", role: "مساح", dept: "الهندسة", project: "المحكمة التجارية", base: 9000, allowances: 600, deductions: 0, joined: "2023-11-20", active: true, paidMonths: [] },
-  { id: "e7", name: "ريم الحربي", role: "منسقة عقود", dept: "العقود", project: "مكتب التخصصي all", base: 8500, allowances: 500, deductions: 0, joined: "2024-01-05", active: true, paidMonths: [] },
-  { id: "e8", name: "م. تركي العنزي", role: "مشرف سلامة", dept: "السلامة والجودة", project: "أبراج العليا أصول", base: 9500, allowances: 900, deductions: 200, joined: "2021-08-12", active: true, paidMonths: [] },
-];
+type Row = {
+  id: string; name: string; role: string; dept: string; project: string; base: number; allowances: number;
+  deductions: number; joined: string | null; active: boolean; paid_months: string[]; device_user_id: string | null;
+};
+const fromRow = (r: Row): Employee => ({
+  id: r.id, name: r.name, role: r.role, dept: r.dept, project: r.project, base: Number(r.base),
+  allowances: Number(r.allowances), deductions: Number(r.deductions), joined: r.joined, active: r.active,
+  paidMonths: r.paid_months ?? [], deviceUserId: r.device_user_id ?? "",
+});
+const toRow = (e: Employee): Row => ({
+  id: e.id, name: e.name, role: e.role, dept: e.dept, project: e.project, base: e.base, allowances: e.allowances,
+  deductions: e.deductions, joined: e.joined || null, active: e.active, paid_months: e.paidMonths,
+  device_user_id: e.deviceUserId?.trim() || null,
+});
 
-const RENAMES: Record<string, string> = {"برج المكاتب الإداري": "أبراج العليا أصول", "مجمع سكني — الرياض": "الدرعية", "فندق الواجهة البحرية": "عمارة فندقية 1", "مركز تجاري — جدة": "المحكمة التجارية"};
-function migrate(list: Employee[]): Employee[] {
-  const byId = new Map(seed.map((e) => [e.id, e.project]));
-  const out = list.map((e) => {
-    if (RENAMES[e.project]) return { ...e, project: RENAMES[e.project]! };
-    if (!e.project && byId.get(e.id) && (e.id === "e3" || e.id === "e7")) return { ...e, project: byId.get(e.id)! };
-    return e;
-  });
-  try { localStorage.setItem(KEY, JSON.stringify(out)); } catch {}
-  return out;
-}
-
-const KEY = "metalfuze.payroll.v1";
 const listeners = new Set<() => void>();
-let cache: Employee[] | null = null;
+let cache: Employee[] = [];
+let loading: Promise<void> | null = null;
 
-const CLEARED_KEY = "metalfuze.payroll.cleared.v1";
+function emit() { listeners.forEach((l) => l()); }
 
-function load(): Employee[] {
-  if (cache) return cache;
-  try {
-    // One-time wipe requested by management: remove the demo employees on first load after this update.
-    if (!localStorage.getItem(CLEARED_KEY)) {
-      localStorage.setItem(CLEARED_KEY, "1");
-      localStorage.setItem(KEY, "[]");
-      cache = [];
-      return cache;
-    }
-    const raw = localStorage.getItem(KEY);
-    cache = raw ? migrate(JSON.parse(raw)) : seed;
-  } catch {
-    cache = seed;
-  }
-  return cache!;
+async function refresh() {
+  const { data, error } = await supabase.from("employees").select("*").order("created_at");
+  if (error) { console.error(error); return; }
+  cache = (data as Row[]).map(fromRow);
+  emit();
 }
 
-function save(list: Employee[]) {
-  cache = list;
-  localStorage.setItem(KEY, JSON.stringify(list));
-  listeners.forEach((l) => l());
+async function write(p: PromiseLike<{ error: { message: string } | null }>) {
+  const { error } = await p;
+  if (error) toast.error(error.message);
+  await refresh();
 }
 
 export const payrollStore = {
-  all: () => load(),
+  all: () => cache,
+  refresh,
   upsert(e: Employee) {
-    const list = load();
-    const i = list.findIndex((x) => x.id === e.id);
-    save(i >= 0 ? list.map((x) => (x.id === e.id ? e : x)) : [...list, e]);
+    cache = cache.some((x) => x.id === e.id) ? cache.map((x) => (x.id === e.id ? e : x)) : [...cache, e];
+    emit();
+    return write(supabase.from("employees").upsert(toRow(e)));
   },
   remove(id: string) {
-    save(load().filter((x) => x.id !== id));
+    cache = cache.filter((x) => x.id !== id); emit();
+    return write(supabase.from("employees").delete().eq("id", id));
   },
   clearAll() {
-    save([]);
+    cache = []; emit();
+    return write(supabase.from("employees").delete().neq("id", ""));
   },
   togglePaid(id: string, month: string) {
-    const list = load();
-    save(
-      list.map((x) =>
-        x.id === id
-          ? { ...x, paidMonths: x.paidMonths.includes(month) ? x.paidMonths.filter((m) => m !== month) : [...x.paidMonths, month] }
-          : x,
-      ),
-    );
+    const e = cache.find((x) => x.id === id);
+    if (!e) return;
+    const paidMonths = e.paidMonths.includes(month) ? e.paidMonths.filter((m) => m !== month) : [...e.paidMonths, month];
+    return payrollStore.upsert({ ...e, paidMonths });
   },
-  payAll(month: string) {
-    save(load().map((x) => (x.active && !x.paidMonths.includes(month) ? { ...x, paidMonths: [...x.paidMonths, month] } : x)));
-  },
-  reset() {
-    save(seed);
+  async payAll(month: string) {
+    const list = cache.filter((x) => x.active && !x.paidMonths.includes(month)).map((x) => ({ ...x, paidMonths: [...x.paidMonths, month] }));
+    if (!list.length) return;
+    cache = cache.map((x) => list.find((y) => y.id === x.id) ?? x); emit();
+    return write(supabase.from("employees").upsert(list.map(toRow)));
   },
 };
 
 export function usePayroll() {
-  const [list, setList] = useState<Employee[]>(seed);
+  const [list, setList] = useState<Employee[]>(cache);
   useEffect(() => {
-    setList(load());
-    const l = () => setList([...load()]);
+    const l = () => setList([...cache]);
     listeners.add(l);
-    return () => {
-      listeners.delete(l);
-    };
+    if (!loading) loading = refresh();
+    else l();
+    return () => { listeners.delete(l); };
   }, []);
   return list;
 }
