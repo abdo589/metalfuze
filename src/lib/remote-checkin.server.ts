@@ -23,11 +23,13 @@ export async function recordRemotePunch(input: CheckinInput): Promise<CheckinRes
 
   const { data: emp } = await db.from("employees").select("id,active,device_user_id,site_id").eq("id", input.employeeId).maybeSingle();
   if (!emp || !emp.active) return { ok: false, error: "employee" };
-  if (!emp.site_id) return { ok: false, error: "nosite" };
-  const { data: site } = await db.from("work_sites").select("name,lat,lng,radius_m").eq("id", emp.site_id).maybeSingle();
-  if (!site) return { ok: false, error: "nosite" };
+  // No assigned work site: accept the punch and just record the exact GPS location (no radius check).
+  const { data: siteRow } = emp.site_id
+    ? await db.from("work_sites").select("name,lat,lng,radius_m").eq("id", emp.site_id).maybeSingle()
+    : { data: null };
+  const site = siteRow ?? { name: "", lat: input.lat, lng: input.lng, radius_m: 0 };
 
-  const check = checkSite(input, site);
+  const check = siteRow ? checkSite(input, site) : { ok: true as const, distance: 0 };
   if (!check.ok) return { ok: false, error: `far:${check.distance}:${site.name}` };
 
   const userId = emp.device_user_id || emp.id;
@@ -43,7 +45,7 @@ export async function recordRemotePunch(input: CheckinInput): Promise<CheckinRes
 
   const { error } = await db.from("attendance_logs").insert({
     device_sn: "REMOTE", device_user_id: userId, punched_at: now.toISOString(), status, source: "remote",
-    lat: input.lat, lng: input.lng, distance_m: check.distance, photo_path: path, site_name: site.name,
+    lat: input.lat, lng: input.lng, distance_m: siteRow ? check.distance : null, photo_path: path, site_name: siteRow ? site.name : null,
   });
   if (error) { console.error("remote punch insert failed", error); return { ok: false, error: "save" }; }
   return { ok: true, time: now.toISOString(), distance: check.distance, site: site.name };
