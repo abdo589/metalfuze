@@ -86,6 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "google-site-verification", content: "j4nvYMQJ-300MMpJY32-QHHT8bIgWgLG4nfR96U6N_0" },
       { title: "Metal Fuze — متابعة المشاريع" },
       { name: "description", content: "لوحة متابعة مشاريع Metal Fuze" },
       { property: "og:type", content: "website" },
