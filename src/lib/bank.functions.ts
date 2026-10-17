@@ -29,7 +29,7 @@ async function lean(path: string, method: "GET" | "POST", body?: unknown) {
   const token = await leanToken("api");
   const res = await fetch(`${e.api}${path}`, {
     method, headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? JSON.stringify(body) : null,
   });
   if (!res.ok) { console.error("Lean request failed", path, res.status, await res.text()); throw new Error("bankapi"); }
   return res.json() as Promise<Record<string, unknown>>;
