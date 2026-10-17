@@ -8,6 +8,7 @@ export const WEEKEND = [5, 6];
 export type Punch = {
   device_user_id: string; punched_at: string; source?: string | null; status?: number | null;
   distance_m?: number | null; photo_path?: string | null; site_name?: string | null;
+  lat?: number | null; lng?: number | null;
 };
 export type DayRecord = { date: string; in: string; out: string | null; late: boolean; lateMin: number };
 
