@@ -73,7 +73,7 @@ export const translations: Record<string, string> = {
   "الدخول بحساب جوجل": "Sign in with Google", "جارٍ فتح جوجل...": "Opening Google…",
   "اسم المستخدم أو كلمة المرور غير صحيحة": "Incorrect username or password",
   "تعذر الدخول بحساب جوجل، حاول مرة أخرى": "Google sign-in failed. Please try again.",
-  "المستخدمون": "Users", "خروج": "Sign Out", "مرحباً،": "Welcome,",
+  "المستخدمون": "Users", "خروج": "Sign Out", "مرحباً،": "Welcome,", "القائمة": "Menu",
   "وحدة الرواتب": "Payroll", "مسير الرواتب الشهري وحالة الصرف لكل موظف": "Monthly payroll and employee payment status",
   "التقرير الشهري": "Monthly Report", "تصدير مسير Excel": "Export Payroll Excel", "إضافة موظف": "Add Employee",
   "الشهر التالي": "Next Month", "الشهر السابق": "Previous Month", "الشهر الحالي": "Current Month",

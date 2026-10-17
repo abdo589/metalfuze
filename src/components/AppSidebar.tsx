@@ -1,0 +1,98 @@
+import { t, useLanguage } from "@/lib/i18n";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { useState } from "react";
+import {
+  Banknote,
+  BrainCircuit,
+  FileSpreadsheet,
+  FileText,
+  LayoutDashboard,
+  Menu,
+  PieChart,
+  Users,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
+import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
+
+const items = [
+  { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
+  { to: "/payroll", label: "الرواتب", icon: Banknote },
+  { to: "/report", label: "التقرير الشهري", icon: FileText },
+  { to: "/budget", label: "الميزانية", icon: PieChart },
+  { to: "/project-reports", label: "تقارير المشاريع", icon: FileSpreadsheet },
+  { to: "/assistant", label: "المستشار الذكي", icon: BrainCircuit },
+  { to: "/users", label: "المستخدمون", icon: Users },
+];
+
+function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  return (
+    <nav className="flex flex-col gap-1">
+      {items.map((it) => {
+        const active = it.to === "/" ? pathname === "/" : pathname.startsWith(it.to);
+        return (
+          <Button key={it.to} variant={active ? "secondary" : "ghost"} asChild
+            className="w-full justify-start gap-3" aria-current={active ? "page" : undefined}>
+            <Link to={it.to} onClick={onNavigate}><it.icon /> {t(it.label)}</Link>
+          </Button>
+        );
+      })}
+    </nav>
+  );
+}
+
+function Logo({ className = "w-40" }: { className?: string }) {
+  return (
+    <Link to="/" className="block">
+      <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
+        className={`screen-logo logo-on-light mx-auto h-auto ${className}`} />
+      <img src={logoLightAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
+        className={`screen-logo logo-on-dark mx-auto hidden h-auto ${className}`} />
+    </Link>
+  );
+}
+
+export function AppSidebar() {
+  const language = useLanguage();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {/* Desktop: fixed side rail on the page start side (right in Arabic, left in English). */}
+      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-e bg-card/40 p-4 lg:flex print:hidden">
+        <Logo />
+        <NavLinks />
+        <div className="mt-auto flex flex-col items-stretch gap-2 border-t pt-4">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
+      </aside>
+
+      {/* Mobile: top bar with a slide-in menu holding the same links. */}
+      <header className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b bg-background/90 px-3 py-2 backdrop-blur lg:hidden print:hidden">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button size="icon" variant="ghost" aria-label={t("القائمة")}><Menu /></Button>
+          </SheetTrigger>
+          <SheetContent side={language === "ar" ? "right" : "left"} className="w-64 p-4">
+            <SheetTitle className="sr-only">{t("القائمة")}</SheetTitle>
+            <div className="flex h-full flex-col gap-6">
+              <Logo className="w-32" />
+              <NavLinks onNavigate={() => setOpen(false)} />
+              <div className="mt-auto flex flex-col gap-2 border-t pt-4">
+                <LanguageToggle />
+                <ThemeToggle />
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+        <Logo className="w-28" />
+        <span className="size-9 shrink-0" aria-hidden="true" />
+      </header>
+    </>
+  );
+}
