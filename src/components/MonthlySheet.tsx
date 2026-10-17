@@ -26,18 +26,18 @@ export function MonthlySheet({ rows, month, today, onSelect }: { rows: Row[]; mo
           <span><span className="inline-block size-2.5 rounded-sm bg-muted" /> {t("عطلة")}</span>
         </div>
       </div>
-      <table className="w-full min-w-[1000px] table-fixed border-collapse text-[9px] leading-tight">
+      <table className="w-full min-w-[1000px] table-fixed border-collapse whitespace-nowrap text-[8px] leading-tight tabular-nums">
         <thead>
           <tr className="text-muted-foreground">
-            <th className="w-28 border border-border p-1 text-start text-[10px]">{t("الموظف")}</th>
+            <th className="w-28 whitespace-normal border border-border p-1 text-start text-[10px]">{t("الموظف")}</th>
             {days.map((d) => (
               <th key={d.iso} className={`border border-border p-0.5 text-center font-medium ${d.off ? "bg-muted" : ""}`}>
                 <div>{d.n}</div><div className="font-normal">{d.wd}</div>
               </th>
             ))}
-            <th className="w-9 border border-border p-0.5">{t("حضور")}</th>
-            <th className="w-9 border border-border p-0.5">{t("تأخير")}</th>
-            <th className="w-9 border border-border p-0.5">{t("غياب")}</th>
+            <th className="w-8 border border-border p-0.5">{t("حضور")}</th>
+            <th className="w-8 border border-border p-0.5">{t("تأخير")}</th>
+            <th className="w-8 border border-border p-0.5">{t("غياب")}</th>
           </tr>
         </thead>
         <tbody>
@@ -46,13 +46,13 @@ export function MonthlySheet({ rows, month, today, onSelect }: { rows: Row[]; mo
             const byDate = new Map(s.days.map((d) => [d.date, d]));
             return (
               <tr key={e.id} onClick={() => onSelect(e.id)} className="cursor-pointer hover:bg-muted/40">
-                <td className="truncate border border-border p-1 text-[10px] font-medium" title={e.name}>{e.name}</td>
+                <td className="whitespace-normal border border-border p-1 text-[10px] font-medium" title={e.name}>{e.name}</td>
                 {days.map((d) => {
                   const r = byDate.get(d.iso);
                   const absent = !r && !d.off && s.linked && d.iso <= today;
                   const cls = r ? (r.late ? "bg-warning/25" : "bg-success/20") : d.off ? "bg-muted" : absent ? "bg-destructive/20 text-destructive" : "";
                   return (
-                    <td key={d.iso} className={`border border-border p-0.5 text-center ${cls}`}>
+                    <td key={d.iso} className={`border border-border px-0 py-0.5 text-center ${cls}`}>
                       {r ? <><div>{r.in}</div>{r.out && <div className="text-muted-foreground">{r.out}</div>}</> : absent ? t("غ") : ""}
                     </td>
                   );
