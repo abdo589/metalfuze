@@ -12,6 +12,8 @@ import { LATE_AFTER, WORK_START, riyadh, summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
 import { RemoteLinks, SelfieThumb, WorkSites, useSites } from "@/components/RemoteAttendance";
 import { AttendanceMap } from "@/components/AttendanceMap";
+import { MonthlySheet } from "@/components/MonthlySheet";
+import { PdfButton } from "@/components/PdfButton";
 
 export const Route = createFileRoute("/attendance")({
   head: () => ({
@@ -72,13 +74,14 @@ function Attendance() {
         </p>
       </header>
 
-      <div className="flex items-center justify-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3 print:hidden">
         <Button variant="outline" size="icon" onClick={() => setMonth(shift(month, 1))} aria-label={t("الشهر التالي")}><ChevronRight /></Button>
         <div className="min-w-40 text-center font-display text-lg font-bold">{monthLabel(month)}</div>
         <Button variant="outline" size="icon" onClick={() => setMonth(shift(month, -1))} aria-label={t("الشهر السابق")}><ChevronLeft /></Button>
+        <PdfButton />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 print:hidden">
         {[
           { label: t("حاضرون اليوم"), value: todayIn, icon: CheckCircle2 },
           { label: t("متأخرون اليوم"), value: lateToday, icon: Clock },
@@ -92,37 +95,9 @@ function Attendance() {
         ))}
       </div>
 
-      <section className="overflow-x-auto rounded-xl border border-border bg-card">
-        <table className="w-full min-w-[700px] text-sm">
-          <thead>
-            <tr className="border-b border-border text-right text-xs text-muted-foreground">
-              <th className="p-3 font-medium">{t("الموظف")}</th>
-              <th className="p-3 font-medium">{t("رقم البصمة")}</th>
-              <th className="p-3 font-medium">{t("اليوم")}</th>
-              <th className="p-3 font-medium">{t("حضور")}</th>
-              <th className="p-3 font-medium">{t("تأخير")}</th>
-              <th className="p-3 font-medium">{t("غياب")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">{t("أضف الموظفين من صفحة الرواتب أولًا")}</td></tr>}
-            {rows.map(({ e, s }) => {
-              const d = s.days.find((x) => x.date === today);
-              return (
-                <tr key={e.id} onClick={() => setSelected(e.id)} className="cursor-pointer border-b border-border/60 last:border-0 hover:bg-muted/40">
-                  <td className="p-3 font-medium">{e.name}<div className="text-xs text-muted-foreground">{e.role}</div></td>
-                  <td className="p-3">{e.deviceUserId || (e.siteId ? <span className="text-xs">{t("جوال")}</span> : <span className="text-xs text-muted-foreground">{t("غير مربوط بالبصمة")}</span>)}</td>
-                  <td className="p-3">{d ? <Badge variant="outline" className={d.late ? "border-warning/30 bg-warning/15 text-warning" : "border-success/30 bg-success/15 text-success"}>{d.in}{d.out ? ` → ${d.out}` : ""}</Badge> : "—"}</td>
-                  <td className="p-3 font-bold">{s.present}</td>
-                  <td className="p-3 text-warning">{s.late}</td>
-                  <td className="p-3 text-destructive">{s.absent}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </section>
+      <MonthlySheet rows={rows} month={month} today={today} onSelect={setSelected} />
 
+      <div className="space-y-6 print:hidden">
       <AttendanceMap sites={sites} punches={punches} nameOf={(id) => employees.find((e) => e.id === id || e.deviceUserId === id)?.name ?? id} />
 
       {sel && (
@@ -188,6 +163,7 @@ function Attendance() {
           </div>
         ))}
       </section>
+      </div>
     </div>
   );
 }
