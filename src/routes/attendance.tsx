@@ -128,7 +128,7 @@ function Attendance() {
               {sel.s.days.map((d) => (
                 <div key={d.date} className={`rounded-lg border p-2 text-xs ${d.late ? "border-warning/40" : "border-border"}`}>
                   <div className="font-medium">{d.date}</div>
-                  <div>{t("دخول")} {d.in}</div><div>{t("خروج")} {d.out ?? "—"}</div>
+                  <div>{t("وقت الدخول")} {d.in}</div><div>{t("وقت الخروج")} {d.out ?? "—"}</div>
                   {d.late && <div className="text-warning">{t("تأخير")} {d.lateMin} {t("دقيقة")}</div>}
                 </div>
               ))}
