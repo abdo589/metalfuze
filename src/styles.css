@@ -359,3 +359,11 @@ html[dir="ltr"] [data-report-document] td .flex { flex-wrap: wrap; }
   .period-report [data-pdf-keep] .grid > div { padding: 10px; }
   .period-report h2 { font-size: 18px; }
 }
+
+/* Paper used for invoices/statements saved as PDF (always white paper). */
+.invoice-paper { background: #ffffff; color: #1b2b2b; }
+.invoice-paper .inv-accent { color: #17494a; }
+.invoice-paper .inv-muted { color: #5b6b6b; }
+.invoice-paper .inv-head { background: #1f8a87; color: #ffffff; }
+.invoice-paper .inv-border { border-color: #cfdcdb; }
+.invoice-paper .inv-zebra:nth-child(even) { background: #f1f8f7; }

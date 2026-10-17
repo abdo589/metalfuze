@@ -1,0 +1,66 @@
+import { useEffect, useState } from "react";
+
+export type TxnType = "collect" | "pay";
+export type Txn = {
+  id: string;
+  number: string;
+  type: TxnType; // collect = تحصيل من العميل، pay = دفع للمورد
+  date: string; // YYYY-MM-DD
+  manager: string;
+  project: string;
+  party: string; // العميل أو المورد
+  amount: number;
+  method: string;
+  notes: string;
+};
+
+const KEY = "metalfuze.transactions.v1";
+const listeners = new Set<() => void>();
+let cache: Txn[] | null = null;
+
+function load(): Txn[] {
+  if (cache) return cache;
+  try { cache = JSON.parse(localStorage.getItem(KEY) ?? "[]"); } catch { cache = []; }
+  return cache!;
+}
+function save(list: Txn[]) {
+  cache = list;
+  localStorage.setItem(KEY, JSON.stringify(list));
+  listeners.forEach((l) => l());
+}
+
+/** Next sequential invoice number per type: REC-0001 for collections, PAY-0001 for payments. */
+export function nextNumber(list: Txn[], type: TxnType) {
+  const prefix = type === "collect" ? "REC" : "PAY";
+  const max = list.filter((x) => x.type === type)
+    .reduce((m, x) => Math.max(m, Number(x.number.split("-")[1]) || 0), 0);
+  return `${prefix}-${String(max + 1).padStart(4, "0")}`;
+}
+
+/** Collected, paid and balance (collected − paid) for a set of transactions. */
+export function totals(list: Txn[]) {
+  const collected = list.filter((x) => x.type === "collect").reduce((a, x) => a + x.amount, 0);
+  const paid = list.filter((x) => x.type === "pay").reduce((a, x) => a + x.amount, 0);
+  return { collected, paid, balance: collected - paid };
+}
+
+export const txnStore = {
+  all: () => load(),
+  upsert(x: Txn) {
+    const list = load();
+    const i = list.findIndex((y) => y.id === x.id);
+    save(i >= 0 ? list.map((y) => (y.id === x.id ? x : y)) : [...list, { ...x, number: x.number || nextNumber(list, x.type) }]);
+  },
+  remove(id: string) { save(load().filter((x) => x.id !== id)); },
+};
+
+export function useTransactions() {
+  const [list, setList] = useState<Txn[]>([]);
+  useEffect(() => {
+    setList(load());
+    const l = () => setList([...load()]);
+    listeners.add(l);
+    return () => { listeners.delete(l); };
+  }, []);
+  return list;
+}
