@@ -52,9 +52,18 @@ const KEY = "metalfuze.payroll.v1";
 const listeners = new Set<() => void>();
 let cache: Employee[] | null = null;
 
+const CLEARED_KEY = "metalfuze.payroll.cleared.v1";
+
 function load(): Employee[] {
   if (cache) return cache;
   try {
+    // One-time wipe requested by management: remove the demo employees on first load after this update.
+    if (!localStorage.getItem(CLEARED_KEY)) {
+      localStorage.setItem(CLEARED_KEY, "1");
+      localStorage.setItem(KEY, "[]");
+      cache = [];
+      return cache;
+    }
     const raw = localStorage.getItem(KEY);
     cache = raw ? migrate(JSON.parse(raw)) : seed;
   } catch {
@@ -78,6 +87,9 @@ export const payrollStore = {
   },
   remove(id: string) {
     save(load().filter((x) => x.id !== id));
+  },
+  clearAll() {
+    save([]);
   },
   togglePaid(id: string, month: string) {
     const list = load();
