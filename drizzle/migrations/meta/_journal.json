@@ -22,6 +22,13 @@
       "when": 1792246277648,
       "tag": "0002_attendance_and_employees",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792246587984,
+      "tag": "0003_restrict_staff_reads",
+      "breakpoints": true
     }
   ]
 }
