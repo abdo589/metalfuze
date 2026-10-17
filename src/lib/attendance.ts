@@ -5,7 +5,10 @@ export const WORK_START = "09:00";
 export const LATE_AFTER = "09:30";
 export const WEEKEND = [5, 6];
 
-export type Punch = { device_user_id: string; punched_at: string };
+export type Punch = {
+  device_user_id: string; punched_at: string; source?: string | null; status?: number | null;
+  distance_m?: number | null; photo_path?: string | null; site_name?: string | null;
+};
 export type DayRecord = { date: string; in: string; out: string | null; late: boolean; lateMin: number };
 
 /** Riyadh (UTC+3) local date + time for a timestamp. */
@@ -17,10 +20,11 @@ export function riyadh(ts: string) {
 
 const mins = (hhmm: string) => { const [h, m] = hhmm.split(":").map(Number); return h! * 60 + m!; };
 
-export function buildDays(punches: Punch[], userId: string): DayRecord[] {
+export function buildDays(punches: Punch[], userId: string | string[]): DayRecord[] {
+  const ids = new Set(Array.isArray(userId) ? userId : [userId]);
   const byDay = new Map<string, string[]>();
   for (const p of punches) {
-    if (p.device_user_id !== userId) continue;
+    if (!ids.has(p.device_user_id)) continue;
     const { date, time } = riyadh(p.punched_at);
     byDay.set(date, [...(byDay.get(date) ?? []), time]);
   }
@@ -48,15 +52,18 @@ export function workDays(month: string, today = riyadh(new Date().toISOString())
 }
 
 export function summarize(e: Employee, punches: Punch[], month: string) {
-  const days = e.deviceUserId ? buildDays(punches, e.deviceUserId).filter((d) => d.date.startsWith(month)) : [];
+  // Remote phone punches use the device id when set, otherwise the employee id.
+  const ids = [e.id, ...(e.deviceUserId ? [e.deviceUserId] : [])];
+  const days = buildDays(punches, ids).filter((d) => d.date.startsWith(month));
+  const linked = !!e.deviceUserId || !!e.siteId || days.length > 0;
   const wd = workDays(month);
   const present = new Set(days.map((d) => d.date));
   return {
     days,
     present: days.length,
     late: days.filter((d) => d.late).length,
-    absent: e.deviceUserId ? wd.filter((d) => !present.has(d)).length : 0,
-    linked: !!e.deviceUserId,
+    absent: linked ? wd.filter((d) => !present.has(d)).length : 0,
+    linked,
   };
 }
 

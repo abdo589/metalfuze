@@ -5,6 +5,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -133,6 +134,15 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => { initializeLanguage(); initializeSidebar(); }, []);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Personal phone check-in links are opened by employees without accounts.
+  if (pathname.startsWith("/checkin/")) return (
+    <>
+      <Outlet />
+      <Toaster position="top-center" richColors />
+    </>
+  );
 
   return (
     <QueryClientProvider client={queryClient}>

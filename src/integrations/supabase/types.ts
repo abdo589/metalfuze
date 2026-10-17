@@ -43,24 +43,42 @@ export type Database = {
           created_at: string
           device_sn: string
           device_user_id: string
+          distance_m: number | null
           id: string
+          lat: number | null
+          lng: number | null
+          photo_path: string | null
           punched_at: string
+          site_name: string | null
+          source: string
           status: number | null
         }
         Insert: {
           created_at?: string
           device_sn: string
           device_user_id: string
+          distance_m?: number | null
           id?: string
+          lat?: number | null
+          lng?: number | null
+          photo_path?: string | null
           punched_at: string
+          site_name?: string | null
+          source?: string
           status?: number | null
         }
         Update: {
           created_at?: string
           device_sn?: string
           device_user_id?: string
+          distance_m?: number | null
           id?: string
+          lat?: number | null
+          lng?: number | null
+          photo_path?: string | null
           punched_at?: string
+          site_name?: string | null
+          source?: string
           status?: number | null
         }
         Relationships: []
@@ -70,6 +88,7 @@ export type Database = {
           active: boolean
           allowances: number
           base: number
+          checkin_token: string | null
           created_at: string
           deductions: number
           dept: string
@@ -80,11 +99,13 @@ export type Database = {
           paid_months: string[]
           project: string
           role: string
+          site_id: string | null
         }
         Insert: {
           active?: boolean
           allowances?: number
           base?: number
+          checkin_token?: string | null
           created_at?: string
           deductions?: number
           dept?: string
@@ -95,11 +116,13 @@ export type Database = {
           paid_months?: string[]
           project?: string
           role?: string
+          site_id?: string | null
         }
         Update: {
           active?: boolean
           allowances?: number
           base?: number
+          checkin_token?: string | null
           created_at?: string
           deductions?: number
           dept?: string
@@ -110,8 +133,17 @@ export type Database = {
           paid_months?: string[]
           project?: string
           role?: string
+          site_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "employees_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "work_sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -128,6 +160,33 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      work_sites: {
+        Row: {
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          radius_m: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          radius_m?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          radius_m?: number
         }
         Relationships: []
       }

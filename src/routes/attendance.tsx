@@ -10,6 +10,7 @@ import { useCanEdit } from "@/lib/permissions";
 import { monthKey, monthLabel, usePayroll } from "@/lib/payroll";
 import { LATE_AFTER, WORK_START, riyadh, summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
+import { RemoteLinks, SelfieThumb, WorkSites, useSites } from "@/components/RemoteAttendance";
 
 export const Route = createFileRoute("/attendance")({
   head: () => ({
@@ -39,6 +40,7 @@ function Attendance() {
   const [month, setMonth] = useState(monthKey());
   const punches = useMonthPunches(month);
   const [devices, setDevices] = useState<Device[]>([]);
+  const { sites, reload: reloadSites } = useSites();
   const [selected, setSelected] = useState<string | null>(null);
   const today = riyadh(new Date().toISOString()).date;
 
@@ -108,7 +110,7 @@ function Attendance() {
               return (
                 <tr key={e.id} onClick={() => setSelected(e.id)} className="cursor-pointer border-b border-border/60 last:border-0 hover:bg-muted/40">
                   <td className="p-3 font-medium">{e.name}<div className="text-xs text-muted-foreground">{e.role}</div></td>
-                  <td className="p-3">{e.deviceUserId || <span className="text-xs text-muted-foreground">{t("غير مربوط بالبصمة")}</span>}</td>
+                  <td className="p-3">{e.deviceUserId || (e.siteId ? <span className="text-xs">{t("جوال")}</span> : <span className="text-xs text-muted-foreground">{t("غير مربوط بالبصمة")}</span>)}</td>
                   <td className="p-3">{d ? <Badge variant="outline" className={d.late ? "border-warning/30 bg-warning/15 text-warning" : "border-success/30 bg-success/15 text-success"}>{d.in}{d.out ? ` → ${d.out}` : ""}</Badge> : "—"}</td>
                   <td className="p-3 font-bold">{s.present}</td>
                   <td className="p-3 text-warning">{s.late}</td>
@@ -123,6 +125,24 @@ function Attendance() {
       {sel && (
         <section className="rounded-xl border border-border bg-card p-4">
           <h2 className="mb-3 font-display text-lg font-bold">{sel.e.name} — {monthLabel(month)}</h2>
+          {(() => {
+            const ids = new Set([sel.e.id, sel.e.deviceUserId].filter(Boolean));
+            const list = punches.filter((p) => ids.has(p.device_user_id) && riyadh(p.punched_at).date.startsWith(month)).reverse();
+            return list.length > 0 && (
+              <div className="mb-4 space-y-2">
+                {list.slice(0, 40).map((p) => (
+                  <div key={p.punched_at + p.device_user_id} className="flex items-center gap-3 rounded-lg border border-border p-2 text-xs">
+                    {p.photo_path && <SelfieThumb path={p.photo_path} />}
+                    <div className="flex-1">
+                      <div className="font-medium">{riyadh(p.punched_at).date} · {riyadh(p.punched_at).time}</div>
+                      {p.source === "remote" && <div className="text-muted-foreground">{p.status === 1 ? t("انصراف") : t("حضور")} · {p.site_name} · {p.distance_m} {t("متر")}</div>}
+                    </div>
+                    <Badge variant="outline">{p.source === "remote" ? t("جوال") : t("جهاز")}</Badge>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
           {sel.s.days.length === 0 ? <p className="text-sm text-muted-foreground">{t("لا توجد بصمات")}</p> : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
               {sel.s.days.map((d) => (
@@ -136,6 +156,9 @@ function Attendance() {
           )}
         </section>
       )}
+
+      <WorkSites canEdit={canEdit} sites={sites} reload={reloadSites} />
+      <RemoteLinks canEdit={canEdit} employees={employees} sites={sites} />
 
       <section className="space-y-3 rounded-xl border border-border bg-card p-4">
         <h2 className="font-display text-lg font-bold">{t("أجهزة البصمة")}</h2>

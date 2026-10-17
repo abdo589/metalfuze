@@ -24,6 +24,19 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
+  "تسجيل حضور": "Check in", "تسجيل انصراف": "Check out", "تسجيل حضور العمال": "Worker check-in", "جارٍ تحديد موقعك…": "Getting your location…", "جارٍ الإرسال…": "Sending…",
+  "سيُطلب منك التقاط صورة سيلفي وتحديد موقعك": "You'll take a selfie and share your location", "الموقع غير متاح على هذا الجهاز": "Location isn't available on this device",
+  "اسمح للموقع بالوصول إلى مكانك ثم حاول مرة أخرى": "Allow location access, then try again", "أنت على بعد": "You are", "متر من موقع": "m from", "متر": "m",
+  "لم يتم تحديد موقع عمل لهذا الموظف — تواصل مع الإدارة": "No work site is set for this employee — contact management", "الصورة غير صالحة، التقط صورة جديدة": "Photo not valid, take a new one",
+  "تعذر تحديد الموقع": "Couldn't get location", "هذا الرابط غير صالح أو تم إيقافه": "This link is invalid or disabled", "الموظف غير نشط": "Employee is inactive", "تعذر الحفظ، حاول مرة أخرى": "Couldn't save, try again",
+  "تم تسجيل الحضور": "Checked in", "تم تسجيل الانصراف": "Checked out", "لم يتم تحديد موقع العمل": "No work site set", "مواقع العمل": "Work sites",
+  "الحضور من الجوال يُقبل فقط داخل المسافة المسموحة من موقع عمل الموظف.": "Phone check-ins are accepted only within the allowed distance of the employee's site.",
+  "لا توجد مواقع بعد": "No sites yet", "اكتب اسم الموقع والإحداثيات": "Enter site name and coordinates", "تمت إضافة الموقع": "Site added", "اسم الموقع (مثلاً: مكتب الإدارة)": "Site name (e.g. Head office)",
+  "الإحداثيات أو رابط خرائط جوجل": "Coordinates or Google Maps link", "المسافة المسموحة (متر)": "Allowed distance (m)", "موقعي الحالي": "My location", "إضافة موقع": "Add site",
+  "الحضور من الجوال": "Phone check-in", "لكل موظف رابط شخصي يفتحه من جواله لتسجيل الحضور والانصراف بصورة سيلفي وموقعه.": "Each employee has a personal link to check in and out from their phone with a selfie and location.",
+  "موقع العمل": "Work site", "الرابط الشخصي": "Personal link", "— بدون موقع —": "— No site —", "الرابط موقوف": "Link disabled", "تم نسخ الرابط": "Link copied", "نسخ": "Copy",
+  "رابط تسجيل الحضور الخاص بك": "Your attendance check-in link", "إنشاء رابط جديد؟ الرابط القديم سيتوقف.": "Create a new link? The old one will stop working.", "رابط جديد": "New link",
+  "جوال": "Phone", "جهاز": "Device", "انصراف": "Out", "اختر العامل، ثم التقط صورته من موقع العمل": "Pick the worker, then take their photo at the site", "اختر العامل…": "Choose worker…",
   "تم تحصيله": "Collected", "تم دفعه للموردين": "Paid to suppliers", "المتبقي للتحصيل": "Left to collect", "صافي المشروع": "Project net",
   "قيمة العقود": "Contract value",
   "تحميل الفاتورة": "Download invoice",

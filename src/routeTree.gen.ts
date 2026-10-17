@@ -17,11 +17,14 @@ import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as ProjectReportsRouteImport } from './routes/project-reports'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as UsersRouteImport } from './routes/users'
+import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
+import { Route as CheckinTokenRouteImport } from './routes/checkin.$token'
 import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
 import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
+import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -63,6 +66,11 @@ const UsersRoute = UsersRouteImport.update({
   path: '/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkersCheckinRoute = WorkersCheckinRouteImport.update({
+  id: '/workers-checkin',
+  path: '/workers-checkin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -78,6 +86,11 @@ const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
   path: '/assistant/$threadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckinTokenRoute = CheckinTokenRouteImport.update({
+  id: '/checkin/$token',
+  path: '/checkin/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IclockCdataRoute = IclockCdataRouteImport.update({
   id: '/iclock/cdata',
   path: '/iclock/cdata',
@@ -86,6 +99,11 @@ const IclockCdataRoute = IclockCdataRouteImport.update({
 const IclockGetrequestRoute = IclockGetrequestRouteImport.update({
   id: '/iclock/getrequest',
   path: '/iclock/getrequest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCheckinRoute = ApiPublicCheckinRouteImport.update({
+  id: '/api/public/checkin',
+  path: '/api/public/checkin',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -98,11 +116,14 @@ export interface FileRoutesByFullPath {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/users': typeof UsersRoute
+  '/workers-checkin': typeof WorkersCheckinRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
+  '/api/public/checkin': typeof ApiPublicCheckinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -113,11 +134,14 @@ export interface FileRoutesByTo {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/users': typeof UsersRoute
+  '/workers-checkin': typeof WorkersCheckinRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant': typeof AssistantIndexRoute
+  '/api/public/checkin': typeof ApiPublicCheckinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -129,11 +153,14 @@ export interface FileRoutesById {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/users': typeof UsersRoute
+  '/workers-checkin': typeof WorkersCheckinRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
+  '/api/public/checkin': typeof ApiPublicCheckinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -146,11 +173,14 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/users'
+    | '/workers-checkin'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/checkin/$token'
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/assistant/'
+    | '/api/public/checkin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -161,11 +191,14 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/users'
+    | '/workers-checkin'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/checkin/$token'
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/assistant'
+    | '/api/public/checkin'
   id:
     | '__root__'
     | '/'
@@ -176,11 +209,14 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/users'
+    | '/workers-checkin'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/checkin/$token'
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/assistant/'
+    | '/api/public/checkin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -192,11 +228,14 @@ export interface RootRouteChildren {
   ProjectReportsRoute: typeof ProjectReportsRoute
   ReportRoute: typeof ReportRoute
   UsersRoute: typeof UsersRoute
+  WorkersCheckinRoute: typeof WorkersCheckinRoute
   ApiChatRoute: typeof ApiChatRoute
   AssistantThreadIdRoute: typeof AssistantThreadIdRoute
+  CheckinTokenRoute: typeof CheckinTokenRoute
   IclockCdataRoute: typeof IclockCdataRoute
   IclockGetrequestRoute: typeof IclockGetrequestRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
+  ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -257,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workers-checkin': {
+      id: '/workers-checkin'
+      path: '/workers-checkin'
+      fullPath: '/workers-checkin'
+      preLoaderRoute: typeof WorkersCheckinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -278,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistantThreadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkin/$token': {
+      id: '/checkin/$token'
+      path: '/checkin/$token'
+      fullPath: '/checkin/$token'
+      preLoaderRoute: typeof CheckinTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/iclock/cdata': {
       id: '/iclock/cdata'
       path: '/iclock/cdata'
@@ -292,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IclockGetrequestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/checkin': {
+      id: '/api/public/checkin'
+      path: '/api/public/checkin'
+      fullPath: '/api/public/checkin'
+      preLoaderRoute: typeof ApiPublicCheckinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -304,11 +364,14 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectReportsRoute: ProjectReportsRoute,
   ReportRoute: ReportRoute,
   UsersRoute: UsersRoute,
+  WorkersCheckinRoute: WorkersCheckinRoute,
   ApiChatRoute: ApiChatRoute,
   AssistantThreadIdRoute: AssistantThreadIdRoute,
+  CheckinTokenRoute: CheckinTokenRoute,
   IclockCdataRoute: IclockCdataRoute,
   IclockGetrequestRoute: IclockGetrequestRoute,
   AssistantIndexRoute: AssistantIndexRoute,
+  ApiPublicCheckinRoute: ApiPublicCheckinRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

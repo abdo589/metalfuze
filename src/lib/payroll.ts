@@ -16,6 +16,8 @@ export type Employee = {
   active: boolean;
   paidMonths: string[];
   deviceUserId?: string; // رقم الموظف في جهاز البصمة
+  siteId?: string | null; // موقع العمل للحضور عن بعد (يُدار من صفحة الحضور)
+  checkinToken?: string | null;
 };
 
 export const netSalary = (e: Employee) => (e.base || 0) + (e.allowances || 0) - (e.deductions || 0);
@@ -31,11 +33,12 @@ export const monthLabel = (key: string) => {
 type Row = {
   id: string; name: string; role: string; dept: string; project: string; base: number; allowances: number;
   deductions: number; joined: string | null; active: boolean; paid_months: string[]; device_user_id: string | null;
+  site_id?: string | null; checkin_token?: string | null;
 };
 const fromRow = (r: Row): Employee => ({
   id: r.id, name: r.name, role: r.role, dept: r.dept, project: r.project, base: Number(r.base),
   allowances: Number(r.allowances), deductions: Number(r.deductions), joined: r.joined, active: r.active,
-  paidMonths: r.paid_months ?? [], deviceUserId: r.device_user_id ?? "",
+  paidMonths: r.paid_months ?? [], deviceUserId: r.device_user_id ?? "", siteId: r.site_id ?? null, checkinToken: r.checkin_token ?? null,
 });
 const toRow = (e: Employee): Row => ({
   id: e.id, name: e.name, role: e.role, dept: e.dept, project: e.project, base: e.base, allowances: e.allowances,
