@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { projectStore } from "./projects";
 
 export type TxnType = "collect" | "pay";
 export type Txn = {
@@ -48,10 +49,13 @@ export const txnStore = {
   all: () => load(),
   upsert(x: Txn) {
     const list = load();
+    const old = list.find((y) => y.id === x.id);
+    if (old) syncPaid(old, -1);
+    syncPaid(x, 1);
     const i = list.findIndex((y) => y.id === x.id);
     save(i >= 0 ? list.map((y) => (y.id === x.id ? x : y)) : [...list, { ...x, number: x.number || nextNumber(list, x.type) }]);
   },
-  remove(id: string) { save(load().filter((x) => x.id !== id)); },
+  remove(id: string) { const old = load().find((x) => x.id === id); if (old) syncPaid(old, -1); save(load().filter((x) => x.id !== id)); },
 };
 
 export function useTransactions() {
@@ -63,4 +67,11 @@ export function useTransactions() {
     return () => { listeners.delete(l); };
   }, []);
   return list;
+}
+
+/** A client collection adds to (or removes from) the project's "paid" amount on the dashboard. */
+function syncPaid(x: Txn, sign: 1 | -1) {
+  if (x.type !== "collect") return;
+  const p = projectStore.all().find((q) => q.name.trim() === x.project.trim());
+  if (p) projectStore.upsert({ ...p, paid: Math.max(0, p.paid + sign * x.amount) });
 }
