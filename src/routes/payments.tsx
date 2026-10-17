@@ -31,7 +31,6 @@ export const Route = createFileRoute("/payments")({
 });
 
 const sar = (n: number) => `${fmtMoney(n)} ${t("ر.س")}`;
-const sarBi = (n: number) => `${fmtMoney(n)} SAR`;
 const fmtDate = (d: string) => new Date(d).toLocaleDateString(locale(), { dateStyle: "medium" });
 const typeLabel = (x: TxnType) => (x === "collect" ? t("تحصيل") : t("دفع"));
 
