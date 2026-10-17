@@ -160,6 +160,16 @@ function Payroll() {
             onClick={() => { payrollStore.payAll(month); toast.success(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}`); }}
           >
             <CheckCircle2 /> {t("اعتماد صرف الشهر للجميع")}</Button>}
+          {canEdit && <Button
+            variant="outline"
+            className="text-destructive hover:text-destructive"
+            onClick={() => {
+              if (!window.confirm(t("هل تريد حذف جميع الموظفين نهائيًا؟"))) return;
+              payrollStore.clearAll();
+              toast.success(t("تم حذف جميع الموظفين"));
+            }}
+          >
+            <Trash2 /> {t("حذف كل الموظفين")}</Button>}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">

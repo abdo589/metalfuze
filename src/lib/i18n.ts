@@ -109,6 +109,8 @@ export const translations: Record<string, string> = {
   "تصدير Excel": "Export Excel", "إجمالي الرواتب الصافية": "Total Net Salaries", "المصروف من الرواتب": "Paid Salaries",
   "تفاصيل الموظفين": "Employee Details", "صرف العقد": "Contract Spending", "الراتب الصافي": "Net Salary",
   "حالة الراتب": "Payment Status", "مدفوع": "Paid", "غير مدفوع": "Unpaid", "إدارة عامة": "General Administration",
+  "حذف كل الموظفين": "Delete All Employees", "هل تريد حذف جميع الموظفين نهائيًا؟": "Delete all employees permanently?",
+  "تم حذف جميع الموظفين": "All employees deleted",
   "إدارة عامة (بدون مشروع)": "General Administration (No Project)", "تكلفة الرواتب حسب المشروع": "Payroll Cost by Project",
   "عدد الموظفين": "Employee Count", "إجمالي الرواتب": "Total Payroll", "لوحة الميزانية": "Budget Overview",
   "تتحدث تلقائياً من بيانات المشاريع والرواتب": "Updated from project and payroll data",
