@@ -1,15 +1,14 @@
 import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, Banknote, CircleAlert, FileDown, FileSpreadsheet, FolderKanban, BrainCircuit, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
+import { AlertTriangle, Banknote, CircleAlert, FileDown, FileSpreadsheet, FolderKanban, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ProjectDialog } from "@/components/ProjectDialog";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { PdfButton } from "@/components/PdfButton";
 import {
   daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
@@ -120,22 +119,11 @@ function Dashboard() {
         <div className="flex flex-wrap justify-center gap-2 print:hidden">
           <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ""; }} />
-          <ThemeToggle />
-          <Button variant="outline" asChild>
-            <Link to="/assistant"><BrainCircuit /> {t("المستشار الذكي")}</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/payroll"><Banknote /> {t("الرواتب")}</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/budget"><Banknote /> {t("الميزانية")}</Link>
-          </Button>
           {canEdit && <Button variant="outline" onClick={() => fileRef.current?.click()}>
             <FileSpreadsheet /> {t("تحديث من ملف Excel")}</Button>}
           <Button variant="outline" onClick={async () => { try { await exportExcel(projects); toast.success(t("تم تصدير تقرير Excel")); } catch { toast.error(t("تعذر التصدير")); } }}>
             <FileDown /> {t("تصدير تقرير Excel")}</Button>
           <PdfButton />
-          <Button variant="outline" asChild><Link to="/project-reports"><FileSpreadsheet />{t("تقارير المشاريع")}</Link></Button>
           {canEdit && <Button onClick={() => { setEditing(null); setOpen(true); }}>
             <Plus /> {t("مشروع جديد")}</Button>}
         </div>

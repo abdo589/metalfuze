@@ -1,8 +1,7 @@
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { LogOut, Lock, Users } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { LogOut, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,6 @@ export function AuthGate({ children }: { children: ReactNode }) {
     <>
       <div className="flex items-center justify-end gap-2 px-4 pt-3 text-sm text-muted-foreground print:hidden sm:px-6">
         <span>{t("مرحباً،")}<b className="text-foreground">{name}</b></span>
-        <Button size="sm" variant="ghost" asChild><Link to="/users"><Users /> {t("المستخدمون")}</Link></Button>
         <Button size="sm" variant="ghost" onClick={() => supabase.auth.signOut()}><LogOut /> {t("خروج")}</Button>
       </div>
       {children}

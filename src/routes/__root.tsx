@@ -17,7 +17,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { themeScript } from "../lib/theme";
 import { initializeLanguage, useLanguage } from "@/lib/i18n";
-import { LanguageToggle } from "@/components/LanguageToggle";
+import { AppSidebar } from "@/components/AppSidebar";
 
 function NotFoundComponent() {
   return (
@@ -133,12 +133,17 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex justify-end px-4 pt-3 print:hidden"><LanguageToggle /></div>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AuthGate>
         <div data-report-document>
         <PrintLetterhead />
-        <Outlet />
+        <div className="flex min-h-screen flex-col lg:flex-row">
+          <AppSidebar />
+          <main className="min-w-0 flex-1">
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </main>
+        </div>
         </div>
       </AuthGate>
       <Toaster position="top-center" richColors />
