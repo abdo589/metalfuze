@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Make the side menu collapsible from an icon (hide/show, persisted per device, desktop rail + mobile drawer, content reflows 1040↔1232px; verified in browser).
+
 - [x] Add branded weekly/monthly/yearly project reports with shared dashboard data and PDF/Excel exports; period controls, signed-in downloads, six PDF pages, Excel logos/totals and formula recalculation verified; wrapping and print spacing corrected.
 
 - [x] Add Arabic/English selection throughout the site and exports; rename projects dashboard to METAL FUZE PROJECTS (signed-in switching, persistence, six pages, PDF and Excel exports verified).

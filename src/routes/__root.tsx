@@ -16,6 +16,7 @@ import { AuthGate } from "@/components/AuthGate";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { themeScript } from "../lib/theme";
+import { initializeSidebar, sidebarScript } from "../lib/sidebar";
 import { initializeLanguage, useLanguage } from "@/lib/i18n";
 import { AppSidebar } from "@/components/AppSidebar";
 
@@ -118,6 +119,8 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
         {/* Applies the saved light/dark choice before first paint. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Applies the saved sidebar show/hide choice before first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: sidebarScript }} />
       </head>
       <body>
         {children}
@@ -129,7 +132,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => { initializeLanguage(); }, []);
+  useEffect(() => { initializeLanguage(); initializeSidebar(); }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

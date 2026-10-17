@@ -185,6 +185,10 @@
   display: block;
 }
 
+/* The side rail collapses to a single icon; the pre-paint script sets data-sidebar. */
+html[data-sidebar="hidden"] .sidebar-rail { display: none !important; }
+html:not([data-sidebar="hidden"]) .sidebar-rail-mini { display: none !important; }
+
 html[dir="ltr"] .text-right { text-align: left; }
 html[dir="ltr"] [data-report-document] td .flex { flex-wrap: wrap; }
 
