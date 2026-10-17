@@ -19,6 +19,8 @@ import { Route as UsersRouteImport } from './routes/users'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
+import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
+import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +72,16 @@ const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
   path: '/assistant/$threadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IclockCdataRoute = IclockCdataRouteImport.update({
+  id: '/iclock/cdata',
+  path: '/iclock/cdata',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IclockGetrequestRoute = IclockGetrequestRouteImport.update({
+  id: '/iclock/getrequest',
+  path: '/iclock/getrequest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -81,6 +93,8 @@ export interface FileRoutesByFullPath {
   '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/iclock/cdata': typeof IclockCdataRoute
+  '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +107,8 @@ export interface FileRoutesByTo {
   '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/iclock/cdata': typeof IclockCdataRoute
+  '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant': typeof AssistantIndexRoute
 }
 export interface FileRoutesById {
@@ -106,6 +122,8 @@ export interface FileRoutesById {
   '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/iclock/cdata': typeof IclockCdataRoute
+  '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +138,8 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/iclock/cdata'
+    | '/iclock/getrequest'
     | '/assistant/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +152,8 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/iclock/cdata'
+    | '/iclock/getrequest'
     | '/assistant'
   id:
     | '__root__'
@@ -144,6 +166,8 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/iclock/cdata'
+    | '/iclock/getrequest'
     | '/assistant/'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +181,8 @@ export interface RootRouteChildren {
   UsersRoute: typeof UsersRoute
   ApiChatRoute: typeof ApiChatRoute
   AssistantThreadIdRoute: typeof AssistantThreadIdRoute
+  IclockCdataRoute: typeof IclockCdataRoute
+  IclockGetrequestRoute: typeof IclockGetrequestRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
 }
 
@@ -232,6 +258,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistantThreadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/iclock/cdata': {
+      id: '/iclock/cdata'
+      path: '/iclock/cdata'
+      fullPath: '/iclock/cdata'
+      preLoaderRoute: typeof IclockCdataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/iclock/getrequest': {
+      id: '/iclock/getrequest'
+      path: '/iclock/getrequest'
+      fullPath: '/iclock/getrequest'
+      preLoaderRoute: typeof IclockGetrequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -245,6 +285,8 @@ const rootRouteChildren: RootRouteChildren = {
   UsersRoute: UsersRoute,
   ApiChatRoute: ApiChatRoute,
   AssistantThreadIdRoute: AssistantThreadIdRoute,
+  IclockCdataRoute: IclockCdataRoute,
+  IclockGetrequestRoute: IclockGetrequestRoute,
   AssistantIndexRoute: AssistantIndexRoute,
 }
 export const routeTree = rootRouteImport
