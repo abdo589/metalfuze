@@ -45,7 +45,7 @@ export async function recordRemotePunch(input: CheckinInput): Promise<CheckinRes
 
   const { error } = await db.from("attendance_logs").insert({
     device_sn: "REMOTE", device_user_id: userId, punched_at: now.toISOString(), status, source: "remote",
-    lat: input.lat, lng: input.lng, distance_m: check.distance, photo_path: path, site_name: site.name,
+    lat: input.lat, lng: input.lng, distance_m: siteRow ? check.distance : null, photo_path: path, site_name: siteRow ? site.name : null,
   });
   if (error) { console.error("remote punch insert failed", error); return { ok: false, error: "save" }; }
   return { ok: true, time: now.toISOString(), distance: check.distance, site: site.name };
