@@ -35,9 +35,9 @@ export function MonthlySheet({ rows, month, today, onSelect }: { rows: Row[]; mo
                 <div>{d.n}</div><div className="font-normal">{d.wd}</div>
               </th>
             ))}
-            <th className="w-8 border border-border p-0.5">{t("حضور")}</th>
-            <th className="w-8 border border-border p-0.5">{t("تأخير")}</th>
-            <th className="w-8 border border-border p-0.5">{t("غياب")}</th>
+            <th className="w-10 border border-border p-0.5" style={{ whiteSpace: "nowrap" }}>{t("حضور")}</th>
+            <th className="w-10 border border-border p-0.5" style={{ whiteSpace: "nowrap" }}>{t("تأخير")}</th>
+            <th className="w-10 border border-border p-0.5" style={{ whiteSpace: "nowrap" }}>{t("غياب")}</th>
           </tr>
         </thead>
         <tbody>
@@ -53,7 +53,7 @@ export function MonthlySheet({ rows, month, today, onSelect }: { rows: Row[]; mo
                   const cls = r ? (r.late ? "bg-warning/25" : "bg-success/20") : d.off ? "bg-muted" : absent ? "bg-destructive/20 text-destructive" : "";
                   return (
                     <td key={d.iso} className={`border border-border px-0 py-0.5 text-center ${cls}`}>
-                      {r ? <><div>{r.in}</div>{r.out && <div className="text-muted-foreground">{r.out}</div>}</> : absent ? t("غ") : ""}
+                      {r ? <><div style={{ whiteSpace: "nowrap", fontSize: 7, letterSpacing: "-0.02em" }}>{r.in}</div>{r.out && <div className="text-muted-foreground" style={{ whiteSpace: "nowrap", fontSize: 7, letterSpacing: "-0.02em" }}>{r.out}</div>}</> : absent ? t("غ") : ""}
                     </td>
                   );
                 })}
