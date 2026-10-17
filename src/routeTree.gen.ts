@@ -20,6 +20,7 @@ import { Route as UsersRouteImport } from './routes/users'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
+import { Route as CheckinTokenRouteImport } from './routes/checkin.$token'
 import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
 import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
 import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
@@ -79,6 +80,11 @@ const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
   path: '/assistant/$threadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckinTokenRoute = CheckinTokenRouteImport.update({
+  id: '/checkin/$token',
+  path: '/checkin/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IclockCdataRoute = IclockCdataRouteImport.update({
   id: '/iclock/cdata',
   path: '/iclock/cdata',
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant': typeof AssistantIndexRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/users': typeof UsersRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/checkin/$token'
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/assistant/'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/checkin/$token'
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/assistant'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/chat'
     | '/assistant/$threadId'
+    | '/checkin/$token'
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/assistant/'
@@ -206,6 +218,7 @@ export interface RootRouteChildren {
   UsersRoute: typeof UsersRoute
   ApiChatRoute: typeof ApiChatRoute
   AssistantThreadIdRoute: typeof AssistantThreadIdRoute
+  CheckinTokenRoute: typeof CheckinTokenRoute
   IclockCdataRoute: typeof IclockCdataRoute
   IclockGetrequestRoute: typeof IclockGetrequestRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistantThreadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkin/$token': {
+      id: '/checkin/$token'
+      path: '/checkin/$token'
+      fullPath: '/checkin/$token'
+      preLoaderRoute: typeof CheckinTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/iclock/cdata': {
       id: '/iclock/cdata'
       path: '/iclock/cdata'
@@ -326,6 +346,7 @@ const rootRouteChildren: RootRouteChildren = {
   UsersRoute: UsersRoute,
   ApiChatRoute: ApiChatRoute,
   AssistantThreadIdRoute: AssistantThreadIdRoute,
+  CheckinTokenRoute: CheckinTokenRoute,
   IclockCdataRoute: IclockCdataRoute,
   IclockGetrequestRoute: IclockGetrequestRoute,
   AssistantIndexRoute: AssistantIndexRoute,
