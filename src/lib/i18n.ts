@@ -26,6 +26,12 @@ export function initializeLanguage() {
 export const translations: Record<string, string> = {
   "تم تحصيله": "Collected", "تم دفعه للموردين": "Paid to suppliers", "المتبقي للتحصيل": "Left to collect", "صافي المشروع": "Project net",
   "قيمة العقود": "Contract value",
+  "تحميل الفاتورة": "Download invoice",
+  "فاتورة مشروع": "Project Invoice",
+  "البند": "Item",
+  "نسبة التحصيل": "Collection rate",
+  "سجل الحركات": "Transaction history",
+  "الختم والاعتماد": "Stamp & approval",
   "الدفع والتحصيل": "Payments & Collections", "تحصيل من العملاء ودفع للموردين لكل مسؤول مشروع": "Client collections and supplier payments per project manager",
   "كل المسؤولين": "All managers", "حركة جديدة": "New transaction", "تعديل حركة": "Edit transaction", "إجمالي التحصيل": "Total collected",
   "إجمالي الدفع": "Total paid", "الرصيد": "Balance", "حسب مسؤول المشروع": "By project manager", "عدد الحركات": "Transactions",

@@ -32,7 +32,7 @@ const sar = (n: number) => `${fmtMoney(n)} ${t("ر.س")}`;
 const fmtDate = (d: string) => new Date(d).toLocaleDateString(locale(), { dateStyle: "medium" });
 const typeLabel = (x: TxnType) => (x === "collect" ? t("تحصيل") : t("دفع"));
 
-type Doc = { kind: "invoice"; txn: Txn } | { kind: "statement"; manager: string };
+type Doc = { kind: "invoice"; txn: Txn } | { kind: "statement"; manager: string } | { kind: "project"; id: string };
 
 function Payments() {
   useLanguage();
@@ -59,7 +59,9 @@ function Payments() {
 
   useEffect(() => {
     if (!doc || !paperRef.current) return;
-    const name = doc.kind === "invoice" ? `Metal-Fuze-${doc.txn.number}.pdf` : `Metal-Fuze-Statement-${doc.manager}.pdf`;
+    const name = doc.kind === "invoice" ? `Metal-Fuze-${doc.txn.number}.pdf`
+      : doc.kind === "project" ? `Metal-Fuze-Invoice-${projects.find((p) => p.id === doc.id)?.code || doc.id}.pdf`
+      : `Metal-Fuze-Statement-${doc.manager}.pdf`;
     import("@/lib/pdf").then(({ exportElementPdf }) => exportElementPdf(paperRef.current!, name))
       .then(() => toast.success(t("تم حفظ PDF")))
       .catch(() => toast.error(t("تعذر حفظ PDF، حاول مرة أخرى")))
@@ -174,7 +176,7 @@ function Payments() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-sm">
             <thead><tr className="border-b border-border text-xs text-muted-foreground">
-              {["المشروع", "مدير المشروع", "قيمة العقد", "تم تحصيله", "تم دفعه للموردين", "المتبقي للتحصيل", "صافي المشروع"].map((h) =>
+              {["المشروع", "مدير المشروع", "قيمة العقد", "تم تحصيله", "تم دفعه للموردين", "المتبقي للتحصيل", "صافي المشروع", "الفاتورة"].map((h) =>
                 <th key={h} className="p-3 text-start font-medium">{t(h)}</th>)}
             </tr></thead>
             <tbody>
@@ -189,6 +191,7 @@ function Payments() {
                     <td className="p-3 text-destructive">{sar(s.paid)}</td>
                     <td className="p-3 font-bold">{sar(p.contract - p.paid)}</td>
                     <td className="p-3">{sar(p.paid - s.paid)}</td>
+                    <td className="p-3"><Button size="sm" disabled={!!doc} onClick={() => setDoc({ kind: "project", id: p.id })}><FileDown /> {t("تحميل الفاتورة")}</Button></td>
                   </tr>
                 );
               })}
@@ -243,7 +246,8 @@ function Payments() {
         <div style={{ position: "fixed", left: -10000, top: 0 }} aria-hidden>
           <div ref={paperRef} className="invoice-paper" style={{ width: 794 }}
             dir={locale() === "en-GB" ? "ltr" : "rtl"}>
-            {doc.kind === "invoice" ? <InvoicePaper x={doc.txn} /> :
+            {doc.kind === "project" ? (() => { const p = projects.find((q) => q.id === doc.id)!; return <ProjectInvoice p={p} list={txns.filter((x) => x.project.trim() === p.name.trim())} />; })() :
+             doc.kind === "invoice" ? <InvoicePaper x={doc.txn} /> :
               <StatementPaper m={doc.manager} list={txns.filter((x) => x.manager === doc.manager).sort((a, b) => a.date.localeCompare(b.date))} />}
           </div>
         </div>
@@ -368,5 +372,60 @@ function TxnDialog({ open, onOpenChange, txn, managers, projects }: {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ProjectInvoice({ p, list }: { p: { name: string; code: string; manager: string; owner: string; contract: number; paid: number; progress: number }; list: Txn[] }) {
+  const sup = list.filter((x) => x.type === "pay").reduce((a, x) => a + x.amount, 0);
+  const remaining = p.contract - p.paid;
+  const pct = p.contract ? Math.round((p.paid / p.contract) * 100) : 0;
+  const no = `INV-${p.code || "000"}-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}`;
+  return (
+    <div className="space-y-6 p-10" style={{ minHeight: 1080 }}>
+      <PaperHeader title={t("فاتورة مشروع")} number={no} />
+      <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="inv-border rounded-lg border p-4 space-y-1">
+          <div className="inv-muted text-xs">{t("المشروع")}</div>
+          <div className="inv-accent text-lg font-bold">{p.name}</div>
+          <div>{t("رمز المشروع")}: <span dir="ltr">{p.code || "—"}</span></div>
+        </div>
+        <div className="inv-border rounded-lg border p-4 space-y-1">
+          <div className="inv-muted text-xs">{t("مدير المشروع")}</div>
+          <div className="text-lg font-bold">{p.manager || "—"}</div>
+          <div>{t("نسبة الإنجاز")}: {Math.round(p.progress * 100)}%</div>
+        </div>
+      </div>
+      <table className="w-full text-sm">
+        <thead><tr className="inv-head"><th className="p-3 text-start">{t("البند")}</th><th className="p-3 text-end">{t("المبلغ")}</th></tr></thead>
+        <tbody>
+          {([[t("قيمة العقد"), p.contract], [t("تم تحصيله"), p.paid], [t("تم دفعه للموردين"), sup]] as [string, number][]).map(([k, v]) => (
+            <tr key={k} className="inv-border inv-zebra border-b"><td className="p-3">{k}</td><td className="p-3 text-end font-medium">{sar(v)}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="inv-head flex items-center justify-between rounded-lg p-5">
+        <span className="text-lg font-bold">{t("المتبقي للتحصيل")}</span>
+        <span className="text-3xl font-extrabold">{sar(remaining)}</span>
+      </div>
+      <div className="inv-muted text-sm">{t("نسبة التحصيل")}: {pct}%</div>
+      {list.length > 0 && (
+        <div>
+          <div className="inv-accent mb-2 font-bold">{t("سجل الحركات")}</div>
+          <table className="w-full text-xs">
+            <thead><tr className="inv-head">{["رقم الفاتورة", "التاريخ", "النوع", "العميل / المورد", "المبلغ"].map((h) => <th key={h} className="p-2 text-start">{t(h)}</th>)}</tr></thead>
+            <tbody>{list.map((x) => (
+              <tr key={x.id} className="inv-border inv-zebra border-b">
+                <td className="p-2 font-mono" dir="ltr">{x.number}</td><td className="p-2">{fmtDate(x.date)}</td>
+                <td className="p-2">{typeLabel(x.type)}</td><td className="p-2">{x.party}</td><td className="p-2">{sar(x.amount)}</td>
+              </tr>))}</tbody>
+          </table>
+        </div>
+      )}
+      <div className="grid grid-cols-2 gap-10 pt-16 text-center text-sm">
+        <div className="inv-border border-t pt-2">{t("توقيع المحاسب")}</div>
+        <div className="inv-border border-t pt-2">{t("الختم والاعتماد")}</div>
+      </div>
+      <div className="inv-muted pt-6 text-center text-xs">Metal Fuze — Accuracy Has No Limit</div>
+    </div>
   );
 }
