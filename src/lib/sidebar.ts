@@ -17,7 +17,7 @@ export const currentSidebar = () => state;
 export function setSidebar(next: SidebarState) {
   state = next;
   try {
-    document.documentElement.dataset.sidebar = next;
+    document.documentElement.dataset["sidebar"] = next;
   } catch {
     /* SSR or no document — the switch still works for this visit */
   }
@@ -45,7 +45,7 @@ export function useSidebar() {
 /** Picks up the value the pre-paint script wrote into <html data-sidebar>. */
 export function initializeSidebar() {
   const next: SidebarState =
-    document.documentElement.dataset.sidebar === "hidden" ? "hidden" : "visible";
+    document.documentElement.dataset["sidebar"] === "hidden" ? "hidden" : "visible";
   if (next !== state) {
     state = next;
     listeners.forEach((listener) => listener());
