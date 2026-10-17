@@ -37,7 +37,7 @@ export function WorkSites({ canEdit, sites, reload }: { canEdit: boolean; sites:
     if (!name.trim() || !c) return toast.error(t("اكتب اسم الموقع والإحداثيات"));
     const { error } = await supabase.from("work_sites").insert({ name: name.trim(), ...c, radius_m: Math.max(30, Number(radius) || 150) });
     if (error) return toast.error(error.message);
-    setName(""); setCoords(""); toast.success(t("تمت إضافة الموقع")); reload();
+    setName(""); setCoords(""); toast.success(t("تمت إضافة الموقع")); reload(); return undefined;
   }
 
   return (
