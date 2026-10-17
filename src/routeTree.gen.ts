@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
@@ -25,6 +26,11 @@ import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AttendanceRoute = AttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BudgetRoute = BudgetRouteImport.update({
@@ -85,6 +91,7 @@ const IclockGetrequestRoute = IclockGetrequestRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/attendance': typeof AttendanceRoute
   '/budget': typeof BudgetRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/attendance': typeof AttendanceRoute
   '/budget': typeof BudgetRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -114,6 +122,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/attendance': typeof AttendanceRoute
   '/budget': typeof BudgetRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/attendance'
     | '/budget'
     | '/payments'
     | '/payroll'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/attendance'
     | '/budget'
     | '/payments'
     | '/payroll'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/attendance'
     | '/budget'
     | '/payments'
     | '/payroll'
@@ -173,6 +185,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AttendanceRoute: typeof AttendanceRoute
   BudgetRoute: typeof BudgetRoute
   PaymentsRoute: typeof PaymentsRoute
   PayrollRoute: typeof PayrollRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/attendance': {
+      id: '/attendance'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof AttendanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/budget': {
@@ -277,6 +297,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AttendanceRoute: AttendanceRoute,
   BudgetRoute: BudgetRoute,
   PaymentsRoute: PaymentsRoute,
   PayrollRoute: PayrollRoute,
