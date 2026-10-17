@@ -17,6 +17,7 @@ import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as ProjectReportsRouteImport } from './routes/project-reports'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -65,6 +66,11 @@ const ProjectReportsRoute = ProjectReportsRouteImport.update({
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UsersRoute = UsersRouteImport.update({
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/payroll': typeof PayrollRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
   '/api/chat': typeof ApiChatRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/payroll': typeof PayrollRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
   '/api/chat': typeof ApiChatRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/payroll': typeof PayrollRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
   '/api/chat': typeof ApiChatRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/project-reports'
     | '/report'
+    | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
     | '/api/chat'
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/project-reports'
     | '/report'
+    | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
     | '/api/chat'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/project-reports'
     | '/report'
+    | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
     | '/api/chat'
@@ -240,6 +252,7 @@ export interface RootRouteChildren {
   PayrollRoute: typeof PayrollRoute
   ProjectReportsRoute: typeof ProjectReportsRoute
   ReportRoute: typeof ReportRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UsersRoute: typeof UsersRoute
   WorkersCheckinRoute: typeof WorkersCheckinRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -307,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/users': {
@@ -384,6 +404,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayrollRoute: PayrollRoute,
   ProjectReportsRoute: ProjectReportsRoute,
   ReportRoute: ReportRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   UsersRoute: UsersRoute,
   WorkersCheckinRoute: WorkersCheckinRoute,
   ApiChatRoute: ApiChatRoute,
