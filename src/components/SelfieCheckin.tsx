@@ -11,7 +11,8 @@ export function SelfieCheckin({ disabled, onSubmit }: {
 }) {
   useLanguage();
   const input = useRef<HTMLInputElement>(null);
-  const [action, setAction] = useState<"in" | "out">("in");
+  const action = useRef<"in" | "out">("in");
+  const gps = useRef<Promise<{ lat: number; lng: number }> | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,18 +21,26 @@ export function SelfieCheckin({ disabled, onSubmit }: {
     setError(null);
     try {
       setBusy(t("جارٍ تحديد موقعك…"));
-      const pos = await getPosition();
+      const pos = await (gps.current ?? getPosition()).catch(() => getPosition());
       setBusy(t("جارٍ الإرسال…"));
-      await onSubmit({ action, ...pos, photo: await resizePhoto(file) });
+      await onSubmit({ action: action.current, ...pos, photo: await resizePhoto(file) });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(null);
+      gps.current = null;
       if (input.current) input.current.value = "";
     }
   }
 
-  const start = (a: "in" | "out") => { setAction(a); input.current?.click(); };
+  // Start locating on the tap itself, so GPS runs while the camera is open.
+  const start = (a: "in" | "out") => {
+    action.current = a;
+    setError(null);
+    gps.current = getPosition();
+    gps.current.catch(() => {});
+    input.current?.click();
+  };
   return (
     <div className="space-y-3">
       <input ref={input} type="file" accept="image/*" capture="user" className="hidden" onChange={(e) => onPhoto(e.target.files?.[0])} />
