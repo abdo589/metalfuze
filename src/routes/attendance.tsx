@@ -11,6 +11,7 @@ import { monthKey, monthLabel, usePayroll } from "@/lib/payroll";
 import { LATE_AFTER, WORK_START, riyadh, summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
 import { RemoteLinks, SelfieThumb, WorkSites, useSites } from "@/components/RemoteAttendance";
+import { AttendanceMap } from "@/components/AttendanceMap";
 
 export const Route = createFileRoute("/attendance")({
   head: () => ({
@@ -121,6 +122,8 @@ function Attendance() {
           </tbody>
         </table>
       </section>
+
+      <AttendanceMap sites={sites} punches={punches} nameOf={(id) => employees.find((e) => e.id === id || e.deviceUserId === id)?.name ?? id} />
 
       {sel && (
         <section className="rounded-xl border border-border bg-card p-4">

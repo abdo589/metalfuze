@@ -159,6 +159,9 @@ export const translations: Record<string, string> = {
   "الرواتب حسب المشروع": "Payroll by Project", "إجمالي صافي الرواتب": "Total Net Salaries", "مسير الرواتب": "Payroll Register",
   "لوحة متابعة مشاريع Metal Fuze": "METAL FUZE PROJECTS",
   "إخفاء القائمة": "Hide Menu", "إظهار القائمة": "Show Menu",
+  "خريطة المواقع والبصمات": "Sites & punches map",
+  "كل بصمة جوال تظهر في مكانها الفعلي، وكل موقع عمل داخل دائرة المسافة المسموحة.": "Every phone punch appears at its exact spot, and each work site shows its allowed-radius circle.",
+  "لا توجد مواقع ولا بصمات جوال على الخريطة بعد": "No work sites or phone punches on the map yet",
 };
 
 /** UI labels only: never translate or mutate user-entered names, notes or credentials. */
