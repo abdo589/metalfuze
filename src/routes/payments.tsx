@@ -159,6 +159,35 @@ function Payments() {
         </div>
       </section>
 
+      {/* حسب المشروع */}
+      <section className="rounded-xl border border-border bg-card">
+        <h2 className="border-b border-border p-4 font-display text-lg font-bold">{t("حسب المشروع")}</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[820px] text-sm">
+            <thead><tr className="border-b border-border text-xs text-muted-foreground">
+              {["المشروع", "مدير المشروع", "قيمة العقد", "تم تحصيله", "تم دفعه للموردين", "المتبقي للتحصيل", "صافي المشروع"].map((h) =>
+                <th key={h} className="p-3 text-start font-medium">{t(h)}</th>)}
+            </tr></thead>
+            <tbody>
+              {projects.filter((p) => manager === "all" || p.manager.trim() === manager).map((p) => {
+                const s = totals(txns.filter((x) => x.project.trim() === p.name.trim()));
+                return (
+                  <tr key={p.id} className="border-b border-border/60">
+                    <td className="p-3 font-medium">{p.name}</td>
+                    <td className="p-3">{p.manager}</td>
+                    <td className="p-3">{sar(p.contract)}</td>
+                    <td className="p-3 text-primary">{sar(s.collected)}</td>
+                    <td className="p-3 text-destructive">{sar(s.paid)}</td>
+                    <td className="p-3 font-bold">{sar(p.contract - s.collected)}</td>
+                    <td className="p-3">{sar(s.balance)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {/* الحركات */}
       <section className="rounded-xl border border-border bg-card">
         <h2 className="border-b border-border p-4 font-display text-lg font-bold">{t("الفواتير")}</h2>
