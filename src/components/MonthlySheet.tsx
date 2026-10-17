@@ -26,7 +26,7 @@ export function MonthlySheet({ rows, month, today, onSelect }: { rows: Row[]; mo
           <span><span className="inline-block size-2.5 rounded-sm bg-muted" /> {t("عطلة")}</span>
         </div>
       </div>
-      <table className="w-full min-w-[1000px] table-fixed border-collapse whitespace-nowrap text-[8px] leading-tight tabular-nums">
+      <table className="attendance-sheet w-full min-w-[1000px] table-fixed border-collapse whitespace-nowrap text-[8px] leading-tight tabular-nums">
         <thead>
           <tr className="text-muted-foreground">
             <th className="w-28 whitespace-normal border border-border p-1 text-start text-[10px]">{t("الموظف")}</th>

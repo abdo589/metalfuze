@@ -334,6 +334,22 @@ html[dir="ltr"] [data-report-document] td .flex { flex-wrap: wrap; }
     vertical-align: top;
   }
 
+  /* Monthly attendance grid: 31 narrow day columns must keep times on one line. */
+  table.attendance-sheet { font-size: 8px; }
+  table.attendance-sheet th, table.attendance-sheet td {
+    padding: 2px 0 !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal;
+    text-align: center;
+    vertical-align: middle;
+  }
+  table.attendance-sheet th:first-child, table.attendance-sheet td:first-child {
+    white-space: normal !important;
+    padding: 2px 4px !important;
+    text-align: start;
+    font-size: 9px;
+  }
+
   td .line-clamp-1 {
     display: block;
     -webkit-line-clamp: unset;
