@@ -8,6 +8,8 @@ import {
   FileText,
   LayoutDashboard,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   PieChart,
   Users,
 } from "lucide-react";
@@ -15,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { setSidebar, useSidebar } from "@/lib/sidebar";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 
@@ -45,7 +48,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function Logo({ className = "w-40" }: { className?: string }) {
+function Logo({ className = "w-36" }: { className?: string }) {
   return (
     <Link to="/" className="block">
       <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
@@ -59,18 +62,33 @@ function Logo({ className = "w-40" }: { className?: string }) {
 export function AppSidebar() {
   const language = useLanguage();
   const [open, setOpen] = useState(false);
+  const collapsed = useSidebar() === "hidden";
 
   return (
     <>
       {/* Desktop: fixed side rail on the page start side (right in Arabic, left in English). */}
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-e bg-card/40 p-4 lg:flex print:hidden">
-        <Logo />
+      <aside className="sidebar-rail sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-e bg-card/40 p-4 lg:flex print:hidden">
+        <div className="flex items-start justify-between gap-1">
+          <Logo />
+          <Button size="icon" variant="ghost" className="shrink-0" aria-label={t("إخفاء القائمة")}
+            title={t("إخفاء القائمة")} onClick={() => setSidebar("hidden")}>
+            <PanelLeftClose />
+          </Button>
+        </div>
         <NavLinks />
         <div className="mt-auto flex flex-col items-stretch gap-2 border-t pt-4">
           <LanguageToggle />
           <ThemeToggle />
         </div>
       </aside>
+
+      {/* Desktop collapsed: a narrow rail holding the single icon that brings the menu back. */}
+      <div className="sidebar-rail-mini sticky top-0 hidden h-dvh w-12 shrink-0 flex-col items-center border-e bg-card/40 py-3 lg:flex print:hidden">
+        <Button size="icon" variant="ghost" aria-label={t("إظهار القائمة")} title={t("إظهار القائمة")}
+          onClick={() => setSidebar("visible")}>
+          <PanelLeftOpen />
+        </Button>
+      </div>
 
       {/* Mobile: top bar with a slide-in menu holding the same links. */}
       <header className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b bg-background/90 px-3 py-2 backdrop-blur lg:hidden print:hidden">

@@ -125,6 +125,7 @@ export const translations: Record<string, string> = {
   "المسمى": "Role", "المصروف من العقد": "Contract Spending", "تفاصيل الموظفين والمشاريع": "Employee & Project Details",
   "الرواتب حسب المشروع": "Payroll by Project", "إجمالي صافي الرواتب": "Total Net Salaries", "مسير الرواتب": "Payroll Register",
   "لوحة متابعة مشاريع Metal Fuze": "METAL FUZE PROJECTS",
+  "إخفاء القائمة": "Hide Menu", "إظهار القائمة": "Show Menu",
 };
 
 /** UI labels only: never translate or mutate user-entered names, notes or credentials. */
