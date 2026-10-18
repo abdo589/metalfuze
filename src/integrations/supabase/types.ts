@@ -209,6 +209,7 @@ export type Database = {
           deductions: number
           dept: string
           device_user_id: string | null
+          email: string | null
           id: string
           joined: string | null
           name: string
@@ -226,6 +227,7 @@ export type Database = {
           deductions?: number
           dept?: string
           device_user_id?: string | null
+          email?: string | null
           id: string
           joined?: string | null
           name: string
@@ -243,6 +245,7 @@ export type Database = {
           deductions?: number
           dept?: string
           device_user_id?: string | null
+          email?: string | null
           id?: string
           joined?: string | null
           name?: string
@@ -685,21 +688,32 @@ export type Database = {
           created_at: string
           display_name: string
           email: string
+          employee_id: string | null
           id: string
         }
         Insert: {
           created_at?: string
           display_name?: string
           email?: string
+          employee_id?: string | null
           id: string
         }
         Update: {
           created_at?: string
           display_name?: string
           email?: string
+          employee_id?: string | null
           id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       residencies: {
         Row: {
