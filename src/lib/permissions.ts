@@ -1,20 +1,33 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-/** True only for accounts holding the admin role; everyone else is view-only. */
-export function useCanEdit() {
-  const [can, setCan] = useState(false);
+export type Role = "admin" | "hr" | "viewer" | null;
+
+/** Pages an HR-only account may open; everything else is hidden from them. */
+export const HR_PATHS = ["/payroll", "/attendance", "/workers-checkin"];
+
+/** Current user's strongest role (admin > hr > viewer). undefined while loading. */
+export function useRole() {
+  const [role, setRole] = useState<Role | undefined>(undefined);
   useEffect(() => {
     let alive = true;
     const check = async () => {
       const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return alive && setCan(false);
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id).eq("role", "admin").maybeSingle();
-      if (alive) setCan(!!data);
+      if (!u.user) return alive && setRole(null);
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id);
+      const roles = (data ?? []).map((r) => String(r.role));
+      const r: Role = roles.includes("admin") ? "admin" : roles.includes("hr") ? "hr" : roles.includes("viewer") ? "viewer" : null;
+      if (alive) setRole(r);
     };
     check();
     const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
     return () => { alive = false; sub.subscription.unsubscribe(); };
   }, []);
-  return can;
+  return role;
+}
+
+/** Admins edit everything; HR edits only within the HR pages (the only ones they can open). */
+export function useCanEdit() {
+  const role = useRole();
+  return role === "admin" || role === "hr";
 }

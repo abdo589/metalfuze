@@ -21,6 +21,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { setSidebar, useSidebar } from "@/lib/sidebar";
+import { HR_PATHS, useRole } from "@/lib/permissions";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 
@@ -40,9 +41,11 @@ const items = [
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const role = useRole();
+  const visible = role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to)) : role === undefined ? [] : items;
   return (
     <nav className="flex flex-col gap-1">
-      {items.map((it) => {
+      {visible.map((it) => {
         const active = it.to === "/" ? pathname === "/" : pathname.startsWith(it.to);
         return (
           <Button key={it.to} variant={active ? "secondary" : "ghost"} asChild

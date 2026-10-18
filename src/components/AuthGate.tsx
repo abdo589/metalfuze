@@ -8,6 +8,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { HR_PATHS, useRole } from "@/lib/permissions";
+
+/** HR-only accounts may open only the HR pages; anything else sends them to payroll. */
+function RoleGuard({ children }: { children: ReactNode }) {
+  const role = useRole();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const blocked = role === "hr" && !HR_PATHS.some((p) => pathname.startsWith(p));
+  useEffect(() => { if (blocked) navigate({ to: "/payroll", replace: true }); }, [blocked, navigate]);
+  if (role === undefined || blocked) return <div className="min-h-screen" />;
+  return <>{children}</>;
+}
 
 const DOMAIN = "metalfuze.local";
 export const toEmail = (u: string) => `${u.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "")}@${DOMAIN}`;
@@ -36,7 +49,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
         <span>{t("مرحباً،")}<b className="text-foreground">{name}</b></span>
         <Button size="sm" variant="ghost" onClick={() => supabase.auth.signOut()}><LogOut /> {t("خروج")}</Button>
       </div>
-      {children}
+      <RoleGuard>{children}</RoleGuard>
     </>
   );
 }

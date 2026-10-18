@@ -12,6 +12,7 @@ export const supervisorCheckin = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) return { ok: false as const, error: "forbidden" };
+    const { data: isHr } = await context.supabase.rpc("is_hr", { _user_id: context.userId });
+    if (!isAdmin && !isHr) return { ok: false as const, error: "forbidden" };
     return recordRemotePunch(data);
   });
