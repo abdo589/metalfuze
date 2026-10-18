@@ -22,7 +22,9 @@ export function useUnreadMessages() {
     }
 
     refresh();
-    const ch = supabase.channel("dm-badge")
+    // Unique name per hook instance: the sidebar renders twice (desktop + mobile),
+    // and reusing a topic returns the already-subscribed channel, which throws on .on().
+    const ch = supabase.channel(`dm-badge-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "direct_messages" }, refresh)
       .subscribe();
 
