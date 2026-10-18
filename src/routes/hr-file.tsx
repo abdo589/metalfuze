@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
+import { FileUp, FileText, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ function HrFilePage() {
 
   async function save() {
     if (!sel || !draft) return;
-    const data: HrRow = {};
+    const data: HrRow = Object.fromEntries(Object.entries(sel.data).filter(([k]) => !META[sel.sheet].columns.includes(k)));
     for (const [k, v] of Object.entries(draft)) {
       const t = v.trim();
       if (!t) continue;
@@ -193,6 +193,9 @@ function HrFilePage() {
                   </div>
                 ))}
               </div>
+              {sel.id && !draft && sel.sheet === "employees" && (
+                <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
+              )}
               {sel.id && !draft && related(sel).map((g) => (
                 <div key={g.k} className="space-y-2">
                   <h3 className="font-bold">{META[g.k].title} <Badge variant="outline">{g.rows.length}</Badge></h3>
@@ -209,6 +212,46 @@ function HrFilePage() {
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+const CONTRACT = "عقد العمل";
+function ContractBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolean; onChange: (d: HrRow) => void }) {
+  const [busy, setBusy] = useState(false);
+  const path = rec.data[CONTRACT] ? String(rec.data[CONTRACT]) : "";
+  async function upload(f: File) {
+    setBusy(true);
+    const ext = f.name.split(".").pop() || "pdf";
+    const p = `contracts/${rec.id}-${Date.now()}.${ext}`;
+    const up = await supabase.storage.from("employee-files").upload(p, f);
+    if (up.error) { setBusy(false); toast.error("تعذر رفع الملف"); return; }
+    if (path) await supabase.storage.from("employee-files").remove([path]);
+    const data = { ...rec.data, [CONTRACT]: p };
+    const { error } = await supabase.from("hr_records").update({ data, updated_at: new Date().toISOString() }).eq("id", rec.id);
+    setBusy(false);
+    if (error) { toast.error("تعذر الحفظ"); return; }
+    toast.success("تم رفع عقد العمل"); onChange(data);
+  }
+  async function view() {
+    const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(path, 300);
+    if (error || !data) { toast.error("تعذر فتح الملف"); return; }
+    window.open(data.signedUrl, "_blank");
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-3">
+      <FileText className="size-4 text-primary" />
+      <span className="font-medium">عقد العمل:</span>
+      {path ? <Button size="sm" variant="outline" onClick={view}>عرض العقد</Button> : <span className="text-sm text-muted-foreground">لم يُرفع بعد</span>}
+      {canEdit && (
+        <Button size="sm" variant="outline" disabled={busy} asChild>
+          <label className="cursor-pointer">
+            <FileUp /> {busy ? "جارٍ الرفع…" : path ? "استبدال العقد" : "رفع العقد"}
+            <input type="file" accept=".pdf,image/*,.doc,.docx" className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          </label>
+        </Button>
+      )}
     </div>
   );
 }
