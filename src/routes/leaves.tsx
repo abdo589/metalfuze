@@ -1,26 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CalendarOff, FileSpreadsheet, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
+import {
+  CalendarDays, CalendarOff, CheckCircle2, ChevronLeft, ChevronRight, Clock, Copy, FileSpreadsheet,
+  Link2, Paperclip, Plus, Save, Search, Settings2, Trash2, XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/permissions";
-import { importHrFile, type HrRow } from "@/lib/hr-file.functions";
-import { locale, t } from "@/lib/i18n";
+import { listUsers, type AppUser } from "@/lib/users.functions";
+import { currentLanguage, t, useLanguage } from "@/lib/i18n";
 import {
-  LEAVE_COLS, daysInMonth, leaveDays, leaveStatus, localDay, toIso, type LeaveStatus,
-} from "@/lib/leave";
+  LEAVE_STATES, countLeaveDays, eachDay, leaveError, overlaps, returnDate, stateLabel,
+  type LeaveRequest, type LeaveState, type LeaveType, type Tier,
+} from "@/lib/leave-engine";
 
 export const Route = createFileRoute("/leaves")({
   head: () => ({
     meta: [
-      { title: "الإجازات — Metal Fuze" },
-      { name: "description", content: "إجازات موظفي Metal Fuze: من في إجازة الآن، والإجازات القادمة، وأيام كل موظف." },
-      { property: "og:title", content: "الإجازات — Metal Fuze" },
-      { property: "og:description", content: "لوحة إجازات الموظفين: حالة كل إجازة وأيامها لكل شهر." },
+      { title: "إدارة الإجازات — Metal Fuze" },
+      { name: "description", content: "طلبات الإجازات والموافقات والأرصدة والتقويم والتقارير لموظفي Metal Fuze." },
+      { property: "og:title", content: "إدارة الإجازات — Metal Fuze" },
+      { property: "og:description", content: "نظام إجازات متكامل: طلبات، موافقات المدير وHR، أرصدة، تقويم وتقارير." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -28,312 +34,628 @@ export const Route = createFileRoute("/leaves")({
   component: LeavesPage,
 });
 
-type Rec = { id: string; sheet: string; data: HrRow; sort: number };
-type Row = Rec & { start: string | null; end: string | null; status: LeaveStatus | null; days: number };
+type Emp = { id: string; name: string; dept: string; role: string; joined: string | null; active: boolean; checkin_token: string | null };
+type Balance = { employee_id: string; joined: string | null; entitlement: number; opening: number; adjustments: number; earned: number; used: number; booked: number; remaining: number };
+type Ev = { id: string; request_id: string; action: string; from_status: string | null; to_status: string | null; note: string | null; actor_name: string; created_at: string };
+type Adj = { id: string; employee_id: string; kind: string; days: number; note: string; actor_name: string; created_at: string };
+type Mgr = { dept: string; user_id: string; user_name: string };
+type Note = { id: string; request_id: string | null; employee_id: string | null; audience: string; dept: string | null; message: string; created_at: string };
+type Settings = { tiers: Tier[]; weekend: number[]; accrual_from: string };
 
-const NAME = "اسم الموظف";
-const DEPT = "القسم";
-const TYPE = "نوع الإجازة";
-const FROM = "تاريخ البداية";
-const TO = "تاريخ النهاية";
-const N = "عدد الأيام";
-const STATE = "الحالة";
-const NOTE = "ملاحظات";
-
-const ST: Record<LeaveStatus, string> = { active: "جارية", upcoming: "قادمة", ended: "منتهية" };
-const ST_TONE: Record<LeaveStatus, string> = {
-  active: "border-primary/50 bg-primary/10 text-primary",
-  upcoming: "border-border bg-muted/40 text-foreground",
-  ended: "border-border bg-card text-muted-foreground",
+const TONE: Record<string, string> = {
+  approved: "border-success/50 bg-success/10 text-success", rejected: "border-destructive/50 bg-destructive/10 text-destructive",
+  cancelled: "border-border text-muted-foreground", pending_manager: "border-warning/50 bg-warning/10 text-warning",
+  pending_hr: "border-primary/50 bg-primary/10 text-primary", draft: "border-border",
 };
-
-function show(v: unknown) {
-  if (v === undefined || v === null || v === "") return "—";
-  if (typeof v === "number") return v.toLocaleString("en-US");
-  return String(v);
-}
+const fmt = (n: number) => Number(n).toLocaleString("en-US", { maximumFractionDigits: 1 });
+const todayIso = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const select = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground";
 
 function LeavesPage() {
+  useLanguage();
+  const lang = currentLanguage();
   const role = useRole();
-  const canEdit = role === "admin" || role === "hr";
-  const [recs, setRecs] = useState<Rec[] | null>(null);
-  const [q, setQ] = useState("");
-  const [status, setStatus] = useState<"all" | LeaveStatus>("all");
-  const [type, setType] = useState("all");
-  const [sel, setSel] = useState<Rec | null>(null);
-  const [draft, setDraft] = useState<Record<string, string> | null>(null);
+  const isAdmin = role === "admin";
+  const isHr = role === "admin" || role === "hr";
+  const [me, setMe] = useState<string | null>(null);
+  const [types, setTypes] = useState<LeaveType[]>([]);
+  const [reqs, setReqs] = useState<LeaveRequest[]>([]);
+  const [emps, setEmps] = useState<Emp[]>([]);
+  const [bal, setBal] = useState<Balance[]>([]);
+  const [events, setEvents] = useState<Ev[]>([]);
+  const [adjs, setAdjs] = useState<Adj[]>([]);
+  const [mgrs, setMgrs] = useState<Mgr[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [settings, setSettings] = useState<Settings>({ tiers: [{ years: 0, days: 21 }, { years: 5, days: 30 }], weekend: [5, 6], accrual_from: "2026-01-01" });
+  const [loaded, setLoaded] = useState(false);
+  const [sel, setSel] = useState<LeaveRequest | null>(null);
+  const [tab, setTab] = useState("summary");
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase.from("hr_records").select("id,sheet,data,sort").eq("sheet", "leaves").order("sort");
-    if (error) { toast.error(t("تعذر التحميل")); return; }
-    setRecs((data ?? []) as unknown as Rec[]);
+    const [u, ty, rq, em, b, ev, ad, mg, nt, st] = await Promise.all([
+      supabase.auth.getUser(),
+      supabase.from("leave_types").select("*").order("sort"),
+      supabase.from("leave_requests").select("*").order("start_date", { ascending: false }),
+      supabase.from("employees").select("id,name,dept,role,joined,active,checkin_token").order("name"),
+      supabase.rpc("leave_balances"),
+      supabase.from("leave_request_events").select("*").order("created_at"),
+      supabase.from("leave_balance_adjustments").select("*").order("created_at", { ascending: false }),
+      supabase.from("department_managers").select("*"),
+      supabase.from("leave_notifications").select("*").neq("audience", "employee").order("created_at", { ascending: false }).limit(30),
+      supabase.from("leave_settings").select("tiers,weekend,accrual_from").eq("id", 1).maybeSingle(),
+    ]);
+    if (rq.error) { toast.error(t("تعذر التحميل")); return; }
+    setMe(u.data.user?.id ?? null);
+    setTypes((ty.data ?? []) as LeaveType[]);
+    setReqs((rq.data ?? []) as unknown as LeaveRequest[]);
+    setEmps((em.data ?? []) as Emp[]);
+    setBal((b.data ?? []) as Balance[]);
+    setEvents((ev.data ?? []) as Ev[]);
+    setAdjs((ad.data ?? []) as Adj[]);
+    setMgrs((mg.data ?? []) as Mgr[]);
+    setNotes((nt.data ?? []) as Note[]);
+    if (st.data) setSettings(st.data as unknown as Settings);
+    setLoaded(true);
   }, []);
   useEffect(() => { load(); }, [load]);
-  useEffect(() => {
-    if (recs && !recs.length && canEdit) importHrFile().then((r) => { if (r.imported) load(); }).catch(() => {});
-  }, [recs, canEdit, load]);
 
-  const today = localDay();
+  const empById = useMemo(() => new Map(emps.map((e) => [e.id, e])), [emps]);
+  const typeById = useMemo(() => new Map(types.map((x) => [x.id, x])), [types]);
+  const typeName = (id: string) => { const x = typeById.get(id); return x ? (lang === "en" ? x.name_en : x.name_ar) : id; };
+  const myDepts = useMemo(() => new Set(mgrs.filter((m) => m.user_id === me).map((m) => m.dept)), [mgrs, me]);
+  const canManagerAct = (r: LeaveRequest) => isAdmin || myDepts.has(empById.get(r.employee_id)?.dept ?? "\u0000");
+  const today = todayIso();
+
+  const pendingMgr = reqs.filter((r) => r.status === "pending_manager");
+  const pendingHr = reqs.filter((r) => r.status === "pending_hr");
+  const onLeave = reqs.filter((r) => r.status === "approved" && r.start_date <= today && r.end_date >= today);
+  const upcoming = reqs.filter((r) => r.status === "approved" && r.start_date > today);
   const month = today.slice(0, 7);
+  const monthDays = reqs.filter((r) => r.status === "approved").reduce((s, r) => s + eachDay(r.start_date, r.end_date).filter((d) => d.startsWith(month)).length, 0);
 
-  const rows = useMemo<Row[]>(() => (recs ?? []).map((r) => ({
-    ...r,
-    start: toIso(r.data[FROM]),
-    end: toIso(r.data[TO]),
-    status: leaveStatus(r.data[FROM], r.data[TO], today),
-    days: leaveDays(r.data[FROM], r.data[TO], r.data[N]),
-  })), [recs, today]);
+  return (
+    <div className="space-y-4 p-4 md:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="flex items-center gap-2 font-display text-2xl font-bold"><CalendarOff className="size-6 text-primary" /> {t("إدارة الإجازات")}</h1>
+          <p className="text-sm text-muted-foreground">{t("طلبات الإجازات والموافقات والأرصدة")}</p>
+        </div>
+        {isHr && <Button onClick={() => setTab("new")}><Plus /> {t("طلب إجازة جديد")}</Button>}
+      </div>
 
-  const types = useMemo(() => [...new Set(rows.map((r) => String(r.data[TYPE] ?? "")).filter(Boolean))].sort(), [rows]);
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList className="h-auto flex-wrap justify-start">
+          <TabsTrigger value="summary">{t("الملخص")}</TabsTrigger>
+          {isHr && <TabsTrigger value="new">{t("طلب جديد")}</TabsTrigger>}
+          <TabsTrigger value="all">{t("جميع الطلبات")}</TabsTrigger>
+          <TabsTrigger value="pending">{t("بانتظار الموافقة")} {pendingMgr.length + pendingHr.length > 0 && <Badge className="ms-1">{pendingMgr.length + pendingHr.length}</Badge>}</TabsTrigger>
+          <TabsTrigger value="balances">{t("الأرصدة")}</TabsTrigger>
+          <TabsTrigger value="history">{t("السجل السابق")}</TabsTrigger>
+          <TabsTrigger value="calendar">{t("التقويم")}</TabsTrigger>
+          <TabsTrigger value="reports">{t("التقارير")}</TabsTrigger>
+          {isAdmin && <TabsTrigger value="settings">{t("الإعدادات")}</TabsTrigger>}
+        </TabsList>
 
-  const filtered = useMemo(() => rows.filter((r) => {
-    if (status !== "all" && r.status !== status) return false;
-    if (type !== "all" && String(r.data[TYPE] ?? "") !== type) return false;
-    const text = `${r.data[NAME] ?? ""} ${r.data[DEPT] ?? ""} ${r.data[TYPE] ?? ""} ${r.data[NOTE] ?? ""}`;
-    return !q || text.includes(q);
-  }).sort((a, b) => (a.start ?? "9999").localeCompare(b.start ?? "9999")), [rows, status, type, q]);
+        <TabsContent value="summary" className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+            {[
+              [t("في إجازة اليوم"), onLeave.length, CalendarOff],
+              [t("بانتظار المدير"), pendingMgr.length, Clock],
+              [t("بانتظار HR"), pendingHr.length, Clock],
+              [t("إجازات قادمة"), upcoming.length, CalendarDays],
+              [t("أيام إجازة هذا الشهر"), monthDays, CheckCircle2],
+            ].map(([l, v, I]) => { const Icon = I as typeof Clock; return (
+              <div key={l as string} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">{l as string}<Icon className="size-4" /></div>
+                <div className="mt-1 font-display text-2xl font-bold tabular-nums">{v as number}</div>
+              </div>
+            ); })}
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Panel title={t("في إجازة اليوم")}>
+              {onLeave.length === 0 ? <Empty /> : onLeave.map((r) => <ReqLine key={r.id} r={r} emp={empById.get(r.employee_id)} typeName={typeName} lang={lang} onOpen={setSel} />)}
+            </Panel>
+            <Panel title={t("آخر الإشعارات")}>
+              {notes.length === 0 ? <Empty /> : notes.filter((n) => n.audience === "hr").slice(0, 10).map((n) => {
+                const [no, tn, st] = n.message.split("|");
+                return <div key={n.id} className="flex justify-between gap-2 border-b border-border/50 py-1.5 text-sm last:border-0">
+                  <span>{no} · {empById.get(n.employee_id ?? "")?.name} · {tn} · <b>{stateLabel(st ?? "", lang)}</b></span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{new Date(n.created_at).toLocaleDateString("en-GB")}</span>
+                </div>;
+              })}
+            </Panel>
+          </div>
+        </TabsContent>
 
-  const onNow = rows.filter((r) => r.status === "active").length;
-  const upcoming = rows.filter((r) => r.status === "upcoming").length;
-  const ended = rows.filter((r) => r.status === "ended").length;
-  const totalDays = rows.reduce((s, r) => s + r.days, 0);
-  const monthDays = rows.reduce((s, r) => s + daysInMonth(r.data[FROM], r.data[TO], month), 0);
+        {isHr && <TabsContent value="new"><NewRequest emps={emps.filter((e) => e.active)} types={types.filter((x) => x.active)} reqs={reqs} bal={bal} settings={settings} lang={lang} onDone={() => { load(); setTab("all"); }} /></TabsContent>}
 
-  const year = today.slice(0, 4);
-  const byMonth = useMemo(() => Array.from({ length: 12 }, (_, i) => {
-    const m = `${year}-${String(i + 1).padStart(2, "0")}`;
-    return { m, days: rows.reduce((s, r) => s + daysInMonth(r.data[FROM], r.data[TO], m), 0) };
-  }), [rows, year]);
-  const maxMonth = Math.max(1, ...byMonth.map((b) => b.days));
+        <TabsContent value="all"><RequestsTable reqs={reqs} empById={empById} typeName={typeName} types={types} lang={lang} onOpen={setSel} /></TabsContent>
 
-  const byEmp = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const r of rows) { const k = String(r.data[NAME] ?? "—"); m.set(k, (m.get(k) ?? 0) + r.days); }
-    return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
-  }, [rows]);
-  const maxEmp = Math.max(1, ...byEmp.map((e) => e[1]));
+        <TabsContent value="pending" className="space-y-4">
+          <Panel title={`${t("بانتظار موافقة المدير")} (${pendingMgr.length})`}>
+            {pendingMgr.length === 0 ? <Empty /> : pendingMgr.map((r) => <ReqLine key={r.id} r={r} emp={empById.get(r.employee_id)} typeName={typeName} lang={lang} onOpen={setSel} hint={canManagerAct(r) ? t("يمكنك المراجعة") : `${t("المدير")}: ${mgrs.find((m) => m.dept === empById.get(r.employee_id)?.dept)?.user_name ?? t("غير محدد")}`} />)}
+          </Panel>
+          <Panel title={`${t("بانتظار مراجعة HR")} (${pendingHr.length})`}>
+            {pendingHr.length === 0 ? <Empty /> : pendingHr.map((r) => <ReqLine key={r.id} r={r} emp={empById.get(r.employee_id)} typeName={typeName} lang={lang} onOpen={setSel} />)}
+          </Panel>
+        </TabsContent>
 
-  const open = (r: Rec) => { setSel(r); setDraft(null); };
-  const startEdit = (r: Rec) => setDraft(Object.fromEntries(LEAVE_COLS.map((c) => [c, r.data[c] === undefined ? "" : String(r.data[c])])));
+        <TabsContent value="balances"><Balances emps={emps} bal={bal} adjs={adjs} isHr={isHr} onDone={load} /></TabsContent>
+
+        <TabsContent value="history">
+          <RequestsTable reqs={reqs.filter((r) => r.end_date < today || r.status === "rejected" || r.status === "cancelled")} empById={empById} typeName={typeName} types={types} lang={lang} onOpen={setSel} />
+        </TabsContent>
+
+        <TabsContent value="calendar"><LeaveCalendar reqs={reqs} empById={empById} typeName={typeName} onOpen={setSel} weekend={settings.weekend} /></TabsContent>
+
+        <TabsContent value="reports"><Reports reqs={reqs} emps={emps} types={types} typeName={typeName} lang={lang} /></TabsContent>
+
+        {isAdmin && <TabsContent value="settings"><SettingsTab types={types} settings={settings} mgrs={mgrs} emps={emps} onDone={load} /></TabsContent>}
+      </Tabs>
+
+      {!loaded && <p className="text-center text-sm text-muted-foreground">{t("جارٍ التحميل…")}</p>}
+
+      <RequestDialog r={sel} onClose={() => setSel(null)} emp={sel ? empById.get(sel.employee_id) : undefined} typeName={typeName} lang={lang}
+        events={events.filter((e) => e.request_id === sel?.id)} balance={bal.find((b) => b.employee_id === sel?.employee_id)}
+        canManager={!!sel && canManagerAct(sel)} canHr={isHr} usesBalance={!!sel && !!typeById.get(sel.type_id)?.uses_balance}
+        onDone={() => { setSel(null); load(); }} />
+    </div>
+  );
+}
+
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  return <section className="rounded-xl border border-border bg-card p-4"><h2 className="mb-2 font-bold">{title}</h2>{children}</section>;
+}
+const Empty = () => <p className="py-4 text-center text-sm text-muted-foreground">{t("لا توجد بيانات")}</p>;
+
+function ReqLine({ r, emp, typeName, lang, onOpen, hint }: { r: LeaveRequest; emp?: Emp; typeName: (id: string) => string; lang: "ar" | "en"; onOpen: (r: LeaveRequest) => void; hint?: string }) {
+  return (
+    <button onClick={() => onOpen(r)} className="flex w-full flex-wrap items-center justify-between gap-2 border-b border-border/50 py-2 text-start text-sm last:border-0 hover:bg-muted/40">
+      <span><b>#{r.request_no}</b> · {emp?.name ?? r.employee_id} · {typeName(r.type_id)} · {r.start_date} → {r.end_date} ({r.working_days} {t("يوم")}){hint && <span className="ms-2 text-xs text-muted-foreground">{hint}</span>}</span>
+      <Badge variant="outline" className={TONE[r.status]}>{stateLabel(r.status, lang)}</Badge>
+    </button>
+  );
+}
+
+function RequestsTable({ reqs, empById, typeName, types, lang, onOpen }: { reqs: LeaveRequest[]; empById: Map<string, Emp>; typeName: (id: string) => string; types: LeaveType[]; lang: "ar" | "en"; onOpen: (r: LeaveRequest) => void }) {
+  const [q, setQ] = useState("");
+  const [st, setSt] = useState("all");
+  const [ty, setTy] = useState("all");
+  const rows = reqs.filter((r) => (st === "all" || r.status === st) && (ty === "all" || r.type_id === ty)
+    && (!q || `${r.request_no} ${empById.get(r.employee_id)?.name ?? ""} ${empById.get(r.employee_id)?.dept ?? ""} ${r.reason}`.includes(q)));
+  return (
+    <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+      <div className="grid gap-2 sm:grid-cols-3">
+        <div className="relative"><Search className="absolute start-2 top-2.5 size-4 text-muted-foreground" /><Input className="ps-8" placeholder={t("بحث")} value={q} onChange={(e) => setQ(e.target.value)} /></div>
+        <select className={select} value={st} onChange={(e) => setSt(e.target.value)}><option value="all">{t("كل الحالات")}</option>{LEAVE_STATES.map((s) => <option key={s.key} value={s.key}>{lang === "en" ? s.en : s.ar}</option>)}</select>
+        <select className={select} value={ty} onChange={(e) => setTy(e.target.value)}><option value="all">{t("كل الأنواع")}</option>{types.map((x) => <option key={x.id} value={x.id}>{lang === "en" ? x.name_en : x.name_ar}</option>)}</select>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[820px] text-sm">
+          <thead><tr className="border-b border-border text-start text-xs text-muted-foreground">
+            {["رقم الطلب", "الموظف", "الإدارة", "نوع الإجازة", "من", "إلى", "الأيام", "العودة", "الحالة"].map((h) => <th key={h} className="p-2 text-start">{t(h)}</th>)}
+          </tr></thead>
+          <tbody>
+            {rows.length === 0 && <tr><td colSpan={9}><Empty /></td></tr>}
+            {rows.map((r) => (
+              <tr key={r.id} onClick={() => onOpen(r)} className="cursor-pointer border-b border-border/50 hover:bg-muted/40">
+                <td className="p-2 font-medium">#{r.request_no}</td>
+                <td className="p-2">{empById.get(r.employee_id)?.name ?? r.employee_id}</td>
+                <td className="p-2">{empById.get(r.employee_id)?.dept}</td>
+                <td className="p-2">{typeName(r.type_id)}</td>
+                <td className="p-2 tabular-nums">{r.start_date}</td>
+                <td className="p-2 tabular-nums">{r.end_date}</td>
+                <td className="p-2 tabular-nums">{r.working_days}</td>
+                <td className="p-2 tabular-nums">{r.return_date}</td>
+                <td className="p-2"><Badge variant="outline" className={TONE[r.status]}>{stateLabel(r.status, lang)}</Badge></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function NewRequest({ emps, types, reqs, bal, settings, lang, onDone }: { emps: Emp[]; types: LeaveType[]; reqs: LeaveRequest[]; bal: Balance[]; settings: Settings; lang: "ar" | "en"; onDone: () => void }) {
+  const [f, setF] = useState({ emp: "", type: "annual", start: "", end: "", reason: "", ret: "" });
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const emp = emps.find((e) => e.id === f.emp);
+  const type = types.find((x) => x.id === f.type);
+  const days = f.start && f.end && f.end >= f.start ? countLeaveDays(f.start, f.end, settings.weekend, type?.calendar_days) : 0;
+  const b = bal.find((x) => x.employee_id === f.emp);
+  const clash = f.emp && f.start && f.end ? overlaps(reqs, f.emp, f.start, f.end) : [];
+
+  async function save(submit: boolean) {
+    if (!emp || !type) return toast.error(t("اختر الموظف ونوع الإجازة"));
+    if (!f.start || !f.end) return toast.error(t("اختر تاريخ البداية والنهاية"));
+    if (f.end < f.start) return toast.error(t("تاريخ النهاية قبل تاريخ البداية"));
+    if (clash.length) return toast.error(t("يوجد طلب إجازة آخر في نفس الفترة"));
+    if (submit && type.requires_attachment && !file) return toast.error(t("هذا النوع يحتاج مرفقًا (مثل التقرير الطبي)"));
+    setBusy(true);
+    try {
+      let path: string | undefined;
+      if (file) {
+        path = `leave/${emp.id}/${crypto.randomUUID()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
+        const up = await supabase.storage.from("employee-files").upload(path, file);
+        if (up.error) { toast.error(t("تعذر رفع الملف")); return; }
+      }
+      const { error } = await supabase.rpc("leave_create", {
+        p_emp: emp.id, p_type: type.id, p_start: f.start, p_end: f.end, p_reason: f.reason,
+        p_attach_path: path, p_attach_name: file?.name, p_submit: submit, p_return: f.ret || undefined,
+      });
+      if (error) { if (path) await supabase.storage.from("employee-files").remove([path]); toast.error(t(leaveError(error.message))); return; }
+      toast.success(t(submit ? "تم إرسال الطلب إلى المدير" : "تم حفظ المسودة"));
+      setF({ emp: "", type: "annual", start: "", end: "", reason: "", ret: "" }); setFile(null); onDone();
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <section className="grid gap-3 rounded-xl border border-border bg-card p-4 md:grid-cols-2">
+      <label className="text-sm">{t("الموظف")}<select className={`${select} mt-1`} value={f.emp} onChange={(e) => setF({ ...f, emp: e.target.value })}>
+        <option value="">—</option>{emps.map((e) => <option key={e.id} value={e.id}>{e.id} · {e.name}</option>)}</select></label>
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div><div className="text-xs text-muted-foreground">{t("الإدارة")}</div><div className="mt-2 font-medium">{emp?.dept || "—"}</div></div>
+        <div><div className="text-xs text-muted-foreground">{t("المسمى الوظيفي")}</div><div className="mt-2 font-medium">{emp?.role || "—"}</div></div>
+      </div>
+      <label className="text-sm">{t("نوع الإجازة")}<select className={`${select} mt-1`} value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>
+        {types.map((x) => <option key={x.id} value={x.id}>{lang === "en" ? x.name_en : x.name_ar}{x.max_days ? ` (${x.max_days})` : ""}</option>)}</select></label>
+      <div className="text-sm">
+        <div className="text-xs text-muted-foreground">{t("الرصيد المتبقي")}</div>
+        <div className="mt-2 font-medium">{b ? fmt(b.remaining) : "—"} {type?.uses_balance ? "" : <span className="text-xs text-muted-foreground">({t("هذا النوع لا يخصم من الرصيد")})</span>}</div>
+      </div>
+      <label className="text-sm">{t("تاريخ البداية")}<Input type="date" className="mt-1" value={f.start} onChange={(e) => setF({ ...f, start: e.target.value })} /></label>
+      <label className="text-sm">{t("تاريخ النهاية")}<Input type="date" className="mt-1" min={f.start} value={f.end} onChange={(e) => setF({ ...f, end: e.target.value })} /></label>
+      <div className="text-sm"><div className="text-xs text-muted-foreground">{t("عدد الأيام")}</div><div className="mt-2 font-display text-xl font-bold">{days}</div>
+        {type?.uses_balance && b && days > b.remaining && <div className="text-xs text-destructive">{t("الرصيد المتبقي لا يكفي لهذا الطلب")}</div>}
+        {clash.length > 0 && <div className="text-xs text-destructive">{t("يوجد طلب إجازة آخر في نفس الفترة")}</div>}
+      </div>
+      <label className="text-sm">{t("تاريخ العودة إلى العمل")}<Input type="date" className="mt-1" value={f.ret || (f.end ? returnDate(f.end, settings.weekend) : "")} onChange={(e) => setF({ ...f, ret: e.target.value })} /></label>
+      <label className="text-sm md:col-span-2">{t("سبب الإجازة")}<Textarea className="mt-1" value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} /></label>
+      <label className="flex cursor-pointer items-center gap-2 text-sm md:col-span-2"><Paperclip className="size-4" />
+        {file ? file.name : t(type?.requires_attachment ? "إرفاق مستند (مطلوب)" : "إرفاق مستند (اختياري)")}
+        <input type="file" accept="application/pdf,image/*" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></label>
+      <div className="flex gap-2 md:col-span-2">
+        <Button disabled={busy} onClick={() => save(true)}>{t("إرسال للموافقة")}</Button>
+        <Button disabled={busy} variant="outline" onClick={() => save(false)}><Save /> {t("حفظ كمسودة")}</Button>
+      </div>
+    </section>
+  );
+}
+
+function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canManager, canHr, usesBalance, onDone }: {
+  r: LeaveRequest | null; onClose: () => void; emp?: Emp; typeName: (id: string) => string; lang: "ar" | "en"; events: Ev[];
+  balance?: Balance; canManager: boolean; canHr: boolean; usesBalance: boolean; onDone: () => void;
+}) {
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => setNote(""), [r?.id]);
+  if (!r) return null;
+
+  async function act(action: string) {
+    if (!r) return;
+    if (action.endsWith("reject") && !note.trim()) return toast.error(t("اكتب سبب الرفض"));
+    setBusy(true);
+    const { error } = await supabase.rpc("leave_transition", { p_id: r.id, p_action: action, p_note: note || undefined });
+    setBusy(false);
+    if (error) return toast.error(t(leaveError(error.message)));
+    toast.success(t("تم التحديث")); onDone();
+  }
+  async function openFile() {
+    if (!r?.attachment_path) return;
+    const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(r.attachment_path, 300);
+    if (error || !data) return toast.error(t("تعذر فتح الملف"));
+    window.open(data.signedUrl, "_blank");
+  }
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+        <DialogHeader><DialogTitle>#{r.request_no} · {emp?.name} · {typeName(r.type_id)}</DialogTitle></DialogHeader>
+        <Badge variant="outline" className={`w-fit ${TONE[r.status]}`}>{stateLabel(r.status, lang)}</Badge>
+        <div className="grid gap-2 text-sm sm:grid-cols-2">
+          {[["رقم الموظف", r.employee_id], ["الإدارة", emp?.dept], ["المسمى الوظيفي", emp?.role], ["عدد الأيام", r.working_days],
+            ["من", r.start_date], ["إلى", r.end_date], ["تاريخ العودة", r.return_date], ["الرصيد المتبقي", balance ? fmt(balance.remaining) : "—"],
+            ["سبب الإجازة", r.reason || "—"], ["ملاحظة المدير", r.manager_note || "—"], ["ملاحظة HR", r.hr_note || "—"]].map(([k, v]) => (
+            <div key={k as string} className="rounded-lg border border-border p-2"><div className="text-xs text-muted-foreground">{t(k as string)}</div><div className="font-medium">{String(v ?? "—")}</div></div>
+          ))}
+        </div>
+        {r.attachment_path && <Button variant="outline" size="sm" className="w-fit" onClick={openFile}><Paperclip /> {r.attachment_name ?? t("المرفق")}</Button>}
+        {usesBalance && r.status === "pending_hr" && balance && r.working_days > balance.remaining && <p className="text-sm text-destructive">{t("الرصيد المتبقي لا يكفي لهذا الطلب")}</p>}
+
+        {((r.status === "pending_manager" && canManager) || (r.status === "pending_hr" && canHr) || (canHr && !["rejected", "cancelled"].includes(r.status))) && (
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <Textarea placeholder={t("ملاحظة / سبب الرفض")} value={note} onChange={(e) => setNote(e.target.value)} />
+            <div className="flex flex-wrap gap-2">
+              {r.status === "draft" && canHr && <Button disabled={busy} onClick={() => act("submit")}>{t("إرسال للموافقة")}</Button>}
+              {r.status === "pending_manager" && canManager && <>
+                <Button disabled={busy} onClick={() => act("manager_approve")}><CheckCircle2 /> {t("موافقة المدير")}</Button>
+                <Button disabled={busy} variant="outline" className="text-destructive" onClick={() => act("manager_reject")}><XCircle /> {t("رفض")}</Button></>}
+              {r.status === "pending_hr" && canHr && <>
+                <Button disabled={busy} onClick={() => act("hr_approve")}><CheckCircle2 /> {t("اعتماد نهائي")}</Button>
+                <Button disabled={busy} variant="outline" className="text-destructive" onClick={() => act("hr_reject")}><XCircle /> {t("رفض")}</Button></>}
+              {canHr && !["rejected", "cancelled"].includes(r.status) && <Button disabled={busy} variant="ghost" onClick={() => act("cancel")}>{t("إلغاء الطلب")}</Button>}
+            </div>
+          </div>
+        )}
+
+        <div>
+          <h3 className="mb-1 font-bold">{t("سجل الطلب")}</h3>
+          {events.map((e) => (
+            <div key={e.id} className="border-s-2 border-primary/40 ps-3 pb-2 text-sm">
+              <div><b>{stateLabel(e.to_status ?? "", lang)}</b> · {e.actor_name || "—"}</div>
+              {e.note && <div className="text-muted-foreground">{e.note}</div>}
+              <div className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString("en-GB")}</div>
+            </div>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Balances({ emps, bal, adjs, isHr, onDone }: { emps: Emp[]; bal: Balance[]; adjs: Adj[]; isHr: boolean; onDone: () => void }) {
+  const [q, setQ] = useState("");
+  const [adj, setAdj] = useState<{ emp: Emp; kind: "opening" | "adjust"; days: string; note: string } | null>(null);
+  const [log, setLog] = useState<Emp | null>(null);
+  const byId = new Map(bal.map((b) => [b.employee_id, b]));
+  const rows = emps.filter((e) => e.active && (!q || `${e.id} ${e.name} ${e.dept}`.includes(q)));
 
   async function save() {
-    if (!sel || !draft) return;
-    const data: HrRow = Object.fromEntries(Object.entries(sel.data).filter(([k]) => !LEAVE_COLS.includes(k)));
-    for (const [k, v] of Object.entries(draft)) {
-      const s = v.trim();
-      if (!s) continue;
-      const orig = sel.data[k];
-      data[k] = typeof orig === "number" && !isNaN(Number(s)) ? Number(s) : s;
-    }
-    const res = sel.id
-      ? await supabase.from("hr_records").update({ data, updated_at: new Date().toISOString() }).eq("id", sel.id)
-      : await supabase.from("hr_records").insert({ sheet: "leaves", data, sort: rows.length });
-    if (res.error) { toast.error(t("تعذر الحفظ")); return; }
-    toast.success(t("تم الحفظ"));
-    setSel(null); setDraft(null); load();
+    if (!adj) return;
+    const n = Number(adj.days);
+    if (!adj.days || isNaN(n)) return toast.error(t("اكتب عدد الأيام"));
+    const { error } = await supabase.rpc("leave_adjust", { p_emp: adj.emp.id, p_days: n, p_kind: adj.kind, p_note: adj.note });
+    if (error) return toast.error(t(leaveError(error.message)));
+    toast.success(t("تم التحديث")); setAdj(null); onDone();
+  }
+  function copyLink(e: Emp) {
+    if (!e.checkin_token) return toast.error(t("لا يوجد رابط لهذا الموظف"));
+    navigator.clipboard.writeText(`${window.location.origin}/leave/${e.checkin_token}`);
+    toast.success(t("تم نسخ رابط الإجازات"));
   }
 
-  async function remove() {
-    if (!sel?.id || !confirm(t("حذف هذا السجل؟"))) return;
-    const { error } = await supabase.from("hr_records").delete().eq("id", sel.id);
-    if (error) { toast.error(t("تعذر الحذف")); return; }
-    toast.success(t("تم الحذف")); setSel(null); load();
-  }
+  return (
+    <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+      <div className="relative max-w-sm"><Search className="absolute start-2 top-2.5 size-4 text-muted-foreground" /><Input className="ps-8" placeholder={t("بحث")} value={q} onChange={(e) => setQ(e.target.value)} /></div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[900px] text-sm">
+          <thead><tr className="border-b border-border text-xs text-muted-foreground">
+            {["الموظف", "تاريخ بداية الخدمة", "الاستحقاق السنوي", "رصيد بداية الفترة", "تعديلات", "المكتسب", "المستخدم", "المحجوز", "المتبقي", ""].map((h) => <th key={h} className="p-2 text-start">{h && t(h)}</th>)}
+          </tr></thead>
+          <tbody>
+            {rows.map((e) => { const b = byId.get(e.id); return (
+              <tr key={e.id} className="border-b border-border/50">
+                <td className="p-2"><div className="font-medium">{e.name}</div><div className="text-xs text-muted-foreground">{e.id} · {e.dept}</div></td>
+                <td className="p-2 tabular-nums">{e.joined ?? "—"}</td>
+                <td className="p-2 tabular-nums">{b ? fmt(b.entitlement) : "—"}</td>
+                <td className="p-2 tabular-nums">{b ? fmt(b.opening) : "—"}</td>
+                <td className="p-2 tabular-nums">{b ? fmt(b.adjustments) : "—"}</td>
+                <td className="p-2 tabular-nums">{b ? fmt(b.earned) : "—"}</td>
+                <td className="p-2 tabular-nums">{b ? fmt(b.used) : "—"}</td>
+                <td className="p-2 tabular-nums">{b ? fmt(b.booked) : "—"}</td>
+                <td className="p-2 font-bold tabular-nums">{b ? fmt(b.remaining) : "—"}</td>
+                <td className="p-2"><div className="flex gap-1">
+                  {isHr && <Button size="sm" variant="outline" onClick={() => setAdj({ emp: e, kind: "adjust", days: "", note: "" })}>{t("تعديل الرصيد")}</Button>}
+                  <Button size="sm" variant="ghost" onClick={() => setLog(e)}>{t("الحركات")}</Button>
+                  {isHr && <Button size="icon" variant="ghost" title={t("نسخ رابط الإجازات")} onClick={() => copyLink(e)}><Link2 /></Button>}
+                </div></td>
+              </tr>
+            ); })}
+          </tbody>
+        </table>
+      </div>
 
-  async function exportExcel() {
+      <Dialog open={!!adj} onOpenChange={(o) => !o && setAdj(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{t("تعديل الرصيد")} — {adj?.emp.name}</DialogTitle></DialogHeader>
+          {adj && <div className="space-y-2">
+            <select className={select} value={adj.kind} onChange={(e) => setAdj({ ...adj, kind: e.target.value as "opening" | "adjust" })}>
+              <option value="opening">{t("رصيد بداية الفترة")}</option><option value="adjust">{t("تعديل (+/-)")}</option></select>
+            <Input type="number" step="0.5" placeholder={t("عدد الأيام (سالب للخصم)")} value={adj.days} onChange={(e) => setAdj({ ...adj, days: e.target.value })} />
+            <Textarea placeholder={t("سبب التعديل (مطلوب)")} value={adj.note} onChange={(e) => setAdj({ ...adj, note: e.target.value })} />
+            <Button onClick={save}><Save /> {t("حفظ")}</Button>
+          </div>}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!log} onOpenChange={(o) => !o && setLog(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{t("حركات الرصيد")} — {log?.name}</DialogTitle></DialogHeader>
+          {adjs.filter((a) => a.employee_id === log?.id).length === 0 ? <Empty /> : adjs.filter((a) => a.employee_id === log?.id).map((a) => (
+            <div key={a.id} className="border-b border-border/50 py-2 text-sm">
+              <b className="tabular-nums">{a.days > 0 ? "+" : ""}{a.days}</b> · {t(a.kind === "opening" ? "رصيد بداية الفترة" : "تعديل (+/-)")} · {a.note}
+              <div className="text-xs text-muted-foreground">{a.actor_name} · {new Date(a.created_at).toLocaleString("en-GB")}</div>
+            </div>
+          ))}
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
+
+function LeaveCalendar({ reqs, empById, typeName, onOpen, weekend }: { reqs: LeaveRequest[]; empById: Map<string, Emp>; typeName: (id: string) => string; onOpen: (r: LeaveRequest) => void; weekend: number[] }) {
+  const [ym, setYm] = useState(() => todayIso().slice(0, 7));
+  const [y, m] = ym.split("-").map(Number);
+  const first = new Date(Date.UTC(y!, m! - 1, 1));
+  const count = new Date(Date.UTC(y!, m!, 0)).getUTCDate();
+  const lead = first.getUTCDay();
+  const active = reqs.filter((r) => !["rejected", "cancelled", "draft"].includes(r.status));
+  const shift = (n: number) => { const d = new Date(Date.UTC(y!, m! - 1 + n, 1)); setYm(d.toISOString().slice(0, 7)); };
+  const label = first.toLocaleDateString(currentLanguage() === "en" ? "en-GB" : "ar-SA-u-ca-gregory", { month: "long", year: "numeric", timeZone: "UTC" });
+  const wd = Array.from({ length: 7 }, (_, i) => new Date(Date.UTC(2026, 9, 18 + i)).toLocaleDateString(currentLanguage() === "en" ? "en-GB" : "ar-SA", { weekday: "short", timeZone: "UTC" }));
+  return (
+    <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center justify-between">
+        <Button size="icon" variant="outline" onClick={() => shift(-1)}><ChevronRight className="rtl:rotate-0 ltr:rotate-180" /></Button>
+        <h2 className="font-bold">{label}</h2>
+        <Button size="icon" variant="outline" onClick={() => shift(1)}><ChevronLeft className="rtl:rotate-0 ltr:rotate-180" /></Button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-xs">
+        {wd.map((w) => <div key={w} className="p-1 text-center font-medium text-muted-foreground">{w}</div>)}
+        {Array.from({ length: lead }).map((_, i) => <div key={`l${i}`} />)}
+        {Array.from({ length: count }, (_, i) => {
+          const d = `${ym}-${String(i + 1).padStart(2, "0")}`;
+          const off = weekend.includes(new Date(`${d}T00:00:00Z`).getUTCDay());
+          const on = active.filter((r) => r.start_date <= d && r.end_date >= d);
+          return (
+            <div key={d} className={`min-h-20 rounded-md border border-border p-1 ${off ? "bg-muted/60" : ""}`}>
+              <div className="text-muted-foreground">{i + 1}</div>
+              {on.slice(0, 3).map((r) => (
+                <button key={r.id} onClick={() => onOpen(r)} title={typeName(r.type_id)}
+                  className={`mt-0.5 block w-full truncate rounded px-1 text-start ${r.status === "approved" ? "bg-primary/20 text-foreground" : "border border-dashed border-warning/60 text-muted-foreground"}`}>
+                  {empById.get(r.employee_id)?.name.split(" ")[0]}
+                </button>
+              ))}
+              {on.length > 3 && <div className="text-muted-foreground">+{on.length - 3}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-xs text-muted-foreground">{t("الملوّن: معتمد · المنقّط: بانتظار الموافقة")}</p>
+    </section>
+  );
+}
+
+function Reports({ reqs, emps, types, typeName, lang }: { reqs: LeaveRequest[]; emps: Emp[]; types: LeaveType[]; typeName: (id: string) => string; lang: "ar" | "en" }) {
+  const [f, setF] = useState({ emp: "all", type: "all", dept: "all", status: "all", from: "", to: "" });
+  const empById = new Map(emps.map((e) => [e.id, e]));
+  const depts = [...new Set(emps.map((e) => e.dept).filter(Boolean))].sort();
+  const rows = reqs.filter((r) => (f.emp === "all" || r.employee_id === f.emp) && (f.type === "all" || r.type_id === f.type)
+    && (f.dept === "all" || empById.get(r.employee_id)?.dept === f.dept) && (f.status === "all" || r.status === f.status)
+    && (!f.from || r.end_date >= f.from) && (!f.to || r.start_date <= f.to));
+  const total = rows.reduce((s, r) => s + Number(r.working_days), 0);
+  const byType = types.map((x) => ({ x, n: rows.filter((r) => r.type_id === x.id).reduce((s, r) => s + Number(r.working_days), 0) })).filter((g) => g.n > 0);
+  const max = Math.max(1, ...byType.map((g) => g.n));
+
+  async function exportXlsx() {
     try {
       const { exportBrandedExcel } = await import("@/lib/branded-excel");
+      const d = todayIso();
       await exportBrandedExcel({
-        filename: `${locale() === "en-GB" ? "Leaves" : "الإجازات"}-${today}.xlsx`,
-        reportTitle: `${t("الإجازات")} — ${today}`,
-        summary: [
-          [t("سجلات الإجازات"), filtered.length, "int"],
-          [t("في إجازة الآن"), onNow, "int"],
-          [t("إجازات قادمة"), upcoming, "int"],
-          [t("إجمالي أيام الإجازات"), totalDays, "int"],
-        ],
+        filename: `${lang === "en" ? "Leave-report" : "تقرير-الإجازات"}-${d}.xlsx`,
+        reportTitle: `${t("تقرير الإجازات")} — ${d}`,
+        summary: [[t("عدد الطلبات"), rows.length, "int"], [t("إجمالي الأيام"), total, "int"]],
         sheets: [{
-          name: t("الإجازات"),
-          title: `${t("الإجازات")} — Metal Fuze`,
-          columns: LEAVE_COLS.map((h) => ({ header: t(h), width: h === NOTE ? 34 : 18 })),
-          rows: filtered.map((r) => LEAVE_COLS.map((c) => (r.data[c] ?? "") as string | number)),
+          name: t("الإجازات"), title: `${t("تقرير الإجازات")} — Metal Fuze`,
+          columns: ["رقم الطلب", "رقم الموظف", "الموظف", "الإدارة", "المسمى الوظيفي", "نوع الإجازة", "من", "إلى", "الأيام", "العودة", "الحالة", "سبب الإجازة", "ملاحظة المدير", "ملاحظة HR"].map((h) => ({ header: t(h), width: 18 })),
+          rows: rows.map((r) => { const e = empById.get(r.employee_id); return [r.request_no, r.employee_id, e?.name, e?.dept, e?.role, typeName(r.type_id), r.start_date, r.end_date, Number(r.working_days), r.return_date, stateLabel(r.status, lang), r.reason, r.manager_note, r.hr_note]; }),
+          totals: [8],
         }],
       });
       toast.success(t("تم تصدير تقرير Excel"));
     } catch { toast.error(t("تعذر التصدير")); }
   }
 
-  const stats = [
-    { label: "سجلات الإجازات", v: rows.length, icon: CalendarOff },
-    { label: "في إجازة الآن", v: onNow, icon: CalendarOff },
-    { label: "إجازات قادمة", v: upcoming, icon: CalendarOff },
-    { label: "منتهية", v: ended, icon: CalendarOff },
-    { label: "إجمالي أيام الإجازات", v: totalDays, icon: CalendarOff },
-    { label: "أيام هذا الشهر", v: monthDays, icon: CalendarOff },
-  ];
+  return (
+    <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <select className={select} value={f.emp} onChange={(e) => setF({ ...f, emp: e.target.value })}><option value="all">{t("كل الموظفين")}</option>{emps.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</select>
+        <select className={select} value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}><option value="all">{t("كل الأنواع")}</option>{types.map((x) => <option key={x.id} value={x.id}>{lang === "en" ? x.name_en : x.name_ar}</option>)}</select>
+        <select className={select} value={f.dept} onChange={(e) => setF({ ...f, dept: e.target.value })}><option value="all">{t("كل الإدارات")}</option>{depts.map((d) => <option key={d} value={d}>{d}</option>)}</select>
+        <select className={select} value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}><option value="all">{t("كل الحالات")}</option>{LEAVE_STATES.map((s) => <option key={s.key} value={s.key}>{lang === "en" ? s.en : s.ar}</option>)}</select>
+        <Input type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} title={t("من")} />
+        <Input type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} title={t("إلى")} />
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm">{t("عدد الطلبات")}: <b>{rows.length}</b> · {t("إجمالي الأيام")}: <b>{total}</b></p>
+        <Button variant="outline" onClick={exportXlsx}><FileSpreadsheet /> {t("تصدير Excel")}</Button>
+      </div>
+      <div className="space-y-1">
+        {byType.map((g) => (
+          <div key={g.x.id} className="flex items-center gap-2 text-sm">
+            <span className="w-40 shrink-0 truncate">{lang === "en" ? g.x.name_en : g.x.name_ar}</span>
+            <div className="h-3 flex-1 rounded bg-muted"><div className="h-3 rounded bg-primary" style={{ width: `${(g.n / max) * 100}%` }} /></div>
+            <span className="w-10 text-end tabular-nums">{g.n}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SettingsTab({ types, settings, mgrs, emps, onDone }: { types: LeaveType[]; settings: Settings; mgrs: Mgr[]; emps: Emp[]; onDone: () => void }) {
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [tiers, setTiers] = useState<Tier[]>(settings.tiers);
+  const [accrual, setAccrual] = useState(settings.accrual_from);
+  const [list, setList] = useState<LeaveType[]>(types);
+  useEffect(() => { listUsers().then(setUsers).catch(() => {}); }, []);
+  useEffect(() => setList(types), [types]);
+  useEffect(() => { setTiers(settings.tiers); setAccrual(settings.accrual_from); }, [settings]);
+  const depts = [...new Set(emps.map((e) => e.dept).filter(Boolean))].sort();
+
+  async function savePolicy() {
+    const { error } = await supabase.from("leave_settings").update({ tiers, accrual_from: accrual }).eq("id", 1);
+    if (error) return toast.error(t("تعذر الحفظ")); toast.success(t("تم الحفظ")); onDone();
+  }
+  async function saveType(x: LeaveType) {
+    const { error } = await supabase.from("leave_types").update({ name_ar: x.name_ar, name_en: x.name_en, paid: x.paid, uses_balance: x.uses_balance, max_days: x.max_days, requires_attachment: x.requires_attachment, calendar_days: x.calendar_days, active: x.active }).eq("id", x.id);
+    if (error) return toast.error(t("تعذر الحفظ")); toast.success(t("تم الحفظ")); onDone();
+  }
+  async function setMgr(dept: string, uid: string) {
+    const res = uid
+      ? await supabase.from("department_managers").upsert({ dept, user_id: uid, user_name: users.find((u) => u.id === uid)?.name ?? "" })
+      : await supabase.from("department_managers").delete().eq("dept", dept);
+    if (res.error) return toast.error(t("تعذر الحفظ")); toast.success(t("تم الحفظ")); onDone();
+  }
+  const upd = (id: string, p: Partial<LeaveType>) => setList(list.map((x) => (x.id === id ? { ...x, ...p } : x)));
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
-      <header className="flex flex-wrap items-end justify-between gap-3 text-center sm:text-start">
-        <div>
-          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{t("الإجازات")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t("كل إجازات الموظفين في مكان واحد — تتحدث تلقائيًا")} · {today}</p>
+    <div className="space-y-4">
+      <Panel title={t("مدير كل إدارة")}>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {depts.map((d) => (
+            <label key={d} className="text-sm">{d}
+              <select className={`${select} mt-1`} value={mgrs.find((m) => m.dept === d)?.user_id ?? ""} onChange={(e) => setMgr(d, e.target.value)}>
+                <option value="">{t("غير محدد")}</option>{users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+            </label>
+          ))}
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={exportExcel}><FileSpreadsheet /> {t("تصدير Excel")}</Button>
-          {canEdit && (
-            <Button onClick={() => { const r: Rec = { id: "", sheet: "leaves", data: {}, sort: 0 }; setSel(r); startEdit(r); }}>
-              <Plus /> {t("إضافة إجازة")}
-            </Button>
-          )}
+        <p className="mt-2 text-xs text-muted-foreground">{t("المدير لازم يكون عنده حساب دخول. مدير النظام يقدر يوافق بدل أي مدير.")}</p>
+      </Panel>
+
+      <Panel title={t("قواعد الاستحقاق السنوي")}>
+        <div className="space-y-2">
+          {tiers.map((x, i) => (
+            <div key={i} className="flex flex-wrap items-center gap-2 text-sm">
+              {t("من")} <Input type="number" className="w-20" value={x.years} onChange={(e) => setTiers(tiers.map((y, j) => (j === i ? { ...y, years: Number(e.target.value) } : y)))} /> {t("سنوات خدمة")}
+              → <Input type="number" className="w-20" value={x.days} onChange={(e) => setTiers(tiers.map((y, j) => (j === i ? { ...y, days: Number(e.target.value) } : y)))} /> {t("يوم سنويًا")}
+              <Button size="icon" variant="ghost" onClick={() => setTiers(tiers.filter((_, j) => j !== i))}><Trash2 /></Button>
+            </div>
+          ))}
+          <Button size="sm" variant="outline" onClick={() => setTiers([...tiers, { years: 10, days: 30 }])}><Plus /> {t("إضافة شريحة")}</Button>
+          <label className="block text-sm">{t("بداية احتساب الاستحقاق في النظام")}<Input type="date" className="mt-1 w-48" value={accrual} onChange={(e) => setAccrual(e.target.value)} /></label>
+          <Button onClick={savePolicy}><Settings2 /> {t("حفظ القواعد")}</Button>
         </div>
-      </header>
+      </Panel>
 
-      {!recs && <p className="text-center text-muted-foreground">{t("جارٍ التحميل…")}</p>}
-
-      {recs && (
-        <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {stats.map((s) => (
-              <div key={s.label} className="rounded-xl border border-border bg-card p-4 text-center">
-                <div className="text-xs text-muted-foreground">{t(s.label)}</div>
-                <div className="mt-1 font-display text-2xl font-bold">{s.v}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative min-w-48 flex-1">
-              <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("بحث…")} className="pr-9" />
-            </div>
-            {(["all", "active", "upcoming", "ended"] as const).map((k) => (
-              <Button key={k} size="sm" variant={status === k ? "secondary" : "outline"} onClick={() => setStatus(k)}>
-                {k === "all" ? t("الكل") : t(ST[k])}
-              </Button>
-            ))}
-            <select value={type} onChange={(e) => setType(e.target.value)}
-              className="h-9 rounded-md border border-border bg-background px-3 text-sm">
-              <option value="all">{t("كل الأنواع")}</option>
-              {types.map((x) => <option key={x} value={x}>{x}</option>)}
-            </select>
-          </div>
-
-          <section className="rounded-xl border border-border bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-right text-xs text-muted-foreground">
-                    {[NAME, DEPT, TYPE, FROM, TO, N, STATE, NOTE].map((c) => <th key={c} className="p-3 font-medium">{t(c)}</th>)}
-                    {canEdit && <th className="p-3 font-medium">{t("تعديل")}</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((r) => (
-                    <tr key={r.id} onClick={() => open(r)} className="cursor-pointer border-b border-border/60 hover:bg-muted/40">
-                      <td className="p-3 font-medium">{show(r.data[NAME])}</td>
-                      <td className="p-3">{show(r.data[DEPT])}</td>
-                      <td className="p-3">{show(r.data[TYPE])}</td>
-                      <td className="p-3 whitespace-nowrap">{show(r.start ?? r.data[FROM])}</td>
-                      <td className="p-3 whitespace-nowrap">{show(r.end ?? r.data[TO])}</td>
-                      <td className="p-3">{show(r.days || r.data[N])}</td>
-                      <td className="p-3">
-                        {r.status
-                          ? <Badge variant="outline" className={ST_TONE[r.status]}>{t(ST[r.status])}</Badge>
-                          : <span className="text-muted-foreground">{show(r.data[STATE])}</span>}
-                      </td>
-                      <td className="max-w-64 p-3 text-xs text-muted-foreground">{show(r.data[NOTE])}</td>
-                      {canEdit && (
-                        <td className="p-3">
-                          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setSel(r); startEdit(r); }}>
-                            <Pencil /> {t("تعديل")}
-                          </Button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                  {!filtered.length && (
-                    <tr><td colSpan={8 + (canEdit ? 1 : 0)} className="p-8 text-center text-muted-foreground">{t("لا توجد نتائج")}</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <section className="rounded-xl border border-border bg-card p-4">
-              <h2 className="mb-3 flex items-center gap-2 font-bold"><CalendarOff className="size-4" /> {t("أيام الإجازات حسب الشهر")} · {year}</h2>
-              <div className="space-y-2">
-                {byMonth.map((b) => (
-                  <div key={b.m} className="flex items-center gap-3">
-                    <span className="w-16 shrink-0 text-xs text-muted-foreground">
-                      {new Date(`${b.m}-01T00:00:00`).toLocaleDateString(locale(), { month: "short" })}
-                    </span>
-                    <div className="h-3 flex-1 overflow-hidden rounded-full bg-muted/40">
-                      <div className="h-full rounded-full bg-primary/70" style={{ width: `${Math.round((b.days / maxMonth) * 100)}%` }} />
-                    </div>
-                    <span className="w-10 shrink-0 text-end text-xs">{b.days || "—"}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-            <section className="rounded-xl border border-border bg-card p-4">
-              <h2 className="mb-3 flex items-center gap-2 font-bold"><CalendarOff className="size-4" /> {t("أكثر الموظفين إجازات")}</h2>
-              {!byEmp.length && <p className="text-sm text-muted-foreground">{t("لا توجد إجازات بعد")}</p>}
-              <div className="space-y-2">
-                {byEmp.map(([name, days]) => (
-                  <div key={name} className="flex items-center gap-3">
-                    <span className="w-40 shrink-0 truncate text-xs">{name}</span>
-                    <div className="h-3 flex-1 overflow-hidden rounded-full bg-muted/40">
-                      <div className="h-full rounded-full bg-primary/70" style={{ width: `${Math.round((days / maxEmp) * 100)}%` }} />
-                    </div>
-                    <span className="w-10 shrink-0 text-end text-xs">{days}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-        </>
-      )}
-
-      <Dialog open={!!sel} onOpenChange={(o) => { if (!o) { setSel(null); setDraft(null); } }}>
-        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-          {sel && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{sel.id ? show(sel.data[NAME]) : t("إضافة إجازة")}</DialogTitle>
-              </DialogHeader>
-              {canEdit && (
-                <div className="flex flex-wrap gap-2">
-                  {draft ? (
-                    <>
-                      <Button onClick={save}><Save /> {t("حفظ")}</Button>
-                      {sel.id && <Button variant="outline" onClick={() => setDraft(null)}><X /> {t("إلغاء")}</Button>}
-                    </>
-                  ) : (
-                    <>
-                      <Button variant="outline" onClick={() => startEdit(sel)}><Pencil /> {t("تعديل")}</Button>
-                      <Button variant="outline" className="text-destructive hover:text-destructive" onClick={remove}><Trash2 /> {t("حذف")}</Button>
-                    </>
-                  )}
-                </div>
-              )}
-              <div className="grid gap-2 sm:grid-cols-2">
-                {LEAVE_COLS.map((c) => (
-                  <div key={c} className={`rounded-lg border border-border p-2 ${c === NOTE ? "sm:col-span-2" : ""}`}>
-                    <div className="text-xs text-muted-foreground">{t(c)}</div>
-                    {draft ? (
-                      <Input className="mt-1 h-8" value={draft[c] ?? ""} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })} />
-                    ) : (
-                      <div className="font-medium">{show(sel.data[c])}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <Panel title={t("أنواع الإجازات")}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[860px] text-sm">
+            <thead><tr className="border-b border-border text-xs text-muted-foreground">
+              {["الاسم بالعربي", "الاسم بالإنجليزي", "مدفوعة", "تخصم من الرصيد", "الحد الأقصى", "مرفق مطلوب", "أيام تقويمية", "مفعلة", ""].map((h) => <th key={h} className="p-2 text-start">{h && t(h)}</th>)}
+            </tr></thead>
+            <tbody>
+              {list.map((x) => (
+                <tr key={x.id} className="border-b border-border/50">
+                  <td className="p-1"><Input value={x.name_ar} onChange={(e) => upd(x.id, { name_ar: e.target.value })} /></td>
+                  <td className="p-1"><Input value={x.name_en} onChange={(e) => upd(x.id, { name_en: e.target.value })} /></td>
+                  {(["paid", "uses_balance"] as const).map((k) => <td key={k} className="p-1 text-center"><input type="checkbox" checked={x[k]} onChange={(e) => upd(x.id, { [k]: e.target.checked })} /></td>)}
+                  <td className="p-1"><Input type="number" className="w-20" value={x.max_days ?? ""} onChange={(e) => upd(x.id, { max_days: e.target.value ? Number(e.target.value) : null })} /></td>
+                  {(["requires_attachment", "calendar_days", "active"] as const).map((k) => <td key={k} className="p-1 text-center"><input type="checkbox" checked={x[k]} onChange={(e) => upd(x.id, { [k]: e.target.checked })} /></td>)}
+                  <td className="p-1"><Button size="sm" variant="outline" onClick={() => saveType(x)}><Save /></Button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
     </div>
   );
 }
+
+export type { LeaveState };
+// Re-exported so Copy icon import stays used by tree-shaking-safe builds.
+export const _icons = { Copy };
