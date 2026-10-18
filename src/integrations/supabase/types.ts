@@ -154,6 +154,24 @@ export type Database = {
           },
         ]
       }
+      department_managers: {
+        Row: {
+          dept: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          dept: string
+          user_id: string
+          user_name?: string
+        }
+        Update: {
+          dept?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           active: boolean
@@ -264,6 +282,267 @@ export type Database = {
           excuse_date?: string
           id?: string
           reason?: string
+        }
+        Relationships: []
+      }
+      leave_balance_adjustments: {
+        Row: {
+          actor_id: string | null
+          actor_name: string
+          created_at: string
+          days: number
+          employee_id: string
+          id: string
+          kind: string
+          note: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string
+          created_at?: string
+          days: number
+          employee_id: string
+          id?: string
+          kind?: string
+          note?: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string
+          created_at?: string
+          days?: number
+          employee_id?: string
+          id?: string
+          kind?: string
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_balance_adjustments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_notifications: {
+        Row: {
+          audience: string
+          created_at: string
+          dept: string | null
+          employee_id: string | null
+          id: string
+          message: string
+          request_id: string | null
+        }
+        Insert: {
+          audience: string
+          created_at?: string
+          dept?: string | null
+          employee_id?: string | null
+          id?: string
+          message: string
+          request_id?: string | null
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          dept?: string | null
+          employee_id?: string | null
+          id?: string
+          message?: string
+          request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_notifications_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "leave_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_request_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string
+          created_at: string
+          from_status: string | null
+          id: string
+          note: string | null
+          request_id: string
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          request_id: string
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          request_id?: string
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_request_events_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "leave_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          attachment_name: string | null
+          attachment_path: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          end_date: string
+          hr_note: string | null
+          id: string
+          manager_note: string | null
+          reason: string
+          request_no: number
+          return_date: string | null
+          start_date: string
+          status: string
+          type_id: string
+          updated_at: string
+          via: string
+          working_days: number
+        }
+        Insert: {
+          attachment_name?: string | null
+          attachment_path?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          end_date: string
+          hr_note?: string | null
+          id?: string
+          manager_note?: string | null
+          reason?: string
+          request_no?: never
+          return_date?: string | null
+          start_date: string
+          status?: string
+          type_id: string
+          updated_at?: string
+          via?: string
+          working_days?: number
+        }
+        Update: {
+          attachment_name?: string | null
+          attachment_path?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          end_date?: string
+          hr_note?: string | null
+          id?: string
+          manager_note?: string | null
+          reason?: string
+          request_no?: never
+          return_date?: string | null
+          start_date?: string
+          status?: string
+          type_id?: string
+          updated_at?: string
+          via?: string
+          working_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "leave_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_settings: {
+        Row: {
+          accrual_from: string
+          id: number
+          tiers: Json
+          weekend: number[]
+        }
+        Insert: {
+          accrual_from?: string
+          id?: number
+          tiers?: Json
+          weekend?: number[]
+        }
+        Update: {
+          accrual_from?: string
+          id?: number
+          tiers?: Json
+          weekend?: number[]
+        }
+        Relationships: []
+      }
+      leave_types: {
+        Row: {
+          active: boolean
+          calendar_days: boolean
+          id: string
+          max_days: number | null
+          name_ar: string
+          name_en: string
+          paid: boolean
+          requires_attachment: boolean
+          sort: number
+          uses_balance: boolean
+        }
+        Insert: {
+          active?: boolean
+          calendar_days?: boolean
+          id: string
+          max_days?: number | null
+          name_ar: string
+          name_en: string
+          paid?: boolean
+          requires_attachment?: boolean
+          sort?: number
+          uses_balance?: boolean
+        }
+        Update: {
+          active?: boolean
+          calendar_days?: boolean
+          id?: string
+          max_days?: number | null
+          name_ar?: string
+          name_en?: string
+          paid?: boolean
+          requires_attachment?: boolean
+          sort?: number
+          uses_balance?: boolean
         }
         Relationships: []
       }
@@ -476,7 +755,69 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_dept_manager: {
+        Args: { _dept: string; _uid: string }
+        Returns: boolean
+      }
       is_hr: { Args: { _user_id: string }; Returns: boolean }
+      leave_actor_name: { Args: { _uid: string }; Returns: string }
+      leave_adjust: {
+        Args: { p_days: number; p_emp: string; p_kind: string; p_note: string }
+        Returns: undefined
+      }
+      leave_balances: {
+        Args: never
+        Returns: {
+          adjustments: number
+          booked: number
+          earned: number
+          employee_id: string
+          entitlement: number
+          joined: string
+          opening: number
+          remaining: number
+          used: number
+        }[]
+      }
+      leave_create: {
+        Args: {
+          p_attach_name?: string
+          p_attach_path?: string
+          p_emp: string
+          p_end: string
+          p_reason: string
+          p_return?: string
+          p_start: string
+          p_submit?: boolean
+          p_type: string
+        }
+        Returns: string
+      }
+      leave_is_weekend: { Args: { _d: string }; Returns: boolean }
+      leave_log: {
+        Args: {
+          _action: string
+          _from: string
+          _note: string
+          _req: string
+          _to: string
+        }
+        Returns: undefined
+      }
+      leave_next_workday: { Args: { _d: string }; Returns: string }
+      leave_transition: {
+        Args: {
+          p_action: string
+          p_emp?: string
+          p_id: string
+          p_note?: string
+        }
+        Returns: string
+      }
+      leave_working_days: {
+        Args: { _calendar: boolean; _end: string; _start: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "viewer" | "hr" | "manager"
