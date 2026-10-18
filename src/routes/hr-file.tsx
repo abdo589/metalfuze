@@ -45,6 +45,7 @@ function show(v: unknown) {
 
 function HrFilePage() {
   const role = useRole();
+  const lang = useLanguage();
   const canEdit = role === "admin" || role === "hr";
   const [recs, setRecs] = useState<Rec[] | null>(null);
   const [tab, setTab] = useState<HrKey>("employees");
