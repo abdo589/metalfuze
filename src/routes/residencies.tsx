@@ -15,9 +15,9 @@ import { PdfButton } from "@/components/PdfButton";
 export const Route = createFileRoute("/residencies")({
   head: () => ({
     meta: [
-      { title: "لوحة تتبع الإقامات — Metal Fuze" },
+      { title: "بيانات الموظفين — Metal Fuze" },
       { name: "description", content: "لوحة متابعة انتهاء الإقامات ورخص العمل والتأمين والعقود مع تنبيهات قبل الانتهاء." },
-      { property: "og:title", content: "لوحة تتبع الإقامات — Metal Fuze" },
+      { property: "og:title", content: "بيانات الموظفين — Metal Fuze" },
       { property: "og:description", content: "تنبيهات انتهاء الإقامات والرخص لموظفي Metal Fuze." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -168,7 +168,7 @@ function Residencies() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
       <header className="space-y-1 text-center">
-        <h1 className="font-display text-2xl font-bold md:text-3xl">{t("تتبع الإقامات")}</h1>
+        <h1 className="font-display text-2xl font-bold md:text-3xl">{t("بيانات الموظفين")}</h1>
         <p className="text-sm text-muted-foreground">{t("تنبيه قبل الانتهاء بـ")} {ALERT_DAYS} {t("يوم")}</p>
         <div className="print:hidden"><PdfButton /></div>
       </header>
