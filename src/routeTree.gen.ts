@@ -17,6 +17,7 @@ import { Route as HrDashboardRouteImport } from './routes/hr-dashboard'
 import { Route as HrFileRouteImport } from './routes/hr-file'
 import { Route as LeavesRouteImport } from './routes/leaves'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MyProjectsRouteImport } from './routes/my-projects'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
@@ -78,6 +79,11 @@ const LeavesRoute = LeavesRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MyProjectsRoute = MyProjectsRouteImport.update({
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
   '/mcp': typeof McpRoute
+  '/messages': typeof MessagesRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -233,6 +240,7 @@ export interface FileRoutesByTo {
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
   '/mcp': typeof McpRoute
+  '/messages': typeof MessagesRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -266,6 +274,7 @@ export interface FileRoutesById {
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
   '/mcp': typeof McpRoute
+  '/messages': typeof MessagesRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -300,6 +309,7 @@ export interface FileRouteTypes {
     | '/hr-file'
     | '/leaves'
     | '/mcp'
+    | '/messages'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -332,6 +342,7 @@ export interface FileRouteTypes {
     | '/hr-file'
     | '/leaves'
     | '/mcp'
+    | '/messages'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/hr-file'
     | '/leaves'
     | '/mcp'
+    | '/messages'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -397,6 +409,7 @@ export interface RootRouteChildren {
   HrFileRoute: typeof HrFileRoute
   LeavesRoute: typeof LeavesRoute
   McpRoute: typeof McpRoute
+  MessagesRoute: typeof MessagesRoute
   MyProjectsRoute: typeof MyProjectsRoute
   PaymentsRoute: typeof PaymentsRoute
   PayrollRoute: typeof PayrollRoute
@@ -477,6 +490,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/my-projects': {
@@ -645,6 +665,7 @@ const rootRouteChildren: RootRouteChildren = {
   HrFileRoute: HrFileRoute,
   LeavesRoute: LeavesRoute,
   McpRoute: McpRoute,
+  MessagesRoute: MessagesRoute,
   MyProjectsRoute: MyProjectsRoute,
   PaymentsRoute: PaymentsRoute,
   PayrollRoute: PayrollRoute,

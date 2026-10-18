@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 export type Role = "admin" | "hr" | "viewer" | "manager" | null;
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
-export const HR_PATHS = ["/payroll", "/attendance", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves"];
+export const HR_PATHS = ["/payroll", "/attendance", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/messages"];
 /** Self-registered project managers (and accounts without a role) only get their own workspace. */
-export const MANAGER_PATHS = ["/my-projects"];
+export const MANAGER_PATHS = ["/my-projects", "/messages"];
 
 /** Current user's strongest role (admin > hr > viewer > manager). Accounts without a role are treated as manager. undefined while loading. */
 export function useRole() {
