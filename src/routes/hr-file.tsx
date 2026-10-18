@@ -28,6 +28,8 @@ export const Route = createFileRoute("/hr-file")({
 
 const META = sheets as Record<HrKey, { title: string; columns: string[] }>;
 const TABS: HrKey[] = ["employees", "documents", "leaves", "payroll", "evaluations"];
+/** Leaves have their own page (/leaves), so they are not offered as a box here. */
+const GRID: HrKey[] = TABS.filter((k) => k !== "leaves");
 const ID = "رقم الموظف";
 const NAME = "اسم الموظف";
 type Rec = { id: string; sheet: HrKey; data: HrRow; sort: number };
@@ -108,7 +110,7 @@ function HrFilePage() {
       {recs && (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
-            {TABS.map((k) => (
+            {GRID.map((k) => (
               <button key={k} onClick={() => { setTab(k); setQ(""); setResTab(false); }}
                 className={`rounded-xl border p-4 text-center transition ${!resTab && tab === k ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted/40"}`}>
                 <div className="text-xs text-muted-foreground">{META[k].title}</div>
