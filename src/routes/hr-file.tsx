@@ -143,8 +143,15 @@ function HrFilePage() {
                 </tr></thead>
                 <tbody>
                   {rows.map((r) => (
-                    <tr key={r.id} onClick={() => open(r)} className="cursor-pointer border-b border-border/60 hover:bg-muted/40">
-                      {cols.map((c) => <td key={c} className="p-3">{show(r.data[c])}</td>)}
+                    <tr key={r.id} onClick={() => open(r)} className={`cursor-pointer border-b border-border/60 hover:bg-muted/40 ${String(r.data["الحالة"] ?? "").includes("مستقيل") ? "bg-destructive/10 opacity-80" : ""}`}>
+                      {cols.map((c) => (
+                        <td key={c} className="p-3">
+                          {show(r.data[c])}
+                          {c === "اسم الموظف" && String(r.data["الحالة"] ?? "").includes("مستقيل") && (
+                            <span className="ms-2 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">مستقيل</span>
+                          )}
+                        </td>
+                      ))}
                       {canEdit && (
                         <td className="p-3">
                           <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setSel(r); startEdit(r); }}>
