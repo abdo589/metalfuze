@@ -14,7 +14,7 @@ import {
   PanelLeftOpen,
   PieChart,
   Fingerprint, Smartphone, Landmark, IdCard, CalendarOff,
-  Users, FolderKanban, MessageSquare,
+  Users, FolderKanban, MessageSquare, Calculator,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -55,6 +55,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const role = useRole();
   const unread = useUnreadMessages();
   const visible = role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
+    : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
     : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
     : role === undefined ? [] : role === "admin" ? items : items.filter((i) => i.to !== "/my-projects");
   return (
