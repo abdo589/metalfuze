@@ -1,7 +1,7 @@
 import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Banknote, CheckCircle2, ChevronLeft, ChevronRight, FileDown, Pencil, Plus, Search, Trash2, Users, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { fmtMoney } from "@/lib/projects";
 import { summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
 import { monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/payroll")({
   head: () => ({
@@ -40,6 +41,17 @@ function Payroll() {
   const employees = usePayroll();
   const [month, setMonth] = useState(monthKey());
   const punches = useMonthPunches(month);
+  const [excuses, setExcuses] = useState<{ employee_id: string; excuse_date: string }[]>([]);
+  useEffect(() => {
+    supabase.from("late_excuses").select("employee_id,excuse_date").then(({ data }) => { if (data) setExcuses(data); });
+  }, []);
+  const excuseSets = useMemo(() => {
+    const m = new Map<string, Set<string>>();
+    for (const x of excuses) { const s = m.get(x.employee_id) ?? new Set<string>(); s.add(x.excuse_date); m.set(x.employee_id, s); }
+    return m;
+  }, [excuses]);
+  /** Attendance summary honoring approved late excuses. */
+  const att = (e: Employee) => summarize(e, punches, month, excuseSets.get(e.id));
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
@@ -83,7 +95,7 @@ function Payroll() {
             { header: t("الشهور المدفوعة"), width: 30 },
           ],
           rows: employees.map((e) => {
-            const a = summarize(e, punches, month);
+            const a = att(e);
             return [e.id, e.name, e.role || "—", e.dept || "—", e.project || "—", e.deviceUserId || "—",
               e.base, e.allowances, e.deductions, netSalary(e),
               e.joined ? new Date(e.joined).toLocaleDateString(locale()) : "—",
@@ -214,7 +226,7 @@ function Payroll() {
                     <td className="p-3 text-success">{fmtMoney(e.allowances)}</td>
                     <td className="p-3 text-destructive">{fmtMoney(e.deductions)}</td>
                     <td className="p-3 font-bold">{fmtMoney(netSalary(e))}</td>
-                    <td className="p-3 text-xs">{(() => { const a = summarize(e, punches, month); return a.linked ? (
+                    <td className="p-3 text-xs">{(() => { const a = att(e); return a.linked ? (
                       <div className="space-y-0.5"><div>{t("حضور")}: <b>{a.present}</b></div>
                         <div className="text-warning">{t("تأخير")}: {a.late}</div>
                         <div className="text-destructive">{t("غياب")}: {a.absent}</div></div>
