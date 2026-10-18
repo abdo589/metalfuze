@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "sdk_version": "3.1.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://ewhygacdvbxjkepcykbq.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "metalfuze",
+      "version": "0.1.0",
+      "title": "Metalfuze"
+    },
+    "tools": [
+      {
+        "name": "list_employees",
+        "title": "List employees",
+        "description": "List company employees (name, job, department, project, active flag) visible to the signed-in user.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Filter by name (partial match).",
+              "type": "string",
+              "maxLength": 80
+            },
+            "activeOnly": {
+              "description": "Only return active employees.",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_leave_requests",
+        "title": "List leave requests",
+        "description": "List employee leave requests, optionally filtered by status, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "status": {
+              "description": "Status filter, e.g. pending_manager, pending_hr, approved, rejected.",
+              "type": "string",
+              "maxLength": 40
+            },
+            "limit": {
+              "description": "Max rows (default 50).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_expiring_documents",
+        "title": "List expiring documents",
+        "description": "List residency (iqama), work permit, insurance and contract dates expiring within the given number of days (including already expired).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "withinDays": {
+              "description": "Window in days (default 60).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_manager_projects",
+        "title": "List manager projects",
+        "description": "List project-manager projects with client, contract value, paid amount and progress that the signed-in user can see.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
