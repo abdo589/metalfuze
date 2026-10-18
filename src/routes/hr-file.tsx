@@ -193,7 +193,7 @@ function HrFilePage() {
                   </div>
                 ))}
               </div>
-              {sel.id && !draft && sel.sheet === "employees" && (
+              {sel.id && sel.sheet === "employees" && (
                 <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
               )}
               {sel.id && !draft && related(sel).map((g) => (
