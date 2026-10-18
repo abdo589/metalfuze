@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      acct_sheets: {
+        Row: {
+          id: string
+          name: string
+          owner_id: string
+          rows: Json
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          owner_id?: string
+          rows?: Json
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          owner_id?: string
+          rows?: Json
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       attendance_devices: {
         Row: {
           approved: boolean
@@ -889,7 +916,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "viewer" | "hr" | "manager"
+      app_role: "admin" | "viewer" | "hr" | "manager" | "accountant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1017,7 +1044,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "viewer", "hr", "manager"],
+      app_role: ["admin", "viewer", "hr", "manager", "accountant"],
     },
   },
 } as const
