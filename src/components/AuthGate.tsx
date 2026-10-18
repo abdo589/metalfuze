@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { HR_PATHS, MANAGER_PATHS, useRole } from "@/lib/permissions";
+import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 /** HR-only accounts may open only the HR pages; anything else sends them to payroll. */
 function RoleGuard({ children }: { children: ReactNode }) {
@@ -17,7 +18,7 @@ function RoleGuard({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const allowed = role === "hr" ? HR_PATHS : role === "manager" ? MANAGER_PATHS : null;
-  const blocked = !!allowed && !allowed.some((p) => pathname.startsWith(p));
+  const blocked = !!allowed && !pathname.startsWith("/.lovable/oauth") && !allowed.some((p) => pathname.startsWith(p));
   const home = role === "manager" ? "/my-projects" : "/payroll";
   useEffect(() => { if (blocked) navigate({ to: home, replace: true }); }, [blocked, home, navigate]);
   if (role === undefined || blocked) return <div className="min-h-screen" />;
@@ -92,7 +93,7 @@ function Login() {
     setGoogleBusy(true);
     setError("");
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: window.location.pathname.startsWith("/.lovable/oauth") ? new URL(oauthReturnPath(window.location.pathname + window.location.search), window.location.origin).href : window.location.origin,
     });
     if (result.error) {
       setGoogleBusy(false);
