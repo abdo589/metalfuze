@@ -53,7 +53,7 @@ function HrFilePage() {
   }, []);
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
-    if (recs && !recs.length && canEdit) importHrFile().then((r) => r.imported && load()).catch(() => {});
+    if (recs && !recs.length && canEdit) importHrFile().then((r) => { if (r.imported) load(); }).catch(() => {});
   }, [recs, canEdit, load]);
 
   const all = recs ?? [];
