@@ -128,11 +128,9 @@ function Residencies() {
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-border">
-                <td className="p-2 min-w-44">
-                  <Field r={r} k="name" canEdit={canEdit} reload={reload} />
-                  <div className="text-xs text-muted-foreground">{r.job ?? ""}</div>
+                <td className="p-2 min-w-44 space-y-1">
+                  <NameCell r={r} canEdit={canEdit} reload={reload} />
                 </td>
-                <Field r={r} k="job" canEdit={canEdit} reload={reload} />
                 <Field r={r} k="nationality" canEdit={canEdit} reload={reload} />
                 <Field r={r} k="iqama_no" canEdit={canEdit} reload={reload} ltr />
                 {DOCS.map((d) => <DateCell key={d.key} r={r} k={d.key} canEdit={canEdit} reload={reload} />)}
