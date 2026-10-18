@@ -48,7 +48,7 @@ function HrFilePage() {
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.from("hr_records").select("id,sheet,data,sort").order("sort");
-    if (error) return toast.error("تعذر التحميل");
+    if (error) { toast.error("تعذر التحميل"); return; }
     setRecs((data ?? []) as unknown as Rec[]);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -76,7 +76,7 @@ function HrFilePage() {
     const res = sel.id
       ? await supabase.from("hr_records").update({ data, updated_at: new Date().toISOString() }).eq("id", sel.id)
       : await supabase.from("hr_records").insert({ sheet: sel.sheet, data, sort: bySheet(sel.sheet).length });
-    if (res.error) return toast.error("تعذر الحفظ");
+    if (res.error) { toast.error("تعذر الحفظ"); return; }
     toast.success("تم الحفظ");
     setSel(null); setDraft(null); load();
   }
@@ -84,7 +84,7 @@ function HrFilePage() {
   async function remove() {
     if (!sel?.id || !confirm("حذف هذا السجل؟")) return;
     const { error } = await supabase.from("hr_records").delete().eq("id", sel.id);
-    if (error) return toast.error("تعذر الحذف");
+    if (error) { toast.error("تعذر الحذف"); return; }
     toast.success("تم الحذف"); setSel(null); load();
   }
 
