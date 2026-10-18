@@ -10,3 +10,6 @@
 
 - [x] Add Google sign-in button to login screen (provider enabled; build OK, button verified on screen)
 - [ ] Search domain availability for Metal Fuze project and present options to the user — done, waiting on the user's pick
+- [x] Auth email templates (Metalfuze, notify.metalfuze.com)
+- [ ] Employee signup by email — waiting on user's choice (email confirmation / company domain only / link to employee record)
+- [ ] Internal chat — waiting on user's choice (private / group, who can join)
