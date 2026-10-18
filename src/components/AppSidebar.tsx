@@ -34,7 +34,7 @@ const items = [
   { to: "/payroll", label: "الرواتب", icon: Banknote },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
   { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Smartphone },
-  { to: "/residencies", label: "تتبع الإقامات", icon: IdCard },
+  { to: "/residencies", label: "بيانات الموظفين", icon: IdCard },
   { to: "/hr-file", label: "ملف الموارد البشرية", icon: FileSpreadsheet },
   { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
   { to: "/bank", label: "رصيد البنك", icon: Landmark },
