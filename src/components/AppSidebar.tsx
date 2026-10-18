@@ -65,7 +65,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
         return (
           <Button key={it.to} variant={active ? "secondary" : "ghost"} asChild
             className="w-full justify-start gap-3" aria-current={active ? "page" : undefined}>
-            <Link to={it.to} onClick={onNavigate} className={badge > 0 ? "me-3 items-center" : undefined}>
+            <Link to={it.to} onClick={onNavigate}>
               <it.icon /> {t(it.label)}
               {badge > 0 && (
                 <span aria-label={`${badge} ${t("رسائل غير مقروءة")}`}
