@@ -35,7 +35,7 @@ const tone = {
 
 const inputCls = "w-full rounded border border-input bg-background px-1.5 py-1 text-xs";
 
-type FieldKey = "name" | "job" | "nationality" | "iqama_no" | "iqama_fee" | "permit_fee";
+type FieldKey = "nationality" | "iqama_no" | "iqama_fee" | "permit_fee";
 
 function Field({ r, k, canEdit, reload, type = "text", ltr = false }: {
   r: Residency; k: FieldKey; canEdit: boolean; reload: () => void; type?: "text" | "number"; ltr?: boolean;
@@ -47,7 +47,7 @@ function Field({ r, k, canEdit, reload, type = "text", ltr = false }: {
         <input
           type={type}
           defaultValue={cur ?? ""}
-          className={inputCls + (k === "name" ? " font-medium" : "")}
+          className={inputCls}
           onBlur={async (e) => {
             const raw = e.target.value.trim();
             let v: string | number | null;
