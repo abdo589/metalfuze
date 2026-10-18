@@ -22,7 +22,7 @@ export const Route = createFileRoute("/messages")({
   component: MessagesPage,
 });
 
-type Profile = { id: string; display_name: string; email: string };
+type Profile = { id: string; display_name: string };
 type Msg = { id: string; sender_id: string; recipient_id: string; body: string; read_at: string | null; created_at: string };
 
 function MessagesPage() {
@@ -43,7 +43,7 @@ function MessagesPage() {
       if (!alive || !u.user) return;
       setMe(u.user.id);
       const [{ data: p }, { data: m }] = await Promise.all([
-        supabase.from("profiles").select("id,display_name,email").order("display_name"),
+        supabase.rpc("chat_directory"),
         supabase.from("direct_messages").select("*").order("created_at").limit(2000),
       ]);
       if (!alive) return;
@@ -72,7 +72,7 @@ function MessagesPage() {
     return map;
   }, [msgs, me]);
   const list = useMemo(() => people
-    .filter((p) => `${p.display_name} ${p.email}`.toLowerCase().includes(q.toLowerCase()))
+    .filter((p) => p.display_name.toLowerCase().includes(q.toLowerCase()))
     .sort((a, b) => (lastAt.get(b.id) ?? "").localeCompare(lastAt.get(a.id) ?? "") || a.display_name.localeCompare(b.display_name)), [people, q, lastAt]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ block: "end" }); }, [thread.length, active]);
@@ -110,8 +110,7 @@ function MessagesPage() {
               <button key={p.id} type="button" onClick={() => setActive(p.id)}
                 className={`flex w-full items-center justify-between gap-2 px-4 py-3 text-start hover:bg-muted/60 ${active === p.id ? "bg-muted" : ""}`}>
                 <div className="min-w-0">
-                  <div className="truncate font-medium">{p.display_name || p.email}</div>
-                  <div className="truncate text-xs text-muted-foreground" dir="ltr">{p.email}</div>
+                  <div className="truncate font-medium">{p.display_name || "—"}</div>
                 </div>
                 {!!unread.get(p.id) && <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{unread.get(p.id)}</span>}
               </button>
@@ -128,7 +127,7 @@ function MessagesPage() {
             <>
               <header className="flex items-center gap-3 border-b border-border p-3">
                 <Button size="sm" variant="ghost" className="md:hidden" onClick={() => setActive(null)}>{t("رجوع")}</Button>
-                <div className="font-semibold">{activePerson.display_name || activePerson.email}</div>
+                <div className="font-semibold">{activePerson.display_name || "—"}</div>
               </header>
               <div className="flex-1 space-y-2 overflow-y-auto p-4">
                 {thread.length === 0 && <p className="text-center text-sm text-muted-foreground">{t("لا توجد رسائل بعد")}</p>}
