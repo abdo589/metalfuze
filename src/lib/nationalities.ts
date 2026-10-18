@@ -1,0 +1,143 @@
+import { currentLanguage } from "@/lib/i18n";
+
+/**
+ * Every nationality the app offers in its pickers. The Arabic spelling is what gets saved
+ * (that's how the existing employee records are written); English is shown in English mode.
+ */
+export const NATIONALITIES: { ar: string; en: string }[] = [
+  // Gulf & Arabia
+  { ar: "سعودي", en: "Saudi" },
+  { ar: "إماراتي", en: "Emirati" },
+  { ar: "بحريني", en: "Bahraini" },
+  { ar: "قطري", en: "Qatari" },
+  { ar: "كويتي", en: "Kuwaiti" },
+  { ar: "عماني", en: "Omani" },
+  { ar: "يمني", en: "Yemeni" },
+  // Levant & Iraq
+  { ar: "أردني", en: "Jordanian" },
+  { ar: "فلسطيني", en: "Palestinian" },
+  { ar: "لبناني", en: "Lebanese" },
+  { ar: "سوري", en: "Syrian" },
+  { ar: "عراقي", en: "Iraqi" },
+  // North & East Africa
+  { ar: "مصري", en: "Egyptian" },
+  { ar: "سوداني", en: "Sudanese" },
+  { ar: "جنوب سوداني", en: "South Sudanese" },
+  { ar: "ليبي", en: "Libyan" },
+  { ar: "تونسي", en: "Tunisian" },
+  { ar: "جزائري", en: "Algerian" },
+  { ar: "مغربي", en: "Moroccan" },
+  { ar: "موريتاني", en: "Mauritanian" },
+  { ar: "صومالي", en: "Somali" },
+  { ar: "قمری", en: "Comorian" },
+  { ar: "إثيوبي", en: "Ethiopian" },
+  { ar: "إريتري", en: "Eritrean" },
+  { ar: "جيبوتي", en: "Djiboutian" },
+  { ar: "كينی", en: "Kenyan" },
+  { ar: "أوغندي", en: "Ugandan" },
+  { ar: "تنزاني", en: "Tanzanian" },
+  // West & Central Africa
+  { ar: "نيجيري", en: "Nigerian" },
+  { ar: "غاني", en: "Ghanaian" },
+  { ar: "سنغالي", en: "Senegalese" },
+  { ar: "مالي", en: "Malian" },
+  { ar: "غيني", en: "Guinean" },
+  { ar: "إيفواري", en: "Ivorian" },
+  { ar: "كاميروني", en: "Cameroonian" },
+  { ar: "كونغولي", en: "Congolese" },
+  { ar: "أنغولي", en: "Angolan" },
+  { ar: "جنوب أفريقي", en: "South African" },
+  // South & Central Asia
+  { ar: "باكستاني", en: "Pakistani" },
+  { ar: "هندي", en: "Indian" },
+  { ar: "بنغلاديشي", en: "Bangladeshi" },
+  { ar: "نيبالي", en: "Nepali" },
+  { ar: "سريلانكي", en: "Sri Lankan" },
+  { ar: "أفغاني", en: "Afghan" },
+  { ar: "إيراني", en: "Iranian" },
+  { ar: "تركي", en: "Turkish" },
+  { ar: "أذربيجاني", en: "Azerbaijani" },
+  { ar: "جورجي", en: "Georgian" },
+  { ar: "أوزبكي", en: "Uzbek" },
+  { ar: "تركمانی", en: "Turkmen" },
+  { ar: "طاجيكي", en: "Tajik" },
+  { ar: "قيرغيزي", en: "Kyrgyz" },
+  // East & South-East Asia
+  { ar: "صيني", en: "Chinese" },
+  { ar: "ياباني", en: "Japanese" },
+  { ar: "كوري", en: "Korean" },
+  { ar: "منغولي", en: "Mongolian" },
+  { ar: "فلبيني", en: "Filipino" },
+  { ar: "إندونيسي", en: "Indonesian" },
+  { ar: "ماليزي", en: "Malaysian" },
+  { ar: "فيتنامي", en: "Vietnamese" },
+  { ar: "تايلاندي", en: "Thai" },
+  { ar: "كمبودي", en: "Cambodian" },
+  { ar: "لاوسي", en: "Lao" },
+  { ar: "ميانماري", en: "Myanmarese" },
+  // Europe
+  { ar: "بريطاني", en: "British" },
+  { ar: "أيرلندي", en: "Irish" },
+  { ar: "فرنسي", en: "French" },
+  { ar: "ألماني", en: "German" },
+  { ar: "إيطالي", en: "Italian" },
+  { ar: "إسباني", en: "Spanish" },
+  { ar: "برتغالي", en: "Portuguese" },
+  { ar: "هولندي", en: "Dutch" },
+  { ar: "بلجيكي", en: "Belgian" },
+  { ar: "سويسري", en: "Swiss" },
+  { ar: "نمساوي", en: "Austrian" },
+  { ar: "سويدي", en: "Swedish" },
+  { ar: "نرويجي", en: "Norwegian" },
+  { ar: "دنماركي", en: "Danish" },
+  { ar: "فنلندي", en: "Finnish" },
+  { ar: "بولندي", en: "Polish" },
+  { ar: "تشیكي", en: "Czech" },
+  { ar: "سلوفاكي", en: "Slovak" },
+  { ar: "مجري", en: "Hungarian" },
+  { ar: "روماني", en: "Romanian" },
+  { ar: "بلغاري", en: "Bulgarian" },
+  { ar: "كرواتي", en: "Croatian" },
+  { ar: "صربي", en: "Serbian" },
+  { ar: "يوناني", en: "Greek" },
+  { ar: "أوكراني", en: "Ukrainian" },
+  { ar: "روسي", en: "Russian" },
+  { ar: "بيلاروسي", en: "Belarusian" },
+  { ar: "مولدوفي", en: "Moldovan" },
+  { ar: "ليتواني", en: "Lithuanian" },
+  { ar: "لاتفي", en: "Latvian" },
+  { ar: "إستوني", en: "Estonian" },
+  { ar: "أيسلندي", en: "Icelandic" },
+  // Americas & Oceania
+  { ar: "أمريكي", en: "American" },
+  { ar: "كندي", en: "Canadian" },
+  { ar: "مكسيكي", en: "Mexican" },
+  { ar: "كوبي", en: "Cuban" },
+  { ar: "جامايكي", en: "Jamaican" },
+  { ar: "هايتي", en: "Haitian" },
+  { ar: "برازيلي", en: "Brazilian" },
+  { ar: "أرجنتيني", en: "Argentine" },
+  { ar: "كولومبي", en: "Colombian" },
+  { ar: "فنزويلي", en: "Venezuelan" },
+  { ar: "تشيلي", en: "Chilean" },
+  { ar: "بيروفي", en: "Peruvian" },
+  { ar: "إكوادوري", en: "Ecuadorian" },
+  { ar: "بوليفي", en: "Bolivian" },
+  { ar: "أوروغواياني", en: "Uruguayan" },
+  { ar: "باراجواياني", en: "Paraguayan" },
+  { ar: "أسترالي", en: "Australian" },
+  { ar: "نيوزيلندي", en: "New Zealander" },
+].sort((a, b) => a.ar.localeCompare(b.ar, "ar"));
+
+/** Options for the current screen language: what the user sees, and what gets saved. */
+export function nationalityOptions() {
+  const en = currentLanguage() === "en";
+  return NATIONALITIES.map((n) => ({ label: en ? n.en : n.ar, value: n.ar }));
+}
+
+/** The saved Arabic spelling for a value typed or picked in either language. */
+export function nationalityValue(input: string): string {
+  const want = input.trim().toLowerCase();
+  const hit = NATIONALITIES.find((n) => n.ar.toLowerCase() === want || n.en.toLowerCase() === want);
+  return hit ? hit.ar : input.trim();
+}
