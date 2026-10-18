@@ -85,6 +85,13 @@
       "when": 1792322002260,
       "tag": "0011_hr_records",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792323483730,
+      "tag": "0012_employee_files_policies",
+      "breakpoints": true
     }
   ]
 }
