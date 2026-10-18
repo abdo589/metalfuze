@@ -64,6 +64,13 @@
       "when": 1792316016076,
       "tag": "0008_create_late_excuses",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792320347234,
+      "tag": "0009_add_manager_role",
+      "breakpoints": true
     }
   ]
 }
