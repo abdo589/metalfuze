@@ -78,6 +78,13 @@
       "when": 1792320375267,
       "tag": "0010_manager_workspace",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792322002260,
+      "tag": "0011_hr_records",
+      "breakpoints": true
     }
   ]
 }
