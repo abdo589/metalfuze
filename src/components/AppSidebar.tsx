@@ -53,6 +53,7 @@ const items = [
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const role = useRole();
+  const unread = useUnreadMessages();
   const visible = role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
     : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
     : role === undefined ? [] : role === "admin" ? items : items.filter((i) => i.to !== "/my-projects");
@@ -60,10 +61,19 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     <nav className="flex flex-col gap-1">
       {visible.map((it) => {
         const active = it.to === "/" ? pathname === "/" : pathname.startsWith(it.to);
+        const badge = it.to === "/messages" ? unread : 0;
         return (
           <Button key={it.to} variant={active ? "secondary" : "ghost"} asChild
             className="w-full justify-start gap-3" aria-current={active ? "page" : undefined}>
-            <Link to={it.to} onClick={onNavigate}><it.icon /> {t(it.label)}</Link>
+            <Link to={it.to} onClick={onNavigate} className={badge > 0 ? "me-3 items-center" : undefined}>
+              <it.icon /> {t(it.label)}
+              {badge > 0 && (
+                <span aria-label={`${badge} ${t("رسائل غير مقروءة")}`}
+                  className="ms-auto inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 text-[11px] font-semibold leading-none text-destructive-foreground">
+                  {badge > 99 ? "99+" : badge}
+                </span>
+              )}
+            </Link>
           </Button>
         );
       })}
