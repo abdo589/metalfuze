@@ -11,6 +11,7 @@ import { useCanEdit } from "@/lib/permissions";
 import { ALERT_DAYS, daysLeft, docStatus } from "@/lib/residency";
 import { DOCS, useResidencies, type Residency } from "@/lib/residency-data";
 import { PdfButton } from "@/components/PdfButton";
+import { NationalitySelect } from "@/components/NationalitySelect";
 
 
 const tone = {
@@ -37,10 +38,10 @@ function DateCell({ r, k }: { r: Residency; k: (typeof DOCS)[number]["key"] }) {
   );
 }
 
-const FIELDS: { k: keyof Residency; label: string; type: "text" | "number" | "date" }[] = [
+const FIELDS: { k: keyof Residency; label: string; type: "text" | "number" | "date" | "nationality" }[] = [
   { k: "name", label: "اسم الموظف", type: "text" },
   { k: "job", label: "الوظيفة", type: "text" },
-  { k: "nationality", label: "الجنسية", type: "text" },
+  { k: "nationality", label: "الجنسية", type: "nationality" },
   { k: "iqama_no", label: "رقم الإقامة", type: "text" },
   ...DOCS.map((d) => ({ k: d.key as keyof Residency, label: d.label, type: "date" as const })),
   { k: "iqama_fee", label: "رسوم الإقامة", type: "number" },
@@ -69,11 +70,15 @@ function EditDialog({ r, onClose, reload }: { r: Residency | null; onClose: () =
         <DialogHeader><DialogTitle>{t("تعديل")} — {r?.name}</DialogTitle></DialogHeader>
         <div className="grid gap-3 sm:grid-cols-2">
           {FIELDS.map(({ k, label, type }) => (
-            <label key={k} className="space-y-1 text-sm">
+            <div key={k} className="space-y-1 text-sm">
               <span className="text-muted-foreground">{t(label)}</span>
-              <Input type={type} dir={type === "text" && k !== "iqama_no" ? undefined : "ltr"} value={f[k] ?? ""}
-                onChange={(e) => setF({ ...f, [k]: e.target.value })} />
-            </label>
+              {type === "nationality" ? (
+                <NationalitySelect value={f[k] ?? ""} onChange={(v) => setF({ ...f, [k]: v })} />
+              ) : (
+                <Input type={type} dir={type === "text" && k !== "iqama_no" ? undefined : "ltr"} value={f[k] ?? ""}
+                  onChange={(e) => setF({ ...f, [k]: e.target.value })} />
+              )}
+            </div>
           ))}
         </div>
         <div className="flex gap-2">

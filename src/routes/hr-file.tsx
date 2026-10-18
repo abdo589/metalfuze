@@ -11,6 +11,7 @@ import { useRole } from "@/lib/permissions";
 import { importHrFile, type HrKey, type HrRow } from "@/lib/hr-file.functions";
 import sheets from "@/lib/hr-sheets.json";
 import { Residencies } from "@/components/ResidenciesPanel";
+import { NationalitySelect } from "@/components/NationalitySelect";
 
 export const Route = createFileRoute("/hr-file")({
   head: () => ({
@@ -198,7 +199,11 @@ function HrFilePage() {
                   <div key={c} className="rounded-lg border border-border p-2">
                     <div className="text-xs text-muted-foreground">{c}</div>
                     {draft ? (
-                      <Input className="mt-1 h-8" value={draft[c] ?? ""} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })} />
+                      c === "الجنسية" ? (
+                        <NationalitySelect className="mt-1" value={draft[c] ?? ""} onChange={(v) => setDraft({ ...draft, [c]: v })} />
+                      ) : (
+                        <Input className="mt-1 h-8" value={draft[c] ?? ""} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })} />
+                      )
                     ) : (
                       <div className="font-medium">{show(sel.data[c])}</div>
                     )}

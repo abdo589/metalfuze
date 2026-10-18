@@ -129,12 +129,6 @@ export const NATIONALITIES: { ar: string; en: string }[] = [
   { ar: "نيوزيلندي", en: "New Zealander" },
 ].sort((a, b) => a.ar.localeCompare(b.ar, "ar"));
 
-/** Options for the current screen language: what the user sees, and what gets saved. */
-export function nationalityOptions() {
-  const en = currentLanguage() === "en";
-  return NATIONALITIES.map((n) => ({ label: en ? n.en : n.ar, value: n.ar }));
-}
-
 /** The saved Arabic spelling for a value typed or picked in either language. */
 export function nationalityValue(input: string): string {
   const want = input.trim().toLowerCase();

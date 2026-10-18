@@ -231,3 +231,8 @@ Object.assign(translations, {
   "تم تسجيل الخروج لعدم النشاط": "Signed out after an hour without activity",
   "سيتم تسجيل الخروج خلال 5 دقائق لعدم النشاط": "You'll be signed out in 5 minutes because nothing is happening",
 });
+
+// Nationality picker labels
+Object.assign(translations, {
+  "اختر الجنسية": "Choose nationality", "ابحث عن جنسية…": "Search a nationality…", "لا توجد جنسية بهذا الاسم": "No nationality with that name", "استخدم": "Use",
+});
