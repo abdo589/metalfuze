@@ -142,6 +142,8 @@ export const translations: Record<string, string> = {
   "رسوم الإقامة": "Iqama Fee", "رسوم رخصة العمل": "Work Permit Fee",
   "منتهية منذ": "Expired since", "تنبيه قبل الانتهاء بـ": "Alerts before expiry within", "تنبيهات": "Alerts",
   "تنتهي خلال": "Expires in", "تتبع الإقامات": "Residency Tracking", "تم التحديث": "Updated",
+  "إجمالي الموظفين": "Total Employees", "قرب الانتهاء": "Expiring Soon", "منتهية": "Expired",
+  "سارية": "Valid", "غير مسجل": "Not set", "الأقرب للانتهاء": "Closest to Expiry", "جدول التفاصيل": "Details Table",
   "تنبيهات انتهاء الإقامات والرخص لموظفي Metal Fuze.": "Residency and permit expiry alerts for Metal Fuze employees.",
   "المشروع (اختياري)": "Project (Optional)", "الراتب الأساسي": "Base Salary", "تاريخ التعيين": "Joining Date",
   "موظف نشط (يظهر في مسير الرواتب)": "Active Employee (Included in Payroll)",

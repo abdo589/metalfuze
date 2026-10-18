@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { AlertTriangle, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, FileText, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,9 +15,9 @@ import { PdfButton } from "@/components/PdfButton";
 export const Route = createFileRoute("/residencies")({
   head: () => ({
     meta: [
-      { title: "تتبع الإقامات — Metal Fuze" },
-      { name: "description", content: "متابعة انتهاء الإقامات ورخص العمل والتأمين والعقود مع تنبيهات قبل الانتهاء." },
-      { property: "og:title", content: "تتبع الإقامات — Metal Fuze" },
+      { title: "لوحة تتبع الإقامات — Metal Fuze" },
+      { name: "description", content: "لوحة متابعة انتهاء الإقامات ورخص العمل والتأمين والعقود مع تنبيهات قبل الانتهاء." },
+      { property: "og:title", content: "لوحة تتبع الإقامات — Metal Fuze" },
       { property: "og:description", content: "تنبيهات انتهاء الإقامات والرخص لموظفي Metal Fuze." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -106,13 +106,64 @@ function DateCell({ r, k, canEdit, reload }: { r: Residency; k: (typeof DOCS)[nu
   );
 }
 
+function StatCard({ label, value, icon, cls }: { label: string; value: number; icon: React.ReactNode; cls: string }) {
+  return (
+    <div className={`flex items-center gap-3 rounded-xl border p-4 ${cls}`}>
+      <div className="rounded-lg bg-background/60 p-2">{icon}</div>
+      <div>
+        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-xs text-muted-foreground">{label}</div>
+      </div>
+    </div>
+  );
+}
+
+function DocBar({ label, expired, soon, valid, unset, total }: {
+  label: string; expired: number; soon: number; valid: number; unset: number; total: number;
+}) {
+  const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
+  return (
+    <div className="space-y-2 rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2 font-medium"><FileText className="size-4 text-muted-foreground" /> {label}</div>
+      <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+        <div className="bg-destructive" style={{ width: `${pct(expired)}%` }} />
+        <div className="bg-warning" style={{ width: `${pct(soon)}%` }} />
+        <div className="bg-success" style={{ width: `${pct(valid)}%` }} />
+      </div>
+      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+        <span className="text-destructive">{t("منتهية")} {expired}</span>
+        <span className="text-warning">{t("قرب الانتهاء")} {soon}</span>
+        <span className="text-success">{t("سارية")} {valid}</span>
+        {unset > 0 && <span>{t("غير مسجل")} {unset}</span>}
+      </div>
+    </div>
+  );
+}
+
 function Residencies() {
   useLanguage();
   const canEdit = useCanEdit();
   const { rows, reload } = useResidencies();
   const [name, setName] = useState("");
+
   const alerts = rows.flatMap((r) => DOCS.map((doc) => ({ r, doc, d: daysLeft(r[doc.key]) })))
     .filter((a) => a.d !== null && a.d <= ALERT_DAYS).sort((a, b) => a.d! - b.d!);
+
+  const all = rows.flatMap((r) => DOCS.map((doc) => daysLeft(r[doc.key]))).filter((x): x is number => x !== null);
+  const nExpired = all.filter((d) => d < 0).length;
+  const nSoon = all.filter((d) => d >= 0 && d <= ALERT_DAYS).length;
+  const nValid = all.filter((d) => d > ALERT_DAYS).length;
+
+  const docStats = DOCS.map((d) => {
+    const ds = rows.map((r) => daysLeft(r[d.key])).filter((x): x is number => x !== null);
+    return {
+      d,
+      expired: ds.filter((x) => x < 0).length,
+      soon: ds.filter((x) => x >= 0 && x <= ALERT_DAYS).length,
+      valid: ds.filter((x) => x > ALERT_DAYS).length,
+      unset: rows.length - ds.length,
+    };
+  });
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
@@ -122,17 +173,42 @@ function Residencies() {
         <div className="print:hidden"><PdfButton /></div>
       </header>
 
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <StatCard label={t("إجمالي الموظفين")} value={rows.length} icon={<Users className="size-5 text-primary" />} cls="border-border bg-card" />
+        <StatCard label={t("قرب الانتهاء")} value={nSoon} icon={<CalendarClock className="size-5 text-warning" />} cls="border-warning/40 bg-warning/10" />
+        <StatCard label={t("منتهية")} value={nExpired} icon={<AlertTriangle className="size-5 text-destructive" />} cls="border-destructive/40 bg-destructive/10" />
+        <StatCard label={t("سارية")} value={nValid} icon={<CheckCircle2 className="size-5 text-success" />} cls="border-success/40 bg-success/10" />
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2">
+        {docStats.map((s) => (
+          <DocBar key={s.d.key} label={t(s.d.label)} expired={s.expired} soon={s.soon} valid={s.valid} unset={s.unset} total={rows.length} />
+        ))}
+      </section>
+
       {alerts.length > 0 && (
-        <section className="space-y-2 rounded-xl border border-warning/40 bg-warning/10 p-4">
-          <h2 className="flex items-center gap-2 font-bold"><AlertTriangle className="size-5 text-warning" /> {t("تنبيهات")} ({alerts.length})</h2>
-          {alerts.map((a) => (
-            <div key={a.r.id + a.doc.key} className="text-sm">
-              <b>{a.r.name}</b> — {t(a.doc.label)}: {a.d! < 0 ? `${t("منتهية منذ")} ${-a.d!} ${t("يوم")}` : `${t("تنتهي خلال")} ${a.d} ${t("يوم")}`} ({a.r[a.doc.key]})
-            </div>
-          ))}
+        <section className="space-y-3 rounded-xl border border-warning/40 bg-warning/10 p-4">
+          <h2 className="flex items-center gap-2 font-bold"><AlertTriangle className="size-5 text-warning" /> {t("الأقرب للانتهاء")} ({alerts.length})</h2>
+          <div className="grid gap-2 md:grid-cols-2">
+            {alerts.map((a) => {
+              const s = docStatus(a.d);
+              return (
+                <div key={a.r.id + a.doc.key} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background/60 p-3">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{a.r.name}</div>
+                    <div className="text-xs text-muted-foreground">{t(a.doc.label)}</div>
+                  </div>
+                  <Badge variant="outline" className={`shrink-0 ${tone[s]}`}>
+                    {a.d! < 0 ? `${t("منتهية منذ")} ${-a.d!} ${t("يوم")}` : `${t("تنتهي خلال")} ${a.d} ${t("يوم")}`}
+                  </Badge>
+                </div>
+              );
+            })}
+          </div>
         </section>
       )}
 
+      <h2 className="text-lg font-semibold">{t("جدول التفاصيل")}</h2>
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
