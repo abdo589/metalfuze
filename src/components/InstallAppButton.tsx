@@ -6,19 +6,21 @@ import { t, useLanguage } from "@/lib/i18n";
 
 type PromptEvent = Event & { prompt: () => Promise<void> };
 
-/** Installs the site as a home-screen app; shows a short guide where the browser has no prompt (iPhone). */
+/** Installs the site as a real app; shows the exact steps for the device the visitor is on. */
 export function InstallAppButton() {
   useLanguage();
   const [installed, setInstalled] = useState(true);
   const [prompt, setPrompt] = useState<PromptEvent | null>(null);
   const [guide, setGuide] = useState(false);
   const [ios, setIos] = useState(false);
+  const [android, setAndroid] = useState(false);
 
   useEffect(() => {
     const standalone = window.matchMedia("(display-mode: standalone)").matches
       || (navigator as Navigator & { standalone?: boolean }).standalone === true;
     setInstalled(standalone);
     setIos(/iphone|ipad|ipod/i.test(navigator.userAgent));
+    setAndroid(/android/i.test(navigator.userAgent));
     const onPrompt = (e: Event) => { e.preventDefault(); setPrompt(e as PromptEvent); };
     const onInstalled = () => setInstalled(true);
     window.addEventListener("beforeinstallprompt", onPrompt);
@@ -43,15 +45,28 @@ export function InstallAppButton() {
       </Button>
       <Dialog open={guide} onOpenChange={setGuide}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>{ios ? t("تثبيت على الآيفون") : t("تثبيت التطبيق")}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{ios ? t("تثبيت على الآيفون") : android ? t("تثبيت على أندرويد") : t("تثبيت على الكمبيوتر")}</DialogTitle>
+          </DialogHeader>
           {ios ? (
             <ol className="space-y-2 text-sm">
               <li>{t("١. اضغط زر المشاركة أسفل Safari")}</li>
               <li>{t("٢. اختر «إضافة إلى الشاشة الرئيسية»")}</li>
               <li>{t("٣. اضغط «إضافة» — سيظهر شعار Metal Fuze على شاشتك")}</li>
             </ol>
+          ) : android ? (
+            <ol className="space-y-2 text-sm">
+              <li>{t("١. افتح القائمة (⋮) في أعلى المتصفح")}</li>
+              <li>{t("٢. اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»")}</li>
+              <li>{t("٣. أكّد التثبيت — سيظهر Metal Fuze كبرنامج بأيقونته")}</li>
+            </ol>
           ) : (
-            <p className="text-sm">{t("على الكمبيوتر أو أندرويد: افتح قائمة المتصفح واختر «تثبيت التطبيق».")}</p>
+            <ol className="space-y-2 text-sm">
+              <li>{t("١. افتح الموقع في Chrome أو Edge على اللابتوب")}</li>
+              <li>{t("٢. اضغط أيقونة التثبيت في آخر شريط العنوان (جوار علامة النجمة)")}</li>
+              <li>{t("أو من القائمة (⋮): Save and share ثم Install page as app")}</li>
+              <li>{t("٣. اضغط «تثبيت» — يفتح Metal Fuze في نافذة مستقلة ويظهر في قائمة البرامج")}</li>
+            </ol>
           )}
           <DialogFooter><Button onClick={() => setGuide(false)}>{t("تم")}</Button></DialogFooter>
         </DialogContent>
