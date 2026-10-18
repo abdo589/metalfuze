@@ -12,7 +12,8 @@ import { importHrFile, type HrKey, type HrRow } from "@/lib/hr-file.functions";
 import sheets from "@/lib/hr-sheets.json";
 import { Residencies } from "@/components/ResidenciesPanel";
 import { NationalitySelect } from "@/components/NationalitySelect";
-import { STATUS_OPTIONS, endedLabel } from "@/lib/employee-status";
+import { resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
+import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/hr-file")({
   head: () => ({
