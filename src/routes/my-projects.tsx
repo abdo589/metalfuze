@@ -52,7 +52,7 @@ function MyProjects() {
     const { data: u } = await supabase.auth.getUser();
     const owner_name = (u.user?.user_metadata?.["display_name"] as string) || u.user?.email?.split("@")[0] || "";
     const { error } = await supabase.from("mgr_projects").insert({ name, owner_name });
-    if (error) return toast.error(t("تعذر الحفظ، حاول مرة أخرى"));
+    if (error) { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); return; }
     setNewName(""); load();
   }
 
@@ -88,7 +88,7 @@ function ProjectCard({ p, mine, expanded, onToggle, reload, showOwner }: { p: P;
       start_date: form.start_date || null, end_date: form.end_date || null,
       contract: Number(form.contract) || 0, issues: form.issues, notes: form.notes, updated_at: new Date().toISOString(),
     }).eq("id", p.id);
-    if (error) return toast.error(t("تعذر الحفظ، حاول مرة أخرى"));
+    if (error) { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); return; }
     toast.success(t("تم الحفظ")); reload();
   }
   async function remove() {

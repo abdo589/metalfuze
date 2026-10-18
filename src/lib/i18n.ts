@@ -24,15 +24,6 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
-  "مشاريعي": "My projects", "مشاريع المديرين": "Managers' projects", "إنشاء حساب": "Create account", "إنشاء حساب مدير مشروع": "Create a project manager account",
-  "الاسم الكامل": "Full name", "لديك حساب؟ سجل الدخول": "Have an account? Sign in", "مدير مشروع؟ أنشئ حسابك": "Project manager? Create your account",
-  "جارٍ الإنشاء...": "Creating...", "تعذر إنشاء الحساب": "Couldn't create account", "مشروع جديد": "New project", "اسم المشروع": "Project name",
-  "العميل": "Client", "لا توجد مشاريع بعد — أضف مشروعك الأول": "No projects yet — add your first one", "تقرير جديد": "New report",
-  "ملاحظة / مشكلة": "Note / issue", "تحديث الإنجاز": "Progress update", "دفع / تحصيل": "Payment / collection", "ملف": "File",
-  "تحصيل": "Collected", "دفع": "Paid out", "المبلغ": "Amount", "إرفاق ملف (PDF / Excel / صورة)": "Attach file (PDF / Excel / image)",
-  "إرسال التقرير": "Submit report", "تم الحفظ": "Saved", "سجل التقارير": "Report history", "لا توجد تقارير بعد": "No reports yet",
-  "فتح الملف": "Open file", "حذف المشروع؟": "Delete project?", "مساحتك منفصلة — لا يراها إلا أنت والإدارة": "Your space is private — only you and management see it",
-  "صاحب الحساب": "Account owner", "كلمة السر 8 أحرف على الأقل": "Password must be at least 8 characters", "اسم المستخدم مستخدم بالفعل": "Username already taken",
   "تسجيل حضور": "Check in", "تسجيل انصراف": "Check out", "تسجيل حضور العمال": "Worker check-in", "جارٍ تحديد موقعك…": "Getting your location…", "جارٍ الإرسال…": "Sending…",
   "سيُطلب منك التقاط صورة سيلفي وتحديد موقعك": "You'll take a selfie and share your location", "الموقع غير متاح على هذا الجهاز": "Location isn't available on this device",
   "اسمح للموقع بالوصول إلى مكانك ثم حاول مرة أخرى": "Allow location access, then try again", "أنت على بعد": "You are", "متر من موقع": "m from", "متر": "m",
@@ -210,3 +201,15 @@ export function t(text: string): string {
   if (text === "لوحة متابعة المشاريع" || text === "تقرير متابعة المشاريع") return "METAL FUZE PROJECTS";
   return language === "en" ? (translations[text] ?? text) : text;
 }
+// Manager workspace labels
+Object.assign(translations, {
+  "مشاريعي": "My projects", "مشاريع المديرين": "Managers' projects", "إنشاء حساب": "Create account", "إنشاء حساب مدير مشروع": "Create a project manager account",
+  "الاسم الكامل": "Full name", "لديك حساب؟ سجل الدخول": "Have an account? Sign in", "مدير مشروع؟ أنشئ حسابك": "Project manager? Create your account",
+  "جارٍ الإنشاء...": "Creating...", "تعذر إنشاء الحساب": "Couldn't create account", "مشروع جديد": "New project", "اسم المشروع": "Project name",
+  "العميل": "Client", "لا توجد مشاريع بعد — أضف مشروعك الأول": "No projects yet — add your first one", "تقرير جديد": "New report",
+  "ملاحظة / مشكلة": "Note / issue", "تحديث الإنجاز": "Progress update", "دفع / تحصيل": "Payment / collection", "ملف": "File",
+  "تحصيل": "Collected", "دفع": "Paid out", "المبلغ": "Amount", "إرفاق ملف (PDF / Excel / صورة)": "Attach file (PDF / Excel / image)",
+  "إرسال التقرير": "Submit report", "تم الحفظ": "Saved", "سجل التقارير": "Report history", "لا توجد تقارير بعد": "No reports yet",
+  "فتح الملف": "Open file", "حذف المشروع؟": "Delete project?", "مساحتك منفصلة — لا يراها إلا أنت والإدارة": "Your space is private — only you and management see it",
+  "صاحب الحساب": "Account owner", "كلمة السر 8 أحرف على الأقل": "Password must be at least 8 characters", "اسم المستخدم مستخدم بالفعل": "Username already taken",
+});
