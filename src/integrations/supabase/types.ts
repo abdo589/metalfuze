@@ -243,6 +243,113 @@ export type Database = {
         }
         Relationships: []
       }
+      mgr_projects: {
+        Row: {
+          client: string
+          code: string
+          contract: number
+          created_at: string
+          end_date: string | null
+          id: string
+          issues: string
+          name: string
+          notes: string
+          owner_id: string
+          owner_name: string
+          paid: number
+          progress: number
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client?: string
+          code?: string
+          contract?: number
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          issues?: string
+          name: string
+          notes?: string
+          owner_id?: string
+          owner_name?: string
+          paid?: number
+          progress?: number
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client?: string
+          code?: string
+          contract?: number
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          issues?: string
+          name?: string
+          notes?: string
+          owner_id?: string
+          owner_name?: string
+          paid?: number
+          progress?: number
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mgr_reports: {
+        Row: {
+          amount: number | null
+          body: string
+          created_at: string
+          direction: string | null
+          file_name: string | null
+          file_path: string | null
+          id: string
+          kind: string
+          owner_id: string
+          progress: number | null
+          project_id: string
+        }
+        Insert: {
+          amount?: number | null
+          body?: string
+          created_at?: string
+          direction?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          kind?: string
+          owner_id?: string
+          progress?: number | null
+          project_id: string
+        }
+        Update: {
+          amount?: number | null
+          body?: string
+          created_at?: string
+          direction?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          kind?: string
+          owner_id?: string
+          progress?: number | null
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mgr_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "mgr_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       residencies: {
         Row: {
           contract_expiry: string | null
