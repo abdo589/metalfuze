@@ -9,15 +9,17 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { HR_PATHS, useRole } from "@/lib/permissions";
+import { HR_PATHS, MANAGER_PATHS, useRole } from "@/lib/permissions";
 
 /** HR-only accounts may open only the HR pages; anything else sends them to payroll. */
 function RoleGuard({ children }: { children: ReactNode }) {
   const role = useRole();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
-  const blocked = role === "hr" && !HR_PATHS.some((p) => pathname.startsWith(p));
-  useEffect(() => { if (blocked) navigate({ to: "/payroll", replace: true }); }, [blocked, navigate]);
+  const allowed = role === "hr" ? HR_PATHS : role === "manager" ? MANAGER_PATHS : null;
+  const blocked = !!allowed && !allowed.some((p) => pathname.startsWith(p));
+  const home = role === "manager" ? "/my-projects" : "/payroll";
+  useEffect(() => { if (blocked) navigate({ to: home, replace: true }); }, [blocked, home, navigate]);
   if (role === undefined || blocked) return <div className="min-h-screen" />;
   return <>{children}</>;
 }
@@ -62,11 +64,25 @@ function Login() {
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [signup, setSignup] = useState(false);
+  const [fullName, setFullName] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError("");
+    if (signup) {
+      const u = username.trim().toLowerCase();
+      if (!/^[a-z0-9._-]{3,30}$/.test(u)) { setBusy(false); return setError(t("اسم المستخدم: 3-30 حرف إنجليزي/أرقام")); }
+      if (password.length < 8) { setBusy(false); return setError(t("كلمة السر 8 أحرف على الأقل")); }
+      const { error } = await supabase.auth.signUp({
+        email: toEmail(u), password,
+        options: { emailRedirectTo: window.location.origin, data: { display_name: fullName.trim().slice(0, 80), self_signup: "true" } },
+      });
+      setBusy(false);
+      if (error) setError(error.message.includes("already") ? t("اسم المستخدم مستخدم بالفعل") : error.message.includes("weak") || error.message.includes("pwned") ? t("كلمة السر ضعيفة أو مسربة، اختر غيرها") : t("تعذر إنشاء الحساب"));
+      return;
+    }
     const { error } = await supabase.auth.signInWithPassword({ email: toEmail(username), password });
     setBusy(false);
     if (error) setError(t("اسم المستخدم أو كلمة المرور غير صحيحة"));
@@ -97,9 +113,10 @@ function Login() {
           <img src={logoLightAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
             className="screen-logo logo-on-dark mx-auto hidden h-auto w-60" />
 
-          <h1 className="font-display text-2xl font-extrabold">{t("تسجيل الدخول")}</h1>
+          <h1 className="font-display text-2xl font-extrabold">{signup ? t("إنشاء حساب مدير مشروع") : t("تسجيل الدخول")}</h1>
           <p className="text-sm text-muted-foreground">{t("لوحة متابعة مشاريع Metal Fuze")}</p>
         </div>
+        {signup && <Input placeholder={t("الاسم الكامل")} value={fullName} onChange={(e) => setFullName(e.target.value)} required />}
         <Input placeholder={t("اسم المستخدم")} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" dir="ltr" required />
         <div dir="ltr" className="relative">
           <Input placeholder={t("كلمة المرور")} type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" dir="ltr" required className="pe-10" />
@@ -109,7 +126,10 @@ function Login() {
           </button>
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button type="submit" className="w-full" disabled={busy || googleBusy}>{busy ? t("جارٍ الدخول...") : t("دخول")}</Button>
+        <Button type="submit" className="w-full" disabled={busy || googleBusy}>{signup ? (busy ? t("جارٍ الإنشاء...") : t("إنشاء حساب")) : busy ? t("جارٍ الدخول...") : t("دخول")}</Button>
+        <button type="button" onClick={() => { setSignup((v) => !v); setError(""); }} className="w-full text-center text-sm text-primary hover:underline">
+          {signup ? t("لديك حساب؟ سجل الدخول") : t("مدير مشروع؟ أنشئ حسابك")}
+        </button>
         <div className="flex items-center gap-3 py-1">
           <div className="h-px flex-1 bg-border" />
           <span className="text-xs text-muted-foreground">{t("أو")}</span>
