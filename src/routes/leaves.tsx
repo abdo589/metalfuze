@@ -344,7 +344,7 @@ function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canMa
   }
   async function openFile() {
     if (!r?.attachment_path) return;
-    const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(r.attachment_path, 300);
+    const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(r.attachment_path, 30);
     if (error || !data) { toast.error(t("تعذر فتح الملف")); return; }
     window.open(data.signedUrl, "_blank");
   }

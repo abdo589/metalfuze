@@ -257,7 +257,7 @@ function ContractBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolean; o
     toast.success("تم رفع عقد العمل"); onChange(data);
   }
   async function view() {
-    const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(path, 300);
+    const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(path, 30);
     if (error || !data) { toast.error("تعذر فتح الملف"); return; }
     window.open(data.signedUrl, "_blank");
   }
