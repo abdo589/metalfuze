@@ -5,12 +5,19 @@ import { parseAttlog } from "@/lib/attendance";
 // Only devices whose serial number was approved by an admin can store punches.
 const text = (s: string, status = 200) => new Response(s, { status, headers: { "Content-Type": "text/plain" } });
 
+// Devices are added manually by an admin; unknown serials are ignored (never inserted).
+// Requests must also come from an allowed office IP (ATTENDANCE_ALLOWED_IPS, comma-separated).
+function ipAllowed(request: Request): boolean {
+  const allowed = (process.env["ATTENDANCE_ALLOWED_IPS"] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  const ip = request.headers.get("cf-connecting-ip") ?? request.headers.get("x-real-ip") ?? "";
+  return allowed.length > 0 && !!ip && allowed.includes(ip);
+}
+
 async function device(sn: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin.from("attendance_devices").select("approved").eq("serial_number", sn).maybeSingle();
-  if (!data) await supabaseAdmin.from("attendance_devices").insert({ serial_number: sn, name: "ZKTeco", last_seen: new Date().toISOString() });
-  else await supabaseAdmin.from("attendance_devices").update({ last_seen: new Date().toISOString() }).eq("serial_number", sn);
-  return { admin: supabaseAdmin, approved: !!data?.approved };
+  if (data) await supabaseAdmin.from("attendance_devices").update({ last_seen: new Date().toISOString() }).eq("serial_number", sn);
+  return { admin: supabaseAdmin, known: !!data, approved: !!data?.approved };
 }
 
 export const Route = createFileRoute("/iclock/cdata")({
@@ -19,7 +26,9 @@ export const Route = createFileRoute("/iclock/cdata")({
       GET: async ({ request }) => {
         const sn = new URL(request.url).searchParams.get("SN")?.slice(0, 64);
         if (!sn) return text("Missing SN", 400);
-        await device(sn);
+        if (!ipAllowed(request)) return text("Forbidden", 403);
+        const { known } = await device(sn);
+        if (!known) return text("Unknown device", 403);
         return text([`GET OPTION FROM: ${sn}`, "ATTLOGStamp=None", "OPERLOGStamp=9999", "ATTPHOTOStamp=None",
           "ErrorDelay=30", "Delay=10", "TransTimes=00:00;14:05", "TransInterval=1", "TransFlag=TransData AttLog",
           "TimeZone=3", "Realtime=1", "Encrypt=None"].join("\n"));
@@ -28,6 +37,7 @@ export const Route = createFileRoute("/iclock/cdata")({
         const url = new URL(request.url);
         const sn = url.searchParams.get("SN")?.slice(0, 64);
         if (!sn) return text("Missing SN", 400);
+        if (!ipAllowed(request)) return text("Forbidden", 403);
         const body = (await request.text()).slice(0, 500_000);
         const { admin, approved } = await device(sn);
         if (url.searchParams.get("table") !== "ATTLOG") return text("OK");
