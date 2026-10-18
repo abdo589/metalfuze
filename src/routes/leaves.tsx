@@ -267,12 +267,12 @@ function NewRequest({ emps, types, reqs, bal, settings, lang, onDone }: { emps: 
   const b = bal.find((x) => x.employee_id === f.emp);
   const clash = f.emp && f.start && f.end ? overlaps(reqs, f.emp, f.start, f.end) : [];
 
-  async function save(submit: boolean): Promise<unknown> {
-    if (!emp || !type) return toast.error(t("اختر الموظف ونوع الإجازة"));
-    if (!f.start || !f.end) return toast.error(t("اختر تاريخ البداية والنهاية"));
-    if (f.end < f.start) return toast.error(t("تاريخ النهاية قبل تاريخ البداية"));
-    if (clash.length) return toast.error(t("يوجد طلب إجازة آخر في نفس الفترة"));
-    if (submit && type.requires_attachment && !file) return toast.error(t("هذا النوع يحتاج مرفقًا (مثل التقرير الطبي)"));
+  async function save(submit: boolean) {
+    if (!emp || !type) { toast.error(t("اختر الموظف ونوع الإجازة")); return; }
+    if (!f.start || !f.end) { toast.error(t("اختر تاريخ البداية والنهاية")); return; }
+    if (f.end < f.start) { toast.error(t("تاريخ النهاية قبل تاريخ البداية")); return; }
+    if (clash.length) { toast.error(t("يوجد طلب إجازة آخر في نفس الفترة")); return; }
+    if (submit && type.requires_attachment && !file) { toast.error(t("هذا النوع يحتاج مرفقًا (مثل التقرير الطبي)")); return; }
     setBusy(true);
     try {
       let path: string | undefined;
@@ -283,7 +283,7 @@ function NewRequest({ emps, types, reqs, bal, settings, lang, onDone }: { emps: 
       }
       const { error } = await supabase.rpc("leave_create", {
         p_emp: emp.id, p_type: type.id, p_start: f.start, p_end: f.end, p_reason: f.reason,
-        p_attach_path: path, p_attach_name: file?.name, p_submit: submit, p_return: f.ret || undefined,
+        p_submit: submit, ...(path ? { p_attach_path: path } : {}), ...(file ? { p_attach_name: file.name } : {}), ...(f.ret ? { p_return: f.ret } : {}),
       });
       if (error) { if (path) await supabase.storage.from("employee-files").remove([path]); toast.error(t(leaveError(error.message))); return; }
       toast.success(t(submit ? "تم إرسال الطلب إلى المدير" : "تم حفظ المسودة"));
@@ -333,19 +333,19 @@ function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canMa
   useEffect(() => setNote(""), [r?.id]);
   if (!r) return null;
 
-  async function act(action: string): Promise<unknown> {
+  async function act(action: string) {
     if (!r) return;
-    if (action.endsWith("reject") && !note.trim()) return toast.error(t("اكتب سبب الرفض"));
+    if (action.endsWith("reject") && !note.trim()) { toast.error(t("اكتب سبب الرفض")); return; }
     setBusy(true);
-    const { error } = await supabase.rpc("leave_transition", { p_id: r.id, p_action: action, p_note: note || undefined });
+    const { error } = await supabase.rpc("leave_transition", { p_id: r.id, p_action: action, ...(note ? { p_note: note } : {}) });
     setBusy(false);
-    if (error) return toast.error(t(leaveError(error.message)));
+    if (error) { toast.error(t(leaveError(error.message))); return; }
     toast.success(t("تم التحديث")); onDone();
   }
-  async function openFile(): Promise<unknown> {
+  async function openFile() {
     if (!r?.attachment_path) return;
     const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(r.attachment_path, 300);
-    if (error || !data) return toast.error(t("تعذر فتح الملف"));
+    if (error || !data) { toast.error(t("تعذر فتح الملف")); return; }
     window.open(data.signedUrl, "_blank");
   }
 
@@ -402,16 +402,16 @@ function Balances({ emps, bal, adjs, isHr, onDone }: { emps: Emp[]; bal: Balance
   const byId = new Map(bal.map((b) => [b.employee_id, b]));
   const rows = emps.filter((e) => e.active && (!q || `${e.id} ${e.name} ${e.dept}`.includes(q)));
 
-  async function save(): Promise<unknown> {
+  async function save() {
     if (!adj) return;
     const n = Number(adj.days);
-    if (!adj.days || isNaN(n)) return toast.error(t("اكتب عدد الأيام"));
+    if (!adj.days || isNaN(n)) { toast.error(t("اكتب عدد الأيام")); return; }
     const { error } = await supabase.rpc("leave_adjust", { p_emp: adj.emp.id, p_days: n, p_kind: adj.kind, p_note: adj.note });
-    if (error) return toast.error(t(leaveError(error.message)));
+    if (error) { toast.error(t(leaveError(error.message))); return; }
     toast.success(t("تم التحديث")); setAdj(null); onDone();
   }
-  function copyLink(e: Emp): unknown {
-    if (!e.checkin_token) return toast.error(t("لا يوجد رابط لهذا الموظف"));
+  function copyLink(e: Emp) {
+    if (!e.checkin_token) { toast.error(t("لا يوجد رابط لهذا الموظف")); return; }
     navigator.clipboard.writeText(`${window.location.origin}/leave/${e.checkin_token}`);
     toast.success(t("تم نسخ رابط الإجازات"));
   }
@@ -585,19 +585,19 @@ function SettingsTab({ types, settings, mgrs, emps, onDone }: { types: LeaveType
   useEffect(() => { setTiers(settings.tiers); setAccrual(settings.accrual_from); }, [settings]);
   const depts = [...new Set(emps.map((e) => e.dept).filter(Boolean))].sort();
 
-  async function savePolicy(): Promise<unknown> {
+  async function savePolicy() {
     const { error } = await supabase.from("leave_settings").update({ tiers, accrual_from: accrual }).eq("id", 1);
-    if (error) return toast.error(t("تعذر الحفظ")); toast.success(t("تم الحفظ")); onDone();
+    if (error) { toast.error(t("تعذر الحفظ")); return; } toast.success(t("تم الحفظ")); onDone();
   }
-  async function saveType(x: LeaveType): Promise<unknown> {
+  async function saveType(x: LeaveType) {
     const { error } = await supabase.from("leave_types").update({ name_ar: x.name_ar, name_en: x.name_en, paid: x.paid, uses_balance: x.uses_balance, max_days: x.max_days, requires_attachment: x.requires_attachment, calendar_days: x.calendar_days, active: x.active }).eq("id", x.id);
-    if (error) return toast.error(t("تعذر الحفظ")); toast.success(t("تم الحفظ")); onDone();
+    if (error) { toast.error(t("تعذر الحفظ")); return; } toast.success(t("تم الحفظ")); onDone();
   }
-  async function setMgr(dept: string, uid: string): Promise<unknown> {
+  async function setMgr(dept: string, uid: string) {
     const res = uid
       ? await supabase.from("department_managers").upsert({ dept, user_id: uid, user_name: users.find((u) => u.id === uid)?.name ?? "" })
       : await supabase.from("department_managers").delete().eq("dept", dept);
-    if (res.error) return toast.error(t("تعذر الحفظ")); toast.success(t("تم الحفظ")); onDone();
+    if (res.error) { toast.error(t("تعذر الحفظ")); return; } toast.success(t("تم الحفظ")); onDone();
   }
   const upd = (id: string, p: Partial<LeaveType>) => setList(list.map((x) => (x.id === id ? { ...x, ...p } : x)));
 

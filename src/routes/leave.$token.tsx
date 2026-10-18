@@ -64,13 +64,13 @@ function LeaveLink() {
   const days = useMemo(() => (info2 && form.start && form.end && form.end >= form.start ? countLeaveDays(form.start, form.end, info2.weekend, type?.calendar_days) : 0), [info2, form, type]);
   const name = (x?: LeaveType) => (x ? (lang === "en" ? x.name_en : x.name_ar) : "");
 
-  async function submit(): Promise<unknown> {
+  async function submit() {
     if (!info2 || !type) return;
-    if (!form.start || !form.end) return toast.error(t("اختر تاريخ البداية والنهاية"));
-    if (form.end < form.start) return toast.error(t("تاريخ النهاية قبل تاريخ البداية"));
-    if (type.requires_attachment && !file) return toast.error(t("هذا النوع يحتاج مرفقًا (مثل التقرير الطبي)"));
-    if (type.uses_balance && info2.balance && days > info2.balance.remaining) return toast.error(t("الرصيد المتبقي لا يكفي لهذا الطلب"));
-    if (file && file.size > 5 * 1024 * 1024) return toast.error(t("الملف أكبر من 5 ميجابايت"));
+    if (!form.start || !form.end) { toast.error(t("اختر تاريخ البداية والنهاية")); return; }
+    if (form.end < form.start) { toast.error(t("تاريخ النهاية قبل تاريخ البداية")); return; }
+    if (type.requires_attachment && !file) { toast.error(t("هذا النوع يحتاج مرفقًا (مثل التقرير الطبي)")); return; }
+    if (type.uses_balance && info2.balance && days > info2.balance.remaining) { toast.error(t("الرصيد المتبقي لا يكفي لهذا الطلب")); return; }
+    if (file && file.size > 5 * 1024 * 1024) { toast.error(t("الملف أكبر من 5 ميجابايت")); return; }
     setBusy(true);
     try {
       const attachment = file ? { name: file.name, type: file.type, data: await toB64(file) } : undefined;
