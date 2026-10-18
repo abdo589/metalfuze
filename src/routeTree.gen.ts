@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as BankRouteImport } from './routes/bank'
 import { Route as BudgetRouteImport } from './routes/budget'
+import { Route as HrFileRouteImport } from './routes/hr-file'
 import { Route as MyProjectsRouteImport } from './routes/my-projects'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
@@ -48,6 +49,11 @@ const BankRoute = BankRouteImport.update({
 const BudgetRoute = BudgetRouteImport.update({
   id: '/budget',
   path: '/budget',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HrFileRoute = HrFileRouteImport.update({
+  id: '/hr-file',
+  path: '/hr-file',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MyProjectsRoute = MyProjectsRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/attendance': typeof AttendanceRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
+  '/hr-file': typeof HrFileRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/attendance': typeof AttendanceRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
+  '/hr-file': typeof HrFileRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/attendance': typeof AttendanceRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
+  '/hr-file': typeof HrFileRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/bank'
     | '/budget'
+    | '/hr-file'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/bank'
     | '/budget'
+    | '/hr-file'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/bank'
     | '/budget'
+    | '/hr-file'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -272,6 +284,7 @@ export interface RootRouteChildren {
   AttendanceRoute: typeof AttendanceRoute
   BankRoute: typeof BankRoute
   BudgetRoute: typeof BudgetRoute
+  HrFileRoute: typeof HrFileRoute
   MyProjectsRoute: typeof MyProjectsRoute
   PaymentsRoute: typeof PaymentsRoute
   PayrollRoute: typeof PayrollRoute
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       path: '/budget'
       fullPath: '/budget'
       preLoaderRoute: typeof BudgetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hr-file': {
+      id: '/hr-file'
+      path: '/hr-file'
+      fullPath: '/hr-file'
+      preLoaderRoute: typeof HrFileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/my-projects': {
@@ -440,6 +460,7 @@ const rootRouteChildren: RootRouteChildren = {
   AttendanceRoute: AttendanceRoute,
   BankRoute: BankRoute,
   BudgetRoute: BudgetRoute,
+  HrFileRoute: HrFileRoute,
   MyProjectsRoute: MyProjectsRoute,
   PaymentsRoute: PaymentsRoute,
   PayrollRoute: PayrollRoute,
