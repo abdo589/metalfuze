@@ -15,6 +15,8 @@ import { summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
 import { monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
 import { supabase } from "@/integrations/supabase/client";
+import { useApprovedLeaves } from "@/lib/leave-data";
+import { unpaidDaysInMonth, unpaidDeduction } from "@/lib/leave-engine";
 
 export const Route = createFileRoute("/payroll")({
   head: () => ({
@@ -228,7 +230,7 @@ function Payroll() {
                     <td className="p-3">{fmtMoney(e.base)}</td>
                     <td className="p-3 text-success">{fmtMoney(e.allowances)}</td>
                     <td className="p-3 text-destructive">{fmtMoney(e.deductions)}</td>
-                    <td className="p-3 font-bold">{fmtMoney(netSalary(e))}</td>
+                    <td className="p-3 font-bold">{fmtMoney(netSalary(e) - unpaid(e).amount)}{unpaid(e).days > 0 && <div className="text-xs font-normal text-destructive">{t("بدون راتب")}: {unpaid(e).days} − {fmtMoney(unpaid(e).amount)}</div>}</td>
                     <td className="p-3 text-xs">{(() => { const a = att(e); return a.linked ? (
                       <div className="space-y-0.5"><div>{t("حضور")}: <b>{a.present}</b></div>
                         <div className="text-warning">{t("تأخير")}: {a.late}</div>
