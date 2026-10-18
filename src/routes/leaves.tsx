@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  CalendarDays, CalendarOff, CheckCircle2, ChevronLeft, ChevronRight, Clock, Copy, FileSpreadsheet,
+  CalendarDays, CalendarOff, CheckCircle2, ChevronLeft, ChevronRight, Clock, FileSpreadsheet,
   Link2, Paperclip, Plus, Save, Search, Settings2, Trash2, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,7 +17,7 @@ import { listUsers, type AppUser } from "@/lib/users.functions";
 import { currentLanguage, t, useLanguage } from "@/lib/i18n";
 import {
   LEAVE_STATES, countLeaveDays, eachDay, leaveError, overlaps, returnDate, stateLabel,
-  type LeaveRequest, type LeaveState, type LeaveType, type Tier,
+  type LeaveRequest, type LeaveType, type Tier,
 } from "@/lib/leave-engine";
 
 export const Route = createFileRoute("/leaves")({
@@ -656,6 +656,3 @@ function SettingsTab({ types, settings, mgrs, emps, onDone }: { types: LeaveType
   );
 }
 
-export type { LeaveState };
-// Re-exported so Copy icon import stays used by tree-shaking-safe builds.
-export const _icons = { Copy };
