@@ -166,6 +166,9 @@ function HrFilePage() {
               <DialogHeader>
                 <DialogTitle>{sel.id ? show(sel.data[NAME] ?? sel.data[META[sel.sheet].columns[0]!]) : `إضافة — ${META[sel.sheet].title}`}</DialogTitle>
               </DialogHeader>
+              {sel.id && sel.sheet === "employees" && (
+                <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
+              )}
               {canEdit && (
                 <div className="flex flex-wrap gap-2">
                   {draft ? (
@@ -193,9 +196,6 @@ function HrFilePage() {
                   </div>
                 ))}
               </div>
-              {sel.id && !draft && sel.sheet === "employees" && (
-                <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
-              )}
               {sel.id && !draft && related(sel).map((g) => (
                 <div key={g.k} className="space-y-2">
                   <h3 className="font-bold">{META[g.k].title} <Badge variant="outline">{g.rows.length}</Badge></h3>
