@@ -216,6 +216,51 @@ export type Database = {
           },
         ]
       }
+      residencies: {
+        Row: {
+          contract_expiry: string | null
+          created_at: string
+          id: string
+          insurance_expiry: string | null
+          iqama_expiry: string | null
+          iqama_fee: number | null
+          iqama_no: string | null
+          job: string | null
+          name: string
+          nationality: string | null
+          permit_expiry: string | null
+          permit_fee: number | null
+        }
+        Insert: {
+          contract_expiry?: string | null
+          created_at?: string
+          id?: string
+          insurance_expiry?: string | null
+          iqama_expiry?: string | null
+          iqama_fee?: number | null
+          iqama_no?: string | null
+          job?: string | null
+          name: string
+          nationality?: string | null
+          permit_expiry?: string | null
+          permit_fee?: number | null
+        }
+        Update: {
+          contract_expiry?: string | null
+          created_at?: string
+          id?: string
+          insurance_expiry?: string | null
+          iqama_expiry?: string | null
+          iqama_fee?: number | null
+          iqama_no?: string | null
+          job?: string | null
+          name?: string
+          nationality?: string | null
+          permit_expiry?: string | null
+          permit_fee?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
