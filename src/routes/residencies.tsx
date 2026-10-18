@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { AlertTriangle, CalendarClock, CheckCircle2, FileText, Plus, Trash2, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertTriangle, CalendarClock, CheckCircle2, FileText, Pencil, Plus, Save, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,76 +34,68 @@ const tone = {
   none: "",
 };
 
-const inputCls = "w-full rounded border border-input bg-background px-1.5 py-1 text-xs";
-
-type FieldKey = "nationality" | "iqama_no" | "iqama_fee" | "permit_fee";
-
-function Field({ r, k, canEdit, reload, type = "text", ltr = false }: {
-  r: Residency; k: FieldKey; canEdit: boolean; reload: () => void; type?: "text" | "number"; ltr?: boolean;
-}) {
-  const cur = r[k];
-  return (
-    <td className="p-2" dir={ltr ? "ltr" : undefined}>
-      {canEdit ? (
-        <input
-          type={type}
-          defaultValue={cur ?? ""}
-          className={inputCls}
-          onBlur={async (e) => {
-            const raw = e.target.value.trim();
-            let v: string | number | null;
-            if (type === "number") {
-              if (raw === "") v = null; else { v = Number(raw); if (Number.isNaN(v)) return; }
-            } else v = raw || null;
-            if (v === cur) return;
-            const { error } = await supabase.from("residencies").update({ [k]: v } as Partial<Residency>).eq("id", r.id);
-            if (error) toast.error(error.message); else { toast.success(t("تم التحديث")); reload(); }
-          }}
-        />
-      ) : <div className="text-xs" dir={ltr ? "ltr" : undefined}>{cur ?? "—"}</div>}
-    </td>
-  );
+function Cell({ v, ltr = false }: { v: string | number | null | undefined; ltr?: boolean }) {
+  return <td className="whitespace-nowrap p-2 text-center" dir={ltr ? "ltr" : undefined}>{v === null || v === undefined || v === "" ? "—" : String(v)}</td>;
 }
 
-function NameCell({ r, canEdit, reload }: { r: Residency; canEdit: boolean; reload: () => void }) {
-  const save = async (k: "name" | "job", v: string) => {
-    v = v.trim();
-    if (v === (r[k] ?? "")) return;
-    const { error } = await supabase.from("residencies").update({ [k]: v || null } as Partial<Residency>).eq("id", r.id);
-    if (error) toast.error(error.message); else { toast.success(t("تم التحديث")); reload(); }
-  };
-  if (!canEdit) return (
-    <>
-      <div className="font-medium">{r.name}</div>
-      <div className="text-xs text-muted-foreground">{r.job ?? ""}</div>
-    </>
-  );
-  return (
-    <>
-      <input type="text" defaultValue={r.name} className={inputCls + " font-medium"} onBlur={(e) => save("name", e.target.value)} />
-      <input type="text" defaultValue={r.job ?? ""} placeholder={t("الوظيفة")} className={inputCls} onBlur={(e) => save("job", e.target.value)} />
-    </>
-  );
-}
-
-function DateCell({ r, k, canEdit, reload }: { r: Residency; k: (typeof DOCS)[number]["key"]; canEdit: boolean; reload: () => void }) {
+function DateCell({ r, k }: { r: Residency; k: (typeof DOCS)[number]["key"] }) {
   const d = daysLeft(r[k]);
   const s = docStatus(d);
   return (
-    <td className="p-2 text-center">
-      {canEdit ? (
-        <input type="date" defaultValue={r[k] ?? ""} className="rounded border border-input bg-background px-1 text-xs"
-          onBlur={async (e) => {
-            const v = e.target.value || null;
-            if (v === r[k]) return;
-            const { error } = await supabase.from("residencies").update({ [k]: v } as Partial<Residency>).eq("id", r.id);
-            if (error) toast.error(error.message); else reload();
-          }} />
-      ) : <div className="text-xs">{r[k] ?? "—"}</div>}
+    <td className="whitespace-nowrap p-2 text-center">
+      <div className="text-xs" dir="ltr">{r[k] ?? "—"}</div>
       {d !== null && <Badge variant="outline" className={`mt-1 ${tone[s]}`}>
         {s === "expired" ? `${t("منتهية منذ")} ${-d} ${t("يوم")}` : `${d} ${t("يوم")}`}
       </Badge>}
     </td>
+  );
+}
+
+const FIELDS: { k: keyof Residency; label: string; type: "text" | "number" | "date" }[] = [
+  { k: "name", label: "اسم الموظف", type: "text" },
+  { k: "job", label: "الوظيفة", type: "text" },
+  { k: "nationality", label: "الجنسية", type: "text" },
+  { k: "iqama_no", label: "رقم الإقامة", type: "text" },
+  ...DOCS.map((d) => ({ k: d.key as keyof Residency, label: d.label, type: "date" as const })),
+  { k: "iqama_fee", label: "رسوم الإقامة", type: "number" },
+  { k: "permit_fee", label: "رسوم رخصة العمل", type: "number" },
+];
+
+function EditDialog({ r, onClose, reload }: { r: Residency | null; onClose: () => void; reload: () => void }) {
+  const [f, setF] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (r) setF(Object.fromEntries(FIELDS.map(({ k }) => [k, r[k] == null ? "" : String(r[k])])));
+  }, [r]);
+  async function save() {
+    if (!r) return;
+    const patch: Record<string, string | number | null> = {};
+    for (const { k, type } of FIELDS) {
+      const v = (f[k] ?? "").trim();
+      patch[k] = v === "" ? (k === "name" ? r.name : null) : type === "number" ? Number(v) : v;
+    }
+    const { error } = await supabase.from("residencies").update(patch as Partial<Residency>).eq("id", r.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(t("تم التحديث")); onClose(); reload();
+  }
+  return (
+    <Dialog open={!!r} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+        <DialogHeader><DialogTitle>{t("تعديل")} — {r?.name}</DialogTitle></DialogHeader>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {FIELDS.map(({ k, label, type }) => (
+            <label key={k} className="space-y-1 text-sm">
+              <span className="text-muted-foreground">{t(label)}</span>
+              <Input type={type} dir={type === "text" && k !== "iqama_no" ? undefined : "ltr"} value={f[k] ?? ""}
+                onChange={(e) => setF({ ...f, [k]: e.target.value })} />
+            </label>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={save}><Save /> {t("حفظ")}</Button>
+          <Button variant="outline" onClick={onClose}>{t("إلغاء")}</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -145,6 +138,7 @@ function Residencies() {
   const canEdit = useCanEdit();
   const { rows, reload } = useResidencies();
   const [name, setName] = useState("");
+  const [editing, setEditing] = useState<Residency | null>(null);
 
   const alerts = rows.flatMap((r) => DOCS.map((doc) => ({ r, doc, d: daysLeft(r[doc.key]) })))
     .filter((a) => a.d !== null && a.d <= ALERT_DAYS).sort((a, b) => a.d! - b.d!);
@@ -225,15 +219,17 @@ function Residencies() {
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-border">
-                <td className="p-2 min-w-44 space-y-1">
-                  <NameCell r={r} canEdit={canEdit} reload={reload} />
+                <td className="whitespace-nowrap p-2">
+                  <div className="font-medium">{r.name}</div>
+                  <div className="text-xs text-muted-foreground">{r.job ?? ""}</div>
                 </td>
-                <Field r={r} k="nationality" canEdit={canEdit} reload={reload} />
-                <Field r={r} k="iqama_no" canEdit={canEdit} reload={reload} ltr />
-                {DOCS.map((d) => <DateCell key={d.key} r={r} k={d.key} canEdit={canEdit} reload={reload} />)}
-                <Field r={r} k="iqama_fee" canEdit={canEdit} reload={reload} type="number" />
-                <Field r={r} k="permit_fee" canEdit={canEdit} reload={reload} type="number" />
-                {canEdit && <td className="p-2 print:hidden">
+                <Cell v={r.nationality} />
+                <Cell v={r.iqama_no} ltr />
+                {DOCS.map((d) => <DateCell key={d.key} r={r} k={d.key} />)}
+                <Cell v={r.iqama_fee} />
+                <Cell v={r.permit_fee} />
+                {canEdit && <td className="whitespace-nowrap p-2 print:hidden">
+                  <Button size="sm" variant="outline" onClick={() => setEditing(r)}><Pencil /> {t("تعديل")}</Button>
                   <Button size="icon" variant="ghost" aria-label={t("حذف")} onClick={async () => {
                     if (!confirm(t("حذف") + " " + r.name + "؟")) return;
                     await supabase.from("residencies").delete().eq("id", r.id); reload();
@@ -244,6 +240,7 @@ function Residencies() {
           </tbody>
         </table>
       </div>
+      <EditDialog r={editing} onClose={() => setEditing(null)} reload={reload} />
 
       {canEdit && (
         <form className="flex gap-2 print:hidden" onSubmit={async (e) => {
