@@ -106,6 +106,7 @@ export const translations: Record<string, string> = {
   "الإشكاليات / العوائق": "Issues / Obstacles", "ملاحظات مهمة": "Important Notes", "ملاحظات": "Notes",
   "إلغاء": "Cancel", "حفظ": "Save", "تسجيل الدخول": "Sign In", "اسم المستخدم": "Username",
   "كلمة المرور": "Password", "دخول": "Sign In", "جارٍ الدخول...": "Signing in…", "أو": "or",
+  "إظهار كلمة المرور": "Show password", "إخفاء كلمة المرور": "Hide password",
   "الدخول بحساب جوجل": "Sign in with Google", "جارٍ فتح جوجل...": "Opening Google…",
   "اسم المستخدم أو كلمة المرور غير صحيحة": "Incorrect username or password",
   "تعذر الدخول بحساب جوجل، حاول مرة أخرى": "Google sign-in failed. Please try again.",

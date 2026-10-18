@@ -1,7 +1,7 @@
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { LogOut } from "lucide-react";
+import { Eye, EyeOff, LogOut } from "lucide-react";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,6 +48,7 @@ function Login() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -87,7 +88,13 @@ function Login() {
           <p className="text-sm text-muted-foreground">{t("لوحة متابعة مشاريع Metal Fuze")}</p>
         </div>
         <Input placeholder={t("اسم المستخدم")} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" dir="ltr" required />
-        <Input placeholder={t("كلمة المرور")} type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" dir="ltr" required />
+        <div dir="ltr" className="relative">
+          <Input placeholder={t("كلمة المرور")} type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" dir="ltr" required className="pe-10" />
+          <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? t("إخفاء كلمة المرور") : t("إظهار كلمة المرور")} aria-pressed={showPassword}
+            className="absolute end-1 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </button>
+        </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <Button type="submit" className="w-full" disabled={busy || googleBusy}>{busy ? t("جارٍ الدخول...") : t("دخول")}</Button>
         <div className="flex items-center gap-3 py-1">
