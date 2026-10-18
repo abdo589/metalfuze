@@ -74,17 +74,25 @@ function Payroll() {
           name: t("مسير الرواتب"),
           title: `${t("مسير الرواتب")} — ${monthLabel(month)}`,
           columns: [
-            { header: t("الموظف"), width: 22 }, { header: t("المسمى"), width: 18 }, { header: t("الإدارة") },
-            { header: t("المشروع"), width: 28 }, { header: t("الأساسي"), format: "money" },
-            { header: t("البدلات"), format: "money" }, { header: t("الخصومات"), format: "money" },
-            { header: t("الصافي"), format: "money" }, { header: t("تاريخ التعيين"), width: 16 },
-            { header: t("الحالة"), width: 12 }, { header: t("نشط"), width: 12 },
+            { header: t("رقم الموظف"), width: 12 }, { header: t("الموظف"), width: 22 }, { header: t("المسمى"), width: 18 },
+            { header: t("الإدارة") }, { header: t("المشروع"), width: 28 }, { header: t("رقم البصمة"), width: 12 },
+            { header: t("الأساسي"), format: "money" }, { header: t("البدلات"), format: "money" },
+            { header: t("الخصومات"), format: "money" }, { header: t("الصافي"), format: "money" },
+            { header: t("تاريخ التعيين"), width: 16 }, { header: t("الحالة"), width: 12 }, { header: t("نشط"), width: 12 },
+            { header: t("أيام الحضور"), format: "int" }, { header: t("أيام التأخير"), format: "int" }, { header: t("أيام الغياب"), format: "int" },
+            { header: t("الشهور المدفوعة"), width: 30 },
           ],
-          rows: employees.map((e) => [e.name, e.role, e.dept || "—", e.project || "—", e.base, e.allowances, e.deductions,
-            netSalary(e), e.joined ? new Date(e.joined).toLocaleDateString(locale()) : "—",
-            e.paidMonths.includes(month) ? t("مدفوع") : t("غير مدفوع"),
-            e.active ? t("نشط") : t("غير نشط")]),
-          totals: [4, 5, 6, 7],
+          rows: employees.map((e) => {
+            const a = summarize(e, punches, month);
+            return [e.id, e.name, e.role || "—", e.dept || "—", e.project || "—", e.deviceUserId || "—",
+              e.base, e.allowances, e.deductions, netSalary(e),
+              e.joined ? new Date(e.joined).toLocaleDateString(locale()) : "—",
+              e.paidMonths.includes(month) ? t("مدفوع") : t("غير مدفوع"),
+              e.active ? t("نشط") : t("غير نشط"),
+              a.present, a.late, a.absent,
+              [...e.paidMonths].sort().join("، ") || "—"];
+          }),
+          totals: [6, 7, 8, 9, 13, 14, 15],
         }],
       });
       toast.success(t("تم تصدير مسير الرواتب"));
