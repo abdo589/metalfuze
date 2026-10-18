@@ -15,6 +15,7 @@ import { useMonthPunches } from "@/lib/attendance-data";
 import { RemoteLinks, SelfieThumb, WorkSites, useSites } from "@/components/RemoteAttendance";
 import { AttendanceMap } from "@/components/AttendanceMap";
 import { MonthlySheet } from "@/components/MonthlySheet";
+import { useApprovedLeaves } from "@/lib/leave-data";
 import { PdfButton } from "@/components/PdfButton";
 
 export const Route = createFileRoute("/attendance")({
@@ -50,6 +51,7 @@ function Attendance() {
   const { sites, reload: reloadSites } = useSites();
   const [selected, setSelected] = useState<string | null>(null);
   const today = riyadh(new Date().toISOString()).date;
+  const { dates: leaveDates } = useApprovedLeaves();
 
   const loadDevices = async () => {
     const { data } = await supabase.from("attendance_devices").select("serial_number,name,approved,last_seen").order("created_at");
@@ -65,8 +67,8 @@ function Attendance() {
   const rows = useMemo(() => {
     const byEmp = new Map<string, Set<string>>();
     for (const x of excuses) { const s = byEmp.get(x.employee_id) ?? new Set<string>(); s.add(x.excuse_date); byEmp.set(x.employee_id, s); }
-    return employees.filter((e) => e.active).map((e) => ({ e, s: summarize(e, punches, month, byEmp.get(e.id)) }));
-  }, [employees, punches, month, excuses]);
+    return employees.filter((e) => e.active).map((e) => ({ e, s: summarize(e, punches, month, byEmp.get(e.id), leaveDates.get(e.id)) }));
+  }, [employees, punches, month, excuses, leaveDates]);
   const todayIn = rows.filter((r) => r.s.days.some((d) => d.date === today)).length;
   const lateToday = rows.filter((r) => r.s.days.some((d) => d.date === today && d.late)).length;
   const linked = rows.filter((r) => r.s.linked).length;
@@ -120,7 +122,7 @@ function Attendance() {
         ))}
       </div>
 
-      <MonthlySheet rows={rows} month={month} today={today} onSelect={setSelected} excuses={excuseMap} />
+      <MonthlySheet rows={rows} month={month} today={today} onSelect={setSelected} excuses={excuseMap} leaves={leaveDates} />
 
       <div className="space-y-6 print:hidden">
       <AttendanceMap sites={sites} punches={punches} nameOf={(id) => employees.find((e) => e.id === id || e.deviceUserId === id)?.name ?? id} />
