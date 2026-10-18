@@ -146,9 +146,9 @@ export function Residencies() {
   });
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
+    <div className="space-y-6">
       <header className="space-y-1 text-center">
-        <h1 className="font-display text-2xl font-bold md:text-3xl">{t("بيانات الموظفين")}</h1>
+        <h1 className="font-display text-2xl font-bold md:text-3xl">{t("الإقامات والوثائق الرسمية")}</h1>
         <p className="text-sm text-muted-foreground">{t("تنبيه قبل الانتهاء بـ")} {ALERT_DAYS} {t("يوم")}</p>
         <div className="print:hidden"><PdfButton /></div>
       </header>
