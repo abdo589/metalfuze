@@ -74,6 +74,23 @@ function Logo({ className = "w-36" }: { className?: string }) {
   );
 }
 
+function NotifyButton() {
+  const [perm, setPerm] = useState<string>("unsupported");
+  useEffect(() => { if ("Notification" in window) setPerm(Notification.permission); }, []);
+  if (perm === "unsupported" || perm === "granted") return null;
+  return (
+    <Button variant="outline" size="sm" onClick={async () => {
+      if (window.top !== window.self) { toast.info(t("افتح التطبيق المثبت أو الموقع في نافذة مستقلة لتفعيل التنبيهات")); return; }
+      const p = await Notification.requestPermission();
+      setPerm(p);
+      if (p === "granted") {
+        sessionStorage.removeItem("res-alert");
+        new Notification("Metal Fuze", { body: t("تم تفعيل تنبيهات الإقامات على الجهاز"), icon: "/icon-192.png" });
+      } else toast.error(t("التنبيهات مرفوضة — فعّلها من إعدادات الموقع في المتصفح"));
+    }}>🔔 {t("تفعيل تنبيهات الجهاز")}</Button>
+  );
+}
+
 export function AppSidebar() {
   const language = useLanguage();
   const [open, setOpen] = useState(false);
@@ -85,8 +102,15 @@ export function AppSidebar() {
     supabase.from("residencies").select("name,iqama_expiry,permit_expiry,insurance_expiry,contract_expiry").then(({ data }) => {
       const n = (data ?? []).filter((r) => [r.iqama_expiry, r.permit_expiry, r.insurance_expiry, r.contract_expiry]
         .some((d) => { const x = daysLeft(d); return x !== null && x <= ALERT_DAYS; })).length;
-      if (n) toast.warning(`${t("تنبيه: مستندات قاربت على الانتهاء أو منتهية لـ")} ${n} ${t("موظف")}`, {
+      if (!n) return;
+      const msg = `${t("تنبيه: مستندات قاربت على الانتهاء أو منتهية لـ")} ${n} ${t("موظف")}`;
+      toast.warning(msg, {
         duration: 15000, action: { label: t("عرض"), onClick: () => { window.location.href = "/residencies"; } } });
+      // System notification on the laptop/phone screen (works in the installed app once allowed).
+      if ("Notification" in window && Notification.permission === "granted") {
+        const note = new Notification("Metal Fuze", { body: msg, icon: "/icon-192.png", tag: "res-alert" });
+        note.onclick = () => { window.focus(); window.location.href = "/residencies"; };
+      }
     });
   }, [role]);
 
