@@ -13,7 +13,7 @@ import {
   PanelLeftOpen,
   PieChart,
   Fingerprint, Smartphone, Landmark, IdCard,
-  Users,
+  Users, FolderKanban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -42,12 +42,15 @@ const items = [
   { to: "/project-reports", label: "تقارير المشاريع", icon: FileSpreadsheet },
   { to: "/assistant", label: "المستشار الذكي", icon: BrainCircuit },
   { to: "/users", label: "المستخدمون", icon: Users },
+  { to: "/my-projects", label: "مشاريع المديرين", icon: FolderKanban },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const role = useRole();
-  const visible = role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to)) : role === undefined ? [] : items;
+  const visible = role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
+    : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }]
+    : role === undefined ? [] : role === "admin" ? items : items.filter((i) => i.to !== "/my-projects");
   return (
     <nav className="flex flex-col gap-1">
       {visible.map((it) => {
