@@ -207,8 +207,8 @@ function HrFilePage() {
                       ) : c === "الحالة" && sel.sheet === "employees" ? (
                         <select className="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground" value={draft[c] ?? ""} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })}>
                           <option value="">—</option>
-                          {draft[c] && !STATUS_OPTIONS.includes(draft[c]!) && <option value={draft[c]}>{draft[c]}</option>}
-                          {STATUS_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                          {draft[c] && !resolveEmployeeStatus(draft[c]) && <option value={draft[c]}>{draft[c]}</option>}
+                          {statusOptions(lang).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </select>
                       ) : (
                         <Input className="mt-1 h-8" value={draft[c] ?? ""} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })} />
