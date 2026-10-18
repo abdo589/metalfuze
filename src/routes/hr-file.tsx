@@ -145,11 +145,11 @@ function HrFilePage() {
                 </tr></thead>
                 <tbody>
                   {rows.map((r) => (
-                    <tr key={r.id} onClick={() => open(r)} className={`cursor-pointer border-b border-border/60 hover:bg-muted/40 ${sheet === "employees" && endedLabel(r.data["الحالة"]) ? "bg-destructive/10 opacity-80" : ""}`}>
+                    <tr key={r.id} onClick={() => open(r)} className={`cursor-pointer border-b border-border/60 hover:bg-muted/40 ${r.sheet === "employees" && endedLabel(r.data["الحالة"]) ? "bg-destructive/10 opacity-80" : ""}`}>
                       {cols.map((c) => (
                         <td key={c} className="p-3">
                           {show(r.data[c])}
-                          {c === "اسم الموظف" && sheet === "employees" && endedLabel(r.data["الحالة"]) && (
+                          {c === "اسم الموظف" && r.sheet === "employees" && endedLabel(r.data["الحالة"]) && (
                             <span className="ms-2 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{endedLabel(r.data["الحالة"])}</span>
                           )}
                         </td>
