@@ -810,6 +810,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      chat_directory: {
+        Args: never
+        Returns: {
+          display_name: string
+          id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
