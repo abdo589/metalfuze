@@ -130,14 +130,22 @@ function HrFilePage() {
               <table className="w-full text-sm">
                 <thead><tr className="border-b border-border text-right text-xs text-muted-foreground">
                   {cols.map((c) => <th key={c} className="p-3 font-medium">{c}</th>)}
+                  {canEdit && <th className="p-3 font-medium">تعديل</th>}
                 </tr></thead>
                 <tbody>
                   {rows.map((r) => (
                     <tr key={r.id} onClick={() => open(r)} className="cursor-pointer border-b border-border/60 hover:bg-muted/40">
                       {cols.map((c) => <td key={c} className="p-3">{show(r.data[c])}</td>)}
+                      {canEdit && (
+                        <td className="p-3">
+                          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setSel(r); startEdit(r); }}>
+                            <Pencil /> تعديل
+                          </Button>
+                        </td>
+                      )}
                     </tr>
                   ))}
-                  {!rows.length && <tr><td colSpan={cols.length} className="p-8 text-center text-muted-foreground">لا توجد نتائج</td></tr>}
+                  {!rows.length && <tr><td colSpan={cols.length + (canEdit ? 1 : 0)} className="p-8 text-center text-muted-foreground">لا توجد نتائج</td></tr>}
                 </tbody>
               </table>
             </div>
