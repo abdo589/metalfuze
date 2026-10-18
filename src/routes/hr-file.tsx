@@ -147,12 +147,12 @@ function HrFilePage() {
                 </tr></thead>
                 <tbody>
                   {rows.map((r) => (
-                    <tr key={r.id} onClick={() => open(r)} className={`cursor-pointer border-b border-border/60 hover:bg-muted/40 ${r.sheet === "employees" && statusLabel(r.data["الحالة"], lang) ? "bg-destructive/10 opacity-80" : ""}`}>
+                    <tr key={r.id} onClick={() => open(r)} className={`cursor-pointer border-b border-border/60 hover:bg-muted/40 ${r.sheet === "employees" && statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang) ? "bg-destructive/10 opacity-80" : ""}`}>
                       {cols.map((c) => (
                         <td key={c} className="p-3">
                           {show(r.data[c])}
-                          {c === "اسم الموظف" && r.sheet === "employees" && statusLabel(r.data["الحالة"], lang) && (
-                            <span className="ms-2 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{statusLabel(r.data["الحالة"], lang)}</span>
+                          {c === "اسم الموظف" && r.sheet === "employees" && statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang) && (
+                            <span className="ms-2 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang)}</span>
                           )}
                         </td>
                       ))}
@@ -204,7 +204,7 @@ function HrFilePage() {
                     {draft ? (
                       c === "الجنسية" ? (
                         <NationalitySelect className="mt-1" value={draft[c] ?? ""} onChange={(v) => setDraft({ ...draft, [c]: v })} />
-                      ) : c === "الحالة" && sel.sheet === "employees" ? (
+                      ) : (c === "الحالة" || c === "حالة الموظف") && sel.sheet === "employees" ? (
                         <select className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground" value={resolveEmployeeStatus(draft[c])?.ar ?? draft[c] ?? ""} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })}>
                           <option value="">{lang === "en" ? "Select status" : "اختر الحالة"}</option>
                           {draft[c] && !resolveEmployeeStatus(draft[c]) && <option value={draft[c]}>{draft[c]}</option>}
