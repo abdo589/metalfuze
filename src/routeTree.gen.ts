@@ -32,6 +32,7 @@ import { Route as CheckinTokenRouteImport } from './routes/checkin.$token'
 import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
 import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
 import { Route as LeaveTokenRouteImport } from './routes/leave.$token'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
 import { Route as ApiPublicLeaveRouteImport } from './routes/api/public/leave'
 
@@ -150,6 +151,11 @@ const LeaveTokenRoute = LeaveTokenRouteImport.update({
   path: '/leave/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCheckinRoute = ApiPublicCheckinRouteImport.update({
   id: '/api/public/checkin',
   path: '/api/public/checkin',
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/leave/$token': typeof LeaveTokenRoute
   '/assistant/': typeof AssistantIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
 }
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/leave/$token': typeof LeaveTokenRoute
   '/assistant': typeof AssistantIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
 }
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/leave/$token': typeof LeaveTokenRoute
   '/assistant/': typeof AssistantIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
 }
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/iclock/getrequest'
     | '/leave/$token'
     | '/assistant/'
+    | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
   fileRoutesByTo: FileRoutesByTo
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/iclock/getrequest'
     | '/leave/$token'
     | '/assistant'
+    | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
   id:
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/iclock/getrequest'
     | '/leave/$token'
     | '/assistant/'
+    | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
   fileRoutesById: FileRoutesById
@@ -351,6 +363,7 @@ export interface RootRouteChildren {
   IclockGetrequestRoute: typeof IclockGetrequestRoute
   LeaveTokenRoute: typeof LeaveTokenRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
   ApiPublicLeaveRoute: typeof ApiPublicLeaveRoute
 }
@@ -518,6 +531,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeaveTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/checkin': {
       id: '/api/public/checkin'
       path: '/api/public/checkin'
@@ -559,6 +579,7 @@ const rootRouteChildren: RootRouteChildren = {
   IclockGetrequestRoute: IclockGetrequestRoute,
   LeaveTokenRoute: LeaveTokenRoute,
   AssistantIndexRoute: AssistantIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicCheckinRoute: ApiPublicCheckinRoute,
   ApiPublicLeaveRoute: ApiPublicLeaveRoute,
 }
