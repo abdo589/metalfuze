@@ -64,6 +64,27 @@ function Field({ r, k, canEdit, reload, type = "text", ltr = false }: {
   );
 }
 
+function NameCell({ r, canEdit, reload }: { r: Residency; canEdit: boolean; reload: () => void }) {
+  const save = async (k: "name" | "job", v: string) => {
+    v = v.trim();
+    if (v === (r[k] ?? "")) return;
+    const { error } = await supabase.from("residencies").update({ [k]: v || null } as Partial<Residency>).eq("id", r.id);
+    if (error) toast.error(error.message); else { toast.success(t("تم التحديث")); reload(); }
+  };
+  if (!canEdit) return (
+    <>
+      <div className="font-medium">{r.name}</div>
+      <div className="text-xs text-muted-foreground">{r.job ?? ""}</div>
+    </>
+  );
+  return (
+    <>
+      <input type="text" defaultValue={r.name} className={inputCls + " font-medium"} onBlur={(e) => save("name", e.target.value)} />
+      <input type="text" defaultValue={r.job ?? ""} placeholder={t("الوظيفة")} className={inputCls} onBlur={(e) => save("job", e.target.value)} />
+    </>
+  );
+}
+
 function DateCell({ r, k, canEdit, reload }: { r: Residency; k: (typeof DOCS)[number]["key"]; canEdit: boolean; reload: () => void }) {
   const d = daysLeft(r[k]);
   const s = docStatus(d);
