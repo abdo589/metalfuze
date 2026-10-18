@@ -31,6 +31,7 @@ import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threa
 import { Route as CheckinTokenRouteImport } from './routes/checkin.$token'
 import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
 import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
+import { Route as LeaveTokenRouteImport } from './routes/leave.$token'
 import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
 import { Route as ApiPublicLeaveRouteImport } from './routes/api/public/leave'
 
@@ -144,6 +145,11 @@ const IclockGetrequestRoute = IclockGetrequestRouteImport.update({
   path: '/iclock/getrequest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaveTokenRoute = LeaveTokenRouteImport.update({
+  id: '/leave/$token',
+  path: '/leave/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCheckinRoute = ApiPublicCheckinRouteImport.update({
   id: '/api/public/checkin',
   path: '/api/public/checkin',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
+  '/leave/$token': typeof LeaveTokenRoute
   '/assistant/': typeof AssistantIndexRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
+  '/leave/$token': typeof LeaveTokenRoute
   '/assistant': typeof AssistantIndexRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
+  '/leave/$token': typeof LeaveTokenRoute
   '/assistant/': typeof AssistantIndexRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/checkin/$token'
     | '/iclock/cdata'
     | '/iclock/getrequest'
+    | '/leave/$token'
     | '/assistant/'
     | '/api/public/checkin'
     | '/api/public/leave'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/checkin/$token'
     | '/iclock/cdata'
     | '/iclock/getrequest'
+    | '/leave/$token'
     | '/assistant'
     | '/api/public/checkin'
     | '/api/public/leave'
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/checkin/$token'
     | '/iclock/cdata'
     | '/iclock/getrequest'
+    | '/leave/$token'
     | '/assistant/'
     | '/api/public/checkin'
     | '/api/public/leave'
@@ -337,6 +349,7 @@ export interface RootRouteChildren {
   CheckinTokenRoute: typeof CheckinTokenRoute
   IclockCdataRoute: typeof IclockCdataRoute
   IclockGetrequestRoute: typeof IclockGetrequestRoute
+  LeaveTokenRoute: typeof LeaveTokenRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
   ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
   ApiPublicLeaveRoute: typeof ApiPublicLeaveRoute
@@ -498,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IclockGetrequestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leave/$token': {
+      id: '/leave/$token'
+      path: '/leave/$token'
+      fullPath: '/leave/$token'
+      preLoaderRoute: typeof LeaveTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/checkin': {
       id: '/api/public/checkin'
       path: '/api/public/checkin'
@@ -537,6 +557,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckinTokenRoute: CheckinTokenRoute,
   IclockCdataRoute: IclockCdataRoute,
   IclockGetrequestRoute: IclockGetrequestRoute,
+  LeaveTokenRoute: LeaveTokenRoute,
   AssistantIndexRoute: AssistantIndexRoute,
   ApiPublicCheckinRoute: ApiPublicCheckinRoute,
   ApiPublicLeaveRoute: ApiPublicLeaveRoute,
