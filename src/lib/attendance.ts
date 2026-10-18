@@ -53,7 +53,7 @@ export function workDays(month: string, today = riyadh(new Date().toISOString())
   return out;
 }
 
-export function summarize(e: Employee, punches: Punch[], month: string, excuses?: Set<string>) {
+export function summarize(e: Employee, punches: Punch[], month: string, excuses?: Set<string>, leaveDates?: Set<string>) {
   // Remote phone punches use the device id when set, otherwise the employee id.
   const ids = [e.id, ...(e.deviceUserId ? [e.deviceUserId] : [])];
   const days = buildDays(punches, ids, excuses).filter((d) => d.date.startsWith(month));
@@ -64,7 +64,8 @@ export function summarize(e: Employee, punches: Punch[], month: string, excuses?
     days,
     present: days.length,
     late: days.filter((d) => d.late).length,
-    absent: linked ? wd.filter((d) => !present.has(d)).length : 0,
+    absent: linked ? wd.filter((d) => !present.has(d) && !leaveDates?.has(d)).length : 0,
+    leave: wd.filter((d) => leaveDates?.has(d)).length,
     linked,
   };
 }

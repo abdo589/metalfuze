@@ -5,7 +5,7 @@ import { monthLabel, type Employee } from "@/lib/payroll";
 type Row = { e: Employee; s: { days: DayRecord[]; present: number; late: number; absent: number; linked: boolean } };
 
 /** Monthly attendance grid: one row per employee, one column per day. Also the PDF layout. */
-export function MonthlySheet({ rows, month, today, onSelect, excuses }: { rows: Row[]; month: string; today: string; onSelect: (id: string) => void; excuses?: Map<string, string> }) {
+export function MonthlySheet({ rows, month, today, onSelect, excuses, leaves }: { rows: Row[]; month: string; today: string; onSelect: (id: string) => void; excuses?: Map<string, string>; leaves?: Map<string, Set<string>> }) {
   useLanguage();
   const [y, m] = month.split("-").map(Number);
   const count = new Date(Date.UTC(y!, m!, 0)).getUTCDate();
@@ -24,6 +24,7 @@ export function MonthlySheet({ rows, month, today, onSelect, excuses }: { rows: 
           <span><span className="inline-block size-2.5 rounded-sm bg-warning/30" /> {t("تأخير")}</span>
           <span><span className="inline-block size-2.5 rounded-sm bg-destructive/25" /> {t("غياب")}</span>
           <span><span className="inline-block size-2.5 rounded-sm bg-primary/30" /> {t("عذر")}</span>
+          <span><span className="inline-block size-2.5 rounded-sm bg-accent" /> {t("إجازة")}</span>
           <span><span className="inline-block size-2.5 rounded-sm bg-muted" /> {t("عطلة")}</span>
         </div>
       </div>
@@ -50,11 +51,12 @@ export function MonthlySheet({ rows, month, today, onSelect, excuses }: { rows: 
                 <td className="whitespace-normal border border-border p-1 text-[10px] font-medium" title={e.name}>{e.name}</td>
                 {days.map((d) => {
                   const r = byDate.get(d.iso);
-                  const absent = !r && !d.off && s.linked && d.iso <= today;
-                  const cls = r ? (r.excused ? "bg-primary/20" : r.late ? "bg-warning/25" : "bg-success/20") : d.off ? "bg-muted" : absent ? "bg-destructive/20 text-destructive" : "";
+                  const onLeave = !r && !d.off && !!leaves?.get(e.id)?.has(d.iso);
+                  const absent = !r && !d.off && !onLeave && s.linked && d.iso <= today;
+                  const cls = r ? (r.excused ? "bg-primary/20" : r.late ? "bg-warning/25" : "bg-success/20") : d.off ? "bg-muted" : onLeave ? "bg-accent text-accent-foreground" : absent ? "bg-destructive/20 text-destructive" : "";
                   return (
                     <td key={d.iso} title={r?.excused ? excuses?.get(`${e.id}|${d.iso}`) : undefined} className={`border border-border px-0 py-0.5 text-center ${cls}`}>
-                      {r ? <><div style={{ whiteSpace: "nowrap", fontSize: 7, letterSpacing: "-0.02em" }}>{r.in}</div>{r.out && <div className="text-muted-foreground" style={{ whiteSpace: "nowrap", fontSize: 7, letterSpacing: "-0.02em" }}>{r.out}</div>}</> : absent ? t("غ") : ""}
+                      {r ? <><div style={{ whiteSpace: "nowrap", fontSize: 7, letterSpacing: "-0.02em" }}>{r.in}</div>{r.out && <div className="text-muted-foreground" style={{ whiteSpace: "nowrap", fontSize: 7, letterSpacing: "-0.02em" }}>{r.out}</div>}</> : onLeave ? t("إج") : absent ? t("غ") : ""}
                     </td>
                   );
                 })}

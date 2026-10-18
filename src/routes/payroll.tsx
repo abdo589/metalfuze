@@ -51,7 +51,10 @@ function Payroll() {
     return m;
   }, [excuses]);
   /** Attendance summary honoring approved late excuses. */
-  const att = (e: Employee) => summarize(e, punches, month, excuseSets.get(e.id));
+  const leaves = useApprovedLeaves();
+  const att = (e: Employee) => summarize(e, punches, month, excuseSets.get(e.id), leaves.dates.get(e.id));
+  /** Unpaid-leave deduction for this month (gross / 30 per day). */
+  const unpaid = (e: Employee) => { const d = unpaidDaysInMonth(leaves.reqs, leaves.types, e.id, month); return { days: d, amount: unpaidDeduction((e.base || 0) + (e.allowances || 0), d) }; };
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);

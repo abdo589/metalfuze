@@ -146,7 +146,7 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Personal phone check-in links are opened by employees without accounts.
-  if (pathname.startsWith("/checkin/")) return (
+  if (pathname.startsWith("/checkin/") || pathname.startsWith("/leave/")) return (
     <>
       <Outlet />
       <Toaster position="top-center" richColors />
