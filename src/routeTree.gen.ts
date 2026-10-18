@@ -17,6 +17,7 @@ import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as ProjectReportsRouteImport } from './routes/project-reports'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as ResidenciesRouteImport } from './routes/residencies'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
@@ -66,6 +67,11 @@ const ProjectReportsRoute = ProjectReportsRouteImport.update({
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResidenciesRoute = ResidenciesRouteImport.update({
+  id: '/residencies',
+  path: '/residencies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/payroll': typeof PayrollRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
+  '/residencies': typeof ResidenciesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/payroll': typeof PayrollRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
+  '/residencies': typeof ResidenciesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/payroll': typeof PayrollRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
+  '/residencies': typeof ResidenciesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/project-reports'
     | '/report'
+    | '/residencies'
     | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/project-reports'
     | '/report'
+    | '/residencies'
     | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/project-reports'
     | '/report'
+    | '/residencies'
     | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
@@ -252,6 +264,7 @@ export interface RootRouteChildren {
   PayrollRoute: typeof PayrollRoute
   ProjectReportsRoute: typeof ProjectReportsRoute
   ReportRoute: typeof ReportRoute
+  ResidenciesRoute: typeof ResidenciesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UsersRoute: typeof UsersRoute
   WorkersCheckinRoute: typeof WorkersCheckinRoute
@@ -320,6 +333,13 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/residencies': {
+      id: '/residencies'
+      path: '/residencies'
+      fullPath: '/residencies'
+      preLoaderRoute: typeof ResidenciesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -404,6 +424,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayrollRoute: PayrollRoute,
   ProjectReportsRoute: ProjectReportsRoute,
   ReportRoute: ReportRoute,
+  ResidenciesRoute: ResidenciesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UsersRoute: UsersRoute,
   WorkersCheckinRoute: WorkersCheckinRoute,

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type Role = "admin" | "hr" | "viewer" | null;
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
-export const HR_PATHS = ["/payroll", "/attendance", "/workers-checkin"];
+export const HR_PATHS = ["/payroll", "/attendance", "/workers-checkin", "/residencies"];
 
 /** Current user's strongest role (admin > hr > viewer). undefined while loading. */
 export function useRole() {

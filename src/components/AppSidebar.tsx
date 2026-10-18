@@ -12,7 +12,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PieChart,
-  Fingerprint, Smartphone, Landmark,
+  Fingerprint, Smartphone, Landmark, IdCard,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,10 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { setSidebar, useSidebar } from "@/lib/sidebar";
 import { HR_PATHS, useRole } from "@/lib/permissions";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 
@@ -30,6 +34,7 @@ const items = [
   { to: "/payroll", label: "الرواتب", icon: Banknote },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
   { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Smartphone },
+  { to: "/residencies", label: "تتبع الإقامات", icon: IdCard },
   { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
   { to: "/bank", label: "رصيد البنك", icon: Landmark },
   { to: "/report", label: "التقرير الشهري", icon: FileText },
@@ -73,6 +78,17 @@ export function AppSidebar() {
   const language = useLanguage();
   const [open, setOpen] = useState(false);
   const collapsed = useSidebar() === "hidden";
+  const role = useRole();
+  useEffect(() => {
+    if (!role || sessionStorage.getItem("res-alert")) return;
+    sessionStorage.setItem("res-alert", "1");
+    supabase.from("residencies").select("name,iqama_expiry,permit_expiry,insurance_expiry,contract_expiry").then(({ data }) => {
+      const n = (data ?? []).filter((r) => [r.iqama_expiry, r.permit_expiry, r.insurance_expiry, r.contract_expiry]
+        .some((d) => { const x = daysLeft(d); return x !== null && x <= ALERT_DAYS; })).length;
+      if (n) toast.warning(`${t("تنبيه: مستندات قاربت على الانتهاء أو منتهية لـ")} ${n} ${t("موظف")}`, {
+        duration: 15000, action: { label: t("عرض"), onClick: () => { window.location.href = "/residencies"; } } });
+    });
+  }, [role]);
 
   return (
     <>
