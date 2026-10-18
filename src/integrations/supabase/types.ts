@@ -216,6 +216,30 @@ export type Database = {
           },
         ]
       }
+      hr_records: {
+        Row: {
+          data: Json
+          id: string
+          sheet: string
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          data?: Json
+          id?: string
+          sheet: string
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          sheet?: string
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       late_excuses: {
         Row: {
           created_at: string
