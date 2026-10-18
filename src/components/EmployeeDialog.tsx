@@ -68,6 +68,10 @@ export function EmployeeDialog({
             <Input value={form.dept} onChange={(e) => set("dept", e.target.value)} />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
+            <Label>{t("البريد الإلكتروني (لربط حساب الموظف)")}</Label>
+            <Input type="email" dir="ltr" value={form.email ?? ""} onChange={(e) => set("email", e.target.value)} placeholder="name@company.com" />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
             <Label>{t("رقم الموظف في جهاز البصمة")}</Label>
             <Input value={form.deviceUserId ?? ""} onChange={(e) => set("deviceUserId", e.target.value)} placeholder="1" />
           </div>
