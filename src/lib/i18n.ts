@@ -225,3 +225,9 @@ Object.assign(translations, {
   "رقم الموظف": "Employee no.", "اسم الموظف": "Employee", "القسم": "Department", "نوع الإجازة": "Leave type",
   "تاريخ البداية": "Start date", "تاريخ النهاية": "End date", "عدد الأيام": "Days", "الحالة": "Status", "ملاحظات": "Notes",
 });
+
+// Idle sign-out labels
+Object.assign(translations, {
+  "تم تسجيل الخروج لعدم النشاط": "Signed out after an hour without activity",
+  "سيتم تسجيل الخروج خلال 5 دقائق لعدم النشاط": "You'll be signed out in 5 minutes because nothing is happening",
+});
