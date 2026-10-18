@@ -50,7 +50,7 @@ function MessagesPage() {
       setPeople((p ?? []).filter((x) => x.id !== u.user!.id));
       setMsgs(m ?? []);
     })();
-    const ch = supabase.channel("dm")
+    const ch = supabase.channel(`dm-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "direct_messages" }, (payload) => {
         const row = payload.new as Msg;
         if (!row?.id) return;
