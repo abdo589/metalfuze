@@ -23,6 +23,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { setSidebar, useSidebar } from "@/lib/sidebar";
 import { HR_PATHS, useRole } from "@/lib/permissions";
+import { useUnreadMessages } from "@/lib/unread-messages";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
