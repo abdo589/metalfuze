@@ -1,0 +1,10 @@
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'hr';
+CREATE OR REPLACE FUNCTION public.is_hr(_user_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ select exists(select 1 from public.user_roles where user_id=_user_id and role::text='hr') $$;
+CREATE POLICY "HR read employees" ON public.employees FOR SELECT TO authenticated USING (public.is_hr(auth.uid()));
+CREATE POLICY "HR insert employees" ON public.employees FOR INSERT TO authenticated WITH CHECK (public.is_hr(auth.uid()));
+CREATE POLICY "HR update employees" ON public.employees FOR UPDATE TO authenticated USING (public.is_hr(auth.uid())) WITH CHECK (public.is_hr(auth.uid()));
+CREATE POLICY "HR delete employees" ON public.employees FOR DELETE TO authenticated USING (public.is_hr(auth.uid()));
+CREATE POLICY "HR read logs" ON public.attendance_logs FOR SELECT TO authenticated USING (public.is_hr(auth.uid()));
+CREATE POLICY "HR read devices" ON public.attendance_devices FOR SELECT TO authenticated USING (public.is_hr(auth.uid()));
+CREATE POLICY "HR read sites" ON public.work_sites FOR SELECT TO authenticated USING (public.is_hr(auth.uid()));
+INSERT INTO public.user_roles(user_id, role) SELECT '7a47486f-847d-4a13-a311-f5f46efeff9b', 'hr'::text::public.app_role WHERE false;
