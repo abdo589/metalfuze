@@ -32,6 +32,7 @@ import { Route as CheckinTokenRouteImport } from './routes/checkin.$token'
 import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
 import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
 import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
+import { Route as ApiPublicLeaveRouteImport } from './routes/api/public/leave'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -148,6 +149,11 @@ const ApiPublicCheckinRoute = ApiPublicCheckinRouteImport.update({
   path: '/api/public/checkin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicLeaveRoute = ApiPublicLeaveRouteImport.update({
+  id: '/api/public/leave',
+  path: '/api/public/leave',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
+  '/api/public/leave': typeof ApiPublicLeaveRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant': typeof AssistantIndexRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
+  '/api/public/leave': typeof ApiPublicLeaveRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/assistant/': typeof AssistantIndexRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
+  '/api/public/leave': typeof ApiPublicLeaveRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/iclock/getrequest'
     | '/assistant/'
     | '/api/public/checkin'
+    | '/api/public/leave'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/iclock/getrequest'
     | '/assistant'
     | '/api/public/checkin'
+    | '/api/public/leave'
   id:
     | '__root__'
     | '/'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/iclock/getrequest'
     | '/assistant/'
     | '/api/public/checkin'
+    | '/api/public/leave'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -327,6 +339,7 @@ export interface RootRouteChildren {
   IclockGetrequestRoute: typeof IclockGetrequestRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
   ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
+  ApiPublicLeaveRoute: typeof ApiPublicLeaveRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCheckinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/leave': {
+      id: '/api/public/leave'
+      path: '/api/public/leave'
+      fullPath: '/api/public/leave'
+      preLoaderRoute: typeof ApiPublicLeaveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -519,6 +539,7 @@ const rootRouteChildren: RootRouteChildren = {
   IclockGetrequestRoute: IclockGetrequestRoute,
   AssistantIndexRoute: AssistantIndexRoute,
   ApiPublicCheckinRoute: ApiPublicCheckinRoute,
+  ApiPublicLeaveRoute: ApiPublicLeaveRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
