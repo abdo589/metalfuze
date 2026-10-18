@@ -75,6 +75,14 @@ function Attendance() {
   const origin = typeof window === "undefined" ? "" : window.location.host;
   const sel = rows.find((r) => r.e.id === selected);
 
+  const [newSn, setNewSn] = useState("");
+  async function addDevice() {
+    const sn = newSn.trim().slice(0, 64);
+    if (!sn) return;
+    const { error } = await supabase.from("attendance_devices").insert({ serial_number: sn, name: "ZKTeco", approved: true });
+    if (error) toast.error(error.message); else { toast.success(t("تمت إضافة الجهاز")); setNewSn(""); loadDevices(); }
+  }
+
   async function approve(sn: string, approved: boolean) {
     const { error } = await supabase.from("attendance_devices").update({ approved }).eq("serial_number", sn);
     if (error) toast.error(error.message); else { toast.success(approved ? t("تم اعتماد الجهاز") : t("تم إيقاف الجهاز")); loadDevices(); }
@@ -180,8 +188,15 @@ function Attendance() {
           <div className="font-medium">{t("إعداد جهاز ZKTeco")}:</div>
           <div>{t("القائمة ← الاتصال ← إعداد خادم السحابة (ADMS)")}</div>
           <div>{t("عنوان الخادم")}: <b dir="ltr">{origin}</b> — {t("المنفذ")}: <b>443</b> — HTTPS: {t("مفعل")}</div>
-          <div>{t("بعد أول اتصال يظهر الجهاز هنا، اعتمده لبدء استقبال البصمات.")}</div>
+          <div>{t("أضف الرقم التسلسلي للجهاز هنا أولًا؛ الأجهزة غير المضافة تُرفض.")}</div>
         </div>
+        {canEdit && (
+          <div className="flex flex-wrap gap-2">
+            <input dir="ltr" value={newSn} onChange={(e) => setNewSn(e.target.value)} placeholder={t("الرقم التسلسلي للجهاز (SN)")}
+              className="h-9 min-w-56 flex-1 rounded-md border border-input bg-background px-3 text-sm" />
+            <Button size="sm" onClick={addDevice} disabled={!newSn.trim()}>{t("إضافة جهاز")}</Button>
+          </div>
+        )}
         {devices.length === 0 ? <p className="text-sm text-muted-foreground">{t("لم يتصل أي جهاز بعد")}</p> : devices.map((d) => (
           <div key={d.serial_number} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
             <div>
