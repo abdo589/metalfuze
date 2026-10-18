@@ -12,4 +12,4 @@
 - [ ] Search domain availability for Metal Fuze project and present options to the user — done, waiting on the user's pick
 - [x] Auth email templates (Metalfuze, notify.metalfuze.com)
 - [ ] Employee signup by email — waiting on user's choice (email confirmation / company domain only / link to employee record)
-- [ ] Internal chat — waiting on user's choice (private / group, who can join)
+- [x] Internal chat — private 1:1 messages for all accounts
