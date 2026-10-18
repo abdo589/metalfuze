@@ -208,7 +208,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 }
 const Empty = () => <p className="py-4 text-center text-sm text-muted-foreground">{t("لا توجد بيانات")}</p>;
 
-function ReqLine({ r, emp, typeName, lang, onOpen, hint }: { r: LeaveRequest; emp?: Emp; typeName: (id: string) => string; lang: "ar" | "en"; onOpen: (r: LeaveRequest) => void; hint?: string }) {
+function ReqLine({ r, emp, typeName, lang, onOpen, hint }: { r: LeaveRequest; emp?: Emp | undefined; typeName: (id: string) => string; lang: "ar" | "en"; onOpen: (r: LeaveRequest) => void; hint?: string | undefined }) {
   return (
     <button onClick={() => onOpen(r)} className="flex w-full flex-wrap items-center justify-between gap-2 border-b border-border/50 py-2 text-start text-sm last:border-0 hover:bg-muted/40">
       <span><b>#{r.request_no}</b> · {emp?.name ?? r.employee_id} · {typeName(r.type_id)} · {r.start_date} → {r.end_date} ({r.working_days} {t("يوم")}){hint && <span className="ms-2 text-xs text-muted-foreground">{hint}</span>}</span>
@@ -267,7 +267,7 @@ function NewRequest({ emps, types, reqs, bal, settings, lang, onDone }: { emps: 
   const b = bal.find((x) => x.employee_id === f.emp);
   const clash = f.emp && f.start && f.end ? overlaps(reqs, f.emp, f.start, f.end) : [];
 
-  async function save(submit: boolean) {
+  async function save(submit: boolean): Promise<unknown> {
     if (!emp || !type) return toast.error(t("اختر الموظف ونوع الإجازة"));
     if (!f.start || !f.end) return toast.error(t("اختر تاريخ البداية والنهاية"));
     if (f.end < f.start) return toast.error(t("تاريخ النهاية قبل تاريخ البداية"));
@@ -325,15 +325,15 @@ function NewRequest({ emps, types, reqs, bal, settings, lang, onDone }: { emps: 
 }
 
 function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canManager, canHr, usesBalance, onDone }: {
-  r: LeaveRequest | null; onClose: () => void; emp?: Emp; typeName: (id: string) => string; lang: "ar" | "en"; events: Ev[];
-  balance?: Balance; canManager: boolean; canHr: boolean; usesBalance: boolean; onDone: () => void;
+  r: LeaveRequest | null; onClose: () => void; emp?: Emp | undefined; typeName: (id: string) => string; lang: "ar" | "en"; events: Ev[];
+  balance?: Balance | undefined; canManager: boolean; canHr: boolean; usesBalance: boolean; onDone: () => void;
 }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => setNote(""), [r?.id]);
   if (!r) return null;
 
-  async function act(action: string) {
+  async function act(action: string): Promise<unknown> {
     if (!r) return;
     if (action.endsWith("reject") && !note.trim()) return toast.error(t("اكتب سبب الرفض"));
     setBusy(true);
@@ -342,7 +342,7 @@ function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canMa
     if (error) return toast.error(t(leaveError(error.message)));
     toast.success(t("تم التحديث")); onDone();
   }
-  async function openFile() {
+  async function openFile(): Promise<unknown> {
     if (!r?.attachment_path) return;
     const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(r.attachment_path, 300);
     if (error || !data) return toast.error(t("تعذر فتح الملف"));
@@ -402,7 +402,7 @@ function Balances({ emps, bal, adjs, isHr, onDone }: { emps: Emp[]; bal: Balance
   const byId = new Map(bal.map((b) => [b.employee_id, b]));
   const rows = emps.filter((e) => e.active && (!q || `${e.id} ${e.name} ${e.dept}`.includes(q)));
 
-  async function save() {
+  async function save(): Promise<unknown> {
     if (!adj) return;
     const n = Number(adj.days);
     if (!adj.days || isNaN(n)) return toast.error(t("اكتب عدد الأيام"));
@@ -410,7 +410,7 @@ function Balances({ emps, bal, adjs, isHr, onDone }: { emps: Emp[]; bal: Balance
     if (error) return toast.error(t(leaveError(error.message)));
     toast.success(t("تم التحديث")); setAdj(null); onDone();
   }
-  function copyLink(e: Emp) {
+  function copyLink(e: Emp): unknown {
     if (!e.checkin_token) return toast.error(t("لا يوجد رابط لهذا الموظف"));
     navigator.clipboard.writeText(`${window.location.origin}/leave/${e.checkin_token}`);
     toast.success(t("تم نسخ رابط الإجازات"));
@@ -585,15 +585,15 @@ function SettingsTab({ types, settings, mgrs, emps, onDone }: { types: LeaveType
   useEffect(() => { setTiers(settings.tiers); setAccrual(settings.accrual_from); }, [settings]);
   const depts = [...new Set(emps.map((e) => e.dept).filter(Boolean))].sort();
 
-  async function savePolicy() {
+  async function savePolicy(): Promise<unknown> {
     const { error } = await supabase.from("leave_settings").update({ tiers, accrual_from: accrual }).eq("id", 1);
     if (error) return toast.error(t("تعذر الحفظ")); toast.success(t("تم الحفظ")); onDone();
   }
-  async function saveType(x: LeaveType) {
+  async function saveType(x: LeaveType): Promise<unknown> {
     const { error } = await supabase.from("leave_types").update({ name_ar: x.name_ar, name_en: x.name_en, paid: x.paid, uses_balance: x.uses_balance, max_days: x.max_days, requires_attachment: x.requires_attachment, calendar_days: x.calendar_days, active: x.active }).eq("id", x.id);
     if (error) return toast.error(t("تعذر الحفظ")); toast.success(t("تم الحفظ")); onDone();
   }
-  async function setMgr(dept: string, uid: string) {
+  async function setMgr(dept: string, uid: string): Promise<unknown> {
     const res = uid
       ? await supabase.from("department_managers").upsert({ dept, user_id: uid, user_name: users.find((u) => u.id === uid)?.name ?? "" })
       : await supabase.from("department_managers").delete().eq("dept", dept);

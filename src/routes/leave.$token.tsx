@@ -64,7 +64,7 @@ function LeaveLink() {
   const days = useMemo(() => (info2 && form.start && form.end && form.end >= form.start ? countLeaveDays(form.start, form.end, info2.weekend, type?.calendar_days) : 0), [info2, form, type]);
   const name = (x?: LeaveType) => (x ? (lang === "en" ? x.name_en : x.name_ar) : "");
 
-  async function submit() {
+  async function submit(): Promise<unknown> {
     if (!info2 || !type) return;
     if (!form.start || !form.end) return toast.error(t("اختر تاريخ البداية والنهاية"));
     if (form.end < form.start) return toast.error(t("تاريخ النهاية قبل تاريخ البداية"));

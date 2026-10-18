@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/public/leave")({
       POST: async ({ request }) => {
         const raw = await request.text();
         if (raw.length > 8_000_000) return json({ ok: false, error: "file" }, 413);
-        let body: Record<string, unknown>;
+        let body: { token?: unknown; action?: unknown; id?: unknown; type?: unknown; start?: unknown; end?: unknown; reason?: unknown; attachment?: unknown };
         try { body = JSON.parse(raw); } catch { return json({ ok: false, error: "bad" }, 400); }
         if (!validToken(body.token)) return json({ ok: false, error: "bad" }, 400);
         const e = await byToken(body.token);
@@ -73,7 +73,7 @@ export const Route = createFileRoute("/api/public/leave")({
         }
         const { data, error } = await db.rpc("leave_create", {
           p_emp: e.id, p_type: body.type, p_start: body.start, p_end: body.end, p_reason: reason,
-          p_attach_path: path ?? undefined, p_attach_name: fileName ?? undefined, p_submit: true,
+          p_submit: true, ...(path ? { p_attach_path: path } : {}), ...(fileName ? { p_attach_name: fileName } : {}),
         });
         if (error) {
           if (path) await db.storage.from("employee-files").remove([path]);
