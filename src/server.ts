@@ -64,6 +64,9 @@ const CSP = [
 function withSecurityHeaders(response: Response): Response {
   const res = new Response(response.body, response);
   res.headers.set("Content-Security-Policy", CSP);
+  // Complements CSP frame-ancestors: modern browsers prefer frame-ancestors,
+  // older/scanning clients fall back to X-Frame-Options DENY.
+  res.headers.set("X-Frame-Options", "DENY");
   res.headers.set("Permissions-Policy", "camera=(self), geolocation=(self), microphone=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), interest-cohort=()");
   res.headers.set("X-Content-Type-Options", "nosniff");
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
