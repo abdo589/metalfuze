@@ -216,6 +216,33 @@ export type Database = {
           },
         ]
       }
+      late_excuses: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          excuse_date: string
+          id: string
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          excuse_date: string
+          id?: string
+          reason?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          excuse_date?: string
+          id?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       residencies: {
         Row: {
           contract_expiry: string | null

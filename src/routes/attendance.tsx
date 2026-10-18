@@ -4,6 +4,8 @@ import { CheckCircle2, ChevronLeft, ChevronRight, Clock, Fingerprint, UserX, Use
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { t, useLanguage } from "@/lib/i18n";
 import { useCanEdit } from "@/lib/permissions";
@@ -43,6 +45,8 @@ function Attendance() {
   const [month, setMonth] = useState(monthKey());
   const punches = useMonthPunches(month);
   const [devices, setDevices] = useState<Device[]>([]);
+  const [excuses, setExcuses] = useState<{ employee_id: string; excuse_date: string; reason: string }[]>([]);
+  const [excuseDraft, setExcuseDraft] = useState<{ empId: string; name: string; date: string; reason: string } | null>(null);
   const { sites, reload: reloadSites } = useSites();
   const [selected, setSelected] = useState<string | null>(null);
   const today = riyadh(new Date().toISOString()).date;
@@ -51,9 +55,18 @@ function Attendance() {
     const { data } = await supabase.from("attendance_devices").select("serial_number,name,approved,last_seen").order("created_at");
     if (data) setDevices(data);
   };
-  useEffect(() => { loadDevices(); }, []);
+  const loadExcuses = async () => {
+    const { data } = await supabase.from("late_excuses").select("employee_id,excuse_date,reason");
+    if (data) setExcuses(data);
+  };
+  useEffect(() => { loadDevices(); loadExcuses(); }, []);
 
-  const rows = useMemo(() => employees.filter((e) => e.active).map((e) => ({ e, s: summarize(e, punches, month) })), [employees, punches, month]);
+  const excuseMap = useMemo(() => new Map(excuses.map((x) => [`${x.employee_id}|${x.excuse_date}`, x.reason])), [excuses]);
+  const rows = useMemo(() => {
+    const byEmp = new Map<string, Set<string>>();
+    for (const x of excuses) { const s = byEmp.get(x.employee_id) ?? new Set<string>(); s.add(x.excuse_date); byEmp.set(x.employee_id, s); }
+    return employees.filter((e) => e.active).map((e) => ({ e, s: summarize(e, punches, month, byEmp.get(e.id)) }));
+  }, [employees, punches, month, excuses]);
   const todayIn = rows.filter((r) => r.s.days.some((d) => d.date === today)).length;
   const lateToday = rows.filter((r) => r.s.days.some((d) => d.date === today && d.late)).length;
   const linked = rows.filter((r) => r.s.linked).length;
@@ -63,6 +76,18 @@ function Attendance() {
   async function approve(sn: string, approved: boolean) {
     const { error } = await supabase.from("attendance_devices").update({ approved }).eq("serial_number", sn);
     if (error) toast.error(error.message); else { toast.success(approved ? t("تم اعتماد الجهاز") : t("تم إيقاف الجهاز")); loadDevices(); }
+  }
+
+  async function saveExcuse() {
+    if (!excuseDraft) return;
+    const { error } = await supabase.from("late_excuses")
+      .upsert({ employee_id: excuseDraft.empId, excuse_date: excuseDraft.date, reason: excuseDraft.reason }, { onConflict: "employee_id,excuse_date" });
+    if (error) toast.error(error.message); else { toast.success(t("تم حفظ العذر")); setExcuseDraft(null); loadExcuses(); }
+  }
+
+  async function removeExcuse(empId: string, date: string) {
+    const { error } = await supabase.from("late_excuses").delete().eq("employee_id", empId).eq("excuse_date", date);
+    if (error) toast.error(error.message); else { toast.success(t("تم حذف العذر")); setExcuseDraft(null); loadExcuses(); }
   }
 
   return (
@@ -95,7 +120,7 @@ function Attendance() {
         ))}
       </div>
 
-      <MonthlySheet rows={rows} month={month} today={today} onSelect={setSelected} />
+      <MonthlySheet rows={rows} month={month} today={today} onSelect={setSelected} excuses={excuseMap} />
 
       <div className="space-y-6 print:hidden">
       <AttendanceMap sites={sites} punches={punches} nameOf={(id) => employees.find((e) => e.id === id || e.deviceUserId === id)?.name ?? id} />
@@ -123,13 +148,22 @@ function Attendance() {
           })()}
           {sel.s.days.length === 0 ? <p className="text-sm text-muted-foreground">{t("لا توجد بصمات")}</p> : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-              {sel.s.days.map((d) => (
-                <div key={d.date} className={`rounded-lg border p-2 text-xs ${d.late ? "border-warning/40" : "border-border"}`}>
-                  <div className="font-medium">{d.date}</div>
-                  <div>{t("وقت الدخول")} {d.in}</div><div>{t("وقت الخروج")} {d.out ?? "—"}</div>
-                  {d.late && <div className="text-warning">{t("تأخير")} {d.lateMin} {t("دقيقة")}</div>}
-                </div>
-              ))}
+              {sel.s.days.map((d) => {
+                const reason = excuseMap.get(`${sel.e.id}|${d.date}`);
+                return (
+                  <div key={d.date} className={`rounded-lg border p-2 text-xs ${d.excused ? "border-primary/40" : d.late ? "border-warning/40" : "border-border"}`}>
+                    <div className="font-medium">{d.date}</div>
+                    <div>{t("وقت الدخول")} {d.in}</div><div>{t("وقت الخروج")} {d.out ?? "—"}</div>
+                    {d.late && <div className="text-warning">{t("تأخير")} {d.lateMin} {t("دقيقة")}</div>}
+                    {d.excused && <div className="text-primary" title={reason}>{t("بعذر")}{reason ? `: ${reason}` : ""}</div>}
+                    {canEdit && (d.late || d.excused) && (
+                      <button className="mt-1 block text-[11px] text-primary underline" onClick={() => setExcuseDraft({ empId: sel.e.id, name: sel.e.name, date: d.date, reason: reason ?? "" })}>
+                        {reason ? t("تعديل العذر") : t("إضافة عذر")}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>
@@ -164,6 +198,28 @@ function Attendance() {
         ))}
       </section>
       </div>
+
+      <Dialog open={!!excuseDraft} onOpenChange={(o) => { if (!o) setExcuseDraft(null); }}>
+        <DialogContent className="print:hidden sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("عذر التأخير")} — {excuseDraft?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <div className="text-sm text-muted-foreground">{excuseDraft?.date}</div>
+            <Textarea
+              placeholder={t("اكتب سبب التأخير")}
+              value={excuseDraft?.reason ?? ""}
+              onChange={(ev) => setExcuseDraft((d) => (d ? { ...d, reason: ev.target.value } : d))}
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            {excuseDraft && excuseMap.has(`${excuseDraft.empId}|${excuseDraft.date}`) && (
+              <Button variant="outline" onClick={() => excuseDraft && removeExcuse(excuseDraft.empId, excuseDraft.date)}>{t("حذف العذر")}</Button>
+            )}
+            <Button onClick={saveExcuse}>{t("حفظ")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

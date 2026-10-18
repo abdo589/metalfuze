@@ -57,6 +57,13 @@
       "when": 1792311014817,
       "tag": "0007_residencies",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792316016076,
+      "tag": "0008_create_late_excuses",
+      "breakpoints": true
     }
   ]
 }

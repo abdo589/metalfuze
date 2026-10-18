@@ -22,4 +22,9 @@ describe("attendance rules", () => {
       { device_user_id: "12", punched_at: "2026-10-15T09:02:11+03:00", status: 0 },
     ]);
   });
+  it("excused late day is not counted late", () => {
+    const d = buildDays([{ device_user_id: "1", punched_at: "2026-10-15T10:15:00+03:00" }], "1", new Set(["2026-10-15"]));
+    expect(d[0]!.late).toBe(false);
+    expect(d[0]!.excused).toBe(true);
+  });
 });

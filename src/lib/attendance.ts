@@ -10,7 +10,7 @@ export type Punch = {
   distance_m?: number | null; photo_path?: string | null; site_name?: string | null;
   lat?: number | null; lng?: number | null;
 };
-export type DayRecord = { date: string; in: string; out: string | null; late: boolean; lateMin: number };
+export type DayRecord = { date: string; in: string; out: string | null; late: boolean; lateMin: number; excused?: boolean };
 
 /** Riyadh (UTC+3) local date + time for a timestamp. */
 export function riyadh(ts: string) {
@@ -21,7 +21,7 @@ export function riyadh(ts: string) {
 
 const mins = (hhmm: string) => { const [h, m] = hhmm.split(":").map(Number); return h! * 60 + m!; };
 
-export function buildDays(punches: Punch[], userId: string | string[]): DayRecord[] {
+export function buildDays(punches: Punch[], userId: string | string[], excuseDates?: Set<string>): DayRecord[] {
   const ids = new Set(Array.isArray(userId) ? userId : [userId]);
   const byDay = new Map<string, string[]>();
   for (const p of punches) {
@@ -33,8 +33,9 @@ export function buildDays(punches: Punch[], userId: string | string[]): DayRecor
     times.sort();
     const first = times[0]!;
     const last = times.length > 1 ? times[times.length - 1]! : null;
-    const late = mins(first) > mins(LATE_AFTER);
-    return { date, in: first, out: last, late, lateMin: late ? mins(first) - mins(WORK_START) : 0 };
+    const excused = !!excuseDates?.has(date) && mins(first) > mins(LATE_AFTER);
+    const late = mins(first) > mins(LATE_AFTER) && !excused;
+    return { date, in: first, out: last, late, lateMin: late ? mins(first) - mins(WORK_START) : 0, excused };
   });
 }
 
@@ -52,10 +53,10 @@ export function workDays(month: string, today = riyadh(new Date().toISOString())
   return out;
 }
 
-export function summarize(e: Employee, punches: Punch[], month: string) {
+export function summarize(e: Employee, punches: Punch[], month: string, excuses?: Set<string>) {
   // Remote phone punches use the device id when set, otherwise the employee id.
   const ids = [e.id, ...(e.deviceUserId ? [e.deviceUserId] : [])];
-  const days = buildDays(punches, ids).filter((d) => d.date.startsWith(month));
+  const days = buildDays(punches, ids, excuses).filter((d) => d.date.startsWith(month));
   const linked = !!e.deviceUserId || !!e.siteId || days.length > 0;
   const wd = workDays(month);
   const present = new Set(days.map((d) => d.date));
