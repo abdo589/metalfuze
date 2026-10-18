@@ -43,7 +43,7 @@ function Cell({ r, k, canEdit, reload }: { r: Residency; k: (typeof DOCS)[number
           onBlur={async (e) => {
             const v = e.target.value || null;
             if (v === r[k]) return;
-            const { error } = await supabase.from("residencies").update({ [k]: v }).eq("id", r.id);
+            const { error } = await supabase.from("residencies").update({ [k]: v } as Partial<Residency>).eq("id", r.id);
             if (error) toast.error(error.message); else reload();
           }} />
       ) : <div className="text-xs">{r[k] ?? "—"}</div>}
