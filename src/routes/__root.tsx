@@ -20,6 +20,7 @@ import { themeScript } from "../lib/theme";
 import { initializeSidebar, sidebarScript } from "../lib/sidebar";
 import { initializeLanguage, useLanguage } from "@/lib/i18n";
 import { AppSidebar } from "@/components/AppSidebar";
+import { IdleSignOut } from "@/components/IdleSignOut";
 
 function NotFoundComponent() {
   return (
@@ -154,6 +155,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <IdleSignOut />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AuthGate>
         <div data-report-document>
