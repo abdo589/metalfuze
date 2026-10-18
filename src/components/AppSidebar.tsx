@@ -14,7 +14,7 @@ import {
   PanelLeftOpen,
   PieChart,
   Fingerprint, Smartphone, Landmark, IdCard, CalendarOff,
-  Users, FolderKanban,
+  Users, FolderKanban, MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -34,6 +34,7 @@ const items = [
   { to: "/hr-dashboard", label: "لوحة التحكم", icon: Bell },
   { to: "/hr-file", label: "بيانات الموظفين", icon: IdCard },
   { to: "/leaves", label: "الإجازات", icon: CalendarOff },
+  { to: "/messages", label: "الرسائل", icon: MessageSquare },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
   { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Smartphone },
@@ -52,7 +53,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const role = useRole();
   const visible = role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
-    : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }]
+    : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
     : role === undefined ? [] : role === "admin" ? items : items.filter((i) => i.to !== "/my-projects");
   return (
     <nav className="flex flex-col gap-1">
