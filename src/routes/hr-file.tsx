@@ -1,10 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getHrFile, type HrFile, type HrSheet } from "@/lib/hr-file.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { useRole } from "@/lib/permissions";
+import { importHrFile, type HrKey, type HrRow } from "@/lib/hr-file.functions";
+import sheets from "@/lib/hr-sheets.json";
 
 export const Route = createFileRoute("/hr-file")({
   head: () => ({
@@ -12,7 +17,7 @@ export const Route = createFileRoute("/hr-file")({
       { title: "ملف الموارد البشرية — Metal Fuze" },
       { name: "description", content: "بيانات الموظفين والوثائق والإجازات والرواتب والتقييمات من ملف الموارد البشرية." },
       { property: "og:title", content: "ملف الموارد البشرية — Metal Fuze" },
-      { property: "og:description", content: "اضغط على أي سجل لعرض كل تفاصيله." },
+      { property: "og:description", content: "اضغط على أي سجل لعرض كل تفاصيله وتعديلها." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -20,10 +25,11 @@ export const Route = createFileRoute("/hr-file")({
   component: HrFilePage,
 });
 
-type Key = keyof HrFile;
-const TABS: Key[] = ["employees", "documents", "leaves", "payroll", "evaluations"];
+const META = sheets as Record<HrKey, { title: string; columns: string[] }>;
+const TABS: HrKey[] = ["employees", "documents", "leaves", "payroll", "evaluations"];
 const ID = "رقم الموظف";
 const NAME = "اسم الموظف";
+type Rec = { id: string; sheet: HrKey; data: HrRow; sort: number };
 
 function show(v: unknown) {
   if (v === undefined || v === null || v === "") return "—";
@@ -32,53 +38,93 @@ function show(v: unknown) {
 }
 
 function HrFilePage() {
-  const [data, setData] = useState<HrFile | null>(null);
-  const [err, setErr] = useState("");
-  const [tab, setTab] = useState<Key>("employees");
+  const role = useRole();
+  const canEdit = role === "admin" || role === "hr";
+  const [recs, setRecs] = useState<Rec[] | null>(null);
+  const [tab, setTab] = useState<HrKey>("employees");
   const [q, setQ] = useState("");
-  const [sel, setSel] = useState<{ sheet: Key; row: Record<string, string | number> } | null>(null);
+  const [sel, setSel] = useState<Rec | null>(null);
+  const [draft, setDraft] = useState<Record<string, string> | null>(null);
 
-  useEffect(() => { getHrFile().then(setData).catch((e) => setErr(String(e.message ?? e))); }, []);
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.from("hr_records").select("id,sheet,data,sort").order("sort");
+    if (error) return toast.error("تعذر التحميل");
+    setRecs((data ?? []) as unknown as Rec[]);
+  }, []);
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (recs && !recs.length && canEdit) importHrFile().then((r) => r.imported && load()).catch(() => {});
+  }, [recs, canEdit, load]);
 
-  const sheet: HrSheet | undefined = data?.[tab];
-  const rows = useMemo(() => (sheet?.rows ?? []).filter((r) => Object.values(r).join(" ").includes(q)), [sheet, q]);
-  const cols = (sheet?.columns ?? []).slice(0, 7);
+  const all = recs ?? [];
+  const bySheet = (k: HrKey) => all.filter((r) => r.sheet === k);
+  const rows = useMemo(() => all.filter((r) => r.sheet === tab && Object.values(r.data).join(" ").includes(q)), [all, tab, q]);
+  const cols = META[tab].columns.slice(0, 7);
 
-  const related = (row: Record<string, string | number>) => {
-    if (!data) return [];
-    const id = row[ID] ? String(row[ID]) : null;
-    const name = row[NAME];
-    return TABS.filter((k) => k !== sel?.sheet).map((k) => ({
-      k, title: data[k].title,
-      rows: data[k].rows.filter((r) => (id && String(r[ID] ?? "") === id) || (name && r[NAME] === name)),
-    })).filter((x) => x.rows.length);
+  const open = (r: Rec) => { setSel(r); setDraft(null); };
+  const startEdit = (r: Rec) => setDraft(Object.fromEntries(META[r.sheet].columns.map((c) => [c, r.data[c] === undefined ? "" : String(r.data[c])])));
+
+  async function save() {
+    if (!sel || !draft) return;
+    const data: HrRow = {};
+    for (const [k, v] of Object.entries(draft)) {
+      const t = v.trim();
+      if (!t) continue;
+      const orig = sel.data[k];
+      data[k] = typeof orig === "number" && !isNaN(Number(t)) ? Number(t) : t;
+    }
+    const res = sel.id
+      ? await supabase.from("hr_records").update({ data, updated_at: new Date().toISOString() }).eq("id", sel.id)
+      : await supabase.from("hr_records").insert({ sheet: sel.sheet, data, sort: bySheet(sel.sheet).length });
+    if (res.error) return toast.error("تعذر الحفظ");
+    toast.success("تم الحفظ");
+    setSel(null); setDraft(null); load();
+  }
+
+  async function remove() {
+    if (!sel?.id || !confirm("حذف هذا السجل؟")) return;
+    const { error } = await supabase.from("hr_records").delete().eq("id", sel.id);
+    if (error) return toast.error("تعذر الحذف");
+    toast.success("تم الحذف"); setSel(null); load();
+  }
+
+  const related = (r: Rec) => {
+    const id = r.data[ID] !== undefined ? String(r.data[ID]) : null;
+    const name = r.data[NAME];
+    return TABS.filter((k) => k !== r.sheet).map((k) => ({
+      k, rows: bySheet(k).filter((x) => (id && String(x.data[ID] ?? "") === id) || (name && x.data[NAME] === name)),
+    })).filter((g) => g.rows.length);
   };
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <header className="text-center">
         <h1 className="font-display text-3xl font-extrabold sm:text-4xl">ملف الموارد البشرية</h1>
-        <p className="mt-1 text-sm text-muted-foreground">اضغط على أي خانة لعرض كل بياناتها</p>
+        <p className="mt-1 text-sm text-muted-foreground">اضغط على أي خانة لعرض كل بياناتها{canEdit ? " وتعديلها" : ""}</p>
       </header>
-      {err && <p className="text-center text-destructive">{err}</p>}
-      {!data && !err && <p className="text-center text-muted-foreground">جارٍ التحميل…</p>}
-      {data && (
+      {!recs && <p className="text-center text-muted-foreground">جارٍ التحميل…</p>}
+      {recs && (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             {TABS.map((k) => (
               <button key={k} onClick={() => { setTab(k); setQ(""); }}
                 className={`rounded-xl border p-4 text-center transition ${tab === k ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted/40"}`}>
-                <div className="text-xs text-muted-foreground">{data[k].title}</div>
-                <div className="mt-1 font-display text-2xl font-bold">{data[k].rows.length}</div>
+                <div className="text-xs text-muted-foreground">{META[k].title}</div>
+                <div className="mt-1 font-display text-2xl font-bold">{bySheet(k).length}</div>
               </button>
             ))}
           </div>
           <section className="rounded-xl border border-border bg-card">
-            <div className="border-b border-border p-4">
-              <div className="relative">
+            <div className="flex gap-3 border-b border-border p-4">
+              <div className="relative flex-1">
                 <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث…" className="pr-9" />
               </div>
+              {canEdit && (
+                <Button onClick={() => { const r: Rec = { id: "", sheet: tab, data: {}, sort: 0 }; setSel(r); startEdit(r); }}>
+                  <Plus /> إضافة
+                </Button>
+              )}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -86,9 +132,9 @@ function HrFilePage() {
                   {cols.map((c) => <th key={c} className="p-3 font-medium">{c}</th>)}
                 </tr></thead>
                 <tbody>
-                  {rows.map((r, i) => (
-                    <tr key={i} onClick={() => setSel({ sheet: tab, row: r })} className="cursor-pointer border-b border-border/60 hover:bg-muted/40">
-                      {cols.map((c) => <td key={c} className="p-3">{show(r[c])}</td>)}
+                  {rows.map((r) => (
+                    <tr key={r.id} onClick={() => open(r)} className="cursor-pointer border-b border-border/60 hover:bg-muted/40">
+                      {cols.map((c) => <td key={c} className="p-3">{show(r.data[c])}</td>)}
                     </tr>
                   ))}
                   {!rows.length && <tr><td colSpan={cols.length} className="p-8 text-center text-muted-foreground">لا توجد نتائج</td></tr>}
@@ -98,28 +144,49 @@ function HrFilePage() {
           </section>
         </>
       )}
-      <Dialog open={!!sel} onOpenChange={(o) => !o && setSel(null)}>
+      <Dialog open={!!sel} onOpenChange={(o) => { if (!o) { setSel(null); setDraft(null); } }}>
         <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-          {sel && data && (
+          {sel && (
             <>
-              <DialogHeader><DialogTitle>{show(sel.row[NAME] ?? sel.row[data[sel.sheet].columns[0]!])}</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>{sel.id ? show(sel.data[NAME] ?? sel.data[META[sel.sheet].columns[0]!]) : `إضافة — ${META[sel.sheet].title}`}</DialogTitle>
+              </DialogHeader>
+              {canEdit && (
+                <div className="flex flex-wrap gap-2">
+                  {draft ? (
+                    <>
+                      <Button onClick={save}><Save /> حفظ</Button>
+                      {sel.id && <Button variant="outline" onClick={() => setDraft(null)}><X /> إلغاء</Button>}
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="outline" onClick={() => startEdit(sel)}><Pencil /> تعديل</Button>
+                      <Button variant="outline" className="text-destructive hover:text-destructive" onClick={remove}><Trash2 /> حذف</Button>
+                    </>
+                  )}
+                </div>
+              )}
               <div className="grid gap-2 sm:grid-cols-2">
-                {data[sel.sheet].columns.map((c) => (
+                {META[sel.sheet].columns.map((c) => (
                   <div key={c} className="rounded-lg border border-border p-2">
                     <div className="text-xs text-muted-foreground">{c}</div>
-                    <div className="font-medium">{show(sel.row[c])}</div>
+                    {draft ? (
+                      <Input className="mt-1 h-8" value={draft[c] ?? ""} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })} />
+                    ) : (
+                      <div className="font-medium">{show(sel.data[c])}</div>
+                    )}
                   </div>
                 ))}
               </div>
-              {related(sel.row).map((g) => (
+              {sel.id && !draft && related(sel).map((g) => (
                 <div key={g.k} className="space-y-2">
-                  <h3 className="font-bold">{g.title} <Badge variant="outline">{g.rows.length}</Badge></h3>
-                  {g.rows.map((r, i) => (
-                    <div key={i} className="rounded-lg bg-muted/40 p-2 text-xs">
-                      {data[g.k].columns.filter((c) => c !== ID && c !== NAME && r[c] !== undefined).map((c) => (
-                        <span key={c} className="me-3 inline-block"><span className="text-muted-foreground">{c}:</span> {show(r[c])}</span>
+                  <h3 className="font-bold">{META[g.k].title} <Badge variant="outline">{g.rows.length}</Badge></h3>
+                  {g.rows.map((r) => (
+                    <button key={r.id} onClick={() => open(r)} className="block w-full rounded-lg bg-muted/40 p-2 text-start text-xs hover:bg-muted">
+                      {META[g.k].columns.filter((c) => c !== ID && c !== NAME && r.data[c] !== undefined).map((c) => (
+                        <span key={c} className="me-3 inline-block"><span className="text-muted-foreground">{c}:</span> {show(r.data[c])}</span>
                       ))}
-                    </div>
+                    </button>
                   ))}
                 </div>
               ))}
