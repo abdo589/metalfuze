@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Banknote,
+  Bell,
   HandCoins,
   BrainCircuit,
   FileSpreadsheet,
@@ -30,12 +31,12 @@ import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 
 const items = [
-  { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
-  { to: "/payroll", label: "الرواتب", icon: Banknote },
+  { to: "/hr-dashboard", label: "لوحة التحكم", icon: Bell },
+  { to: "/hr-file", label: "بيانات الموظفين", icon: IdCard },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
+  { to: "/payroll", label: "الرواتب", icon: Banknote },
   { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Smartphone },
-  { to: "/residencies", label: "بيانات الموظفين", icon: IdCard },
-  { to: "/hr-file", label: "ملف الموارد البشرية", icon: FileSpreadsheet },
+  { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
   { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
   { to: "/bank", label: "رصيد البنك", icon: Landmark },
   { to: "/report", label: "التقرير الشهري", icon: FileText },
@@ -109,11 +110,11 @@ export function AppSidebar() {
       if (!n) return;
       const msg = `${t("تنبيه: مستندات قاربت على الانتهاء أو منتهية لـ")} ${n} ${t("موظف")}`;
       toast.warning(msg, {
-        duration: 15000, action: { label: t("عرض"), onClick: () => { window.location.href = "/residencies"; } } });
+        duration: 15000, action: { label: t("عرض"), onClick: () => { window.location.href = "/hr-dashboard"; } } });
       // System notification on the laptop/phone screen (works in the installed app once allowed).
       if ("Notification" in window && Notification.permission === "granted") {
         const note = new Notification("Metal Fuze", { body: msg, icon: "/icon-192.png", tag: "res-alert" });
-        note.onclick = () => { window.focus(); window.location.href = "/residencies"; };
+        note.onclick = () => { window.focus(); window.location.href = "/hr-dashboard"; };
       }
     });
   }, [role]);

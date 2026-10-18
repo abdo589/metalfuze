@@ -10,13 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/permissions";
 import { importHrFile, type HrKey, type HrRow } from "@/lib/hr-file.functions";
 import sheets from "@/lib/hr-sheets.json";
+import { Residencies } from "@/components/ResidenciesPanel";
 
 export const Route = createFileRoute("/hr-file")({
   head: () => ({
     meta: [
-      { title: "ملف الموارد البشرية — Metal Fuze" },
+      { title: "بيانات الموظفين — Metal Fuze" },
       { name: "description", content: "بيانات الموظفين والوثائق والإجازات والرواتب والتقييمات من ملف الموارد البشرية." },
-      { property: "og:title", content: "ملف الموارد البشرية — Metal Fuze" },
+      { property: "og:title", content: "بيانات الموظفين — Metal Fuze" },
       { property: "og:description", content: "اضغط على أي سجل لعرض كل تفاصيله وتعديلها." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -42,6 +43,7 @@ function HrFilePage() {
   const canEdit = role === "admin" || role === "hr";
   const [recs, setRecs] = useState<Rec[] | null>(null);
   const [tab, setTab] = useState<HrKey>("employees");
+  const [resTab, setResTab] = useState(false);
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<Rec | null>(null);
   const [draft, setDraft] = useState<Record<string, string> | null>(null);
@@ -99,22 +101,27 @@ function HrFilePage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <header className="text-center">
-        <h1 className="font-display text-3xl font-extrabold sm:text-4xl">ملف الموارد البشرية</h1>
+        <h1 className="font-display text-3xl font-extrabold sm:text-4xl">بيانات الموظفين</h1>
         <p className="mt-1 text-sm text-muted-foreground">اضغط على أي خانة لعرض كل بياناتها{canEdit ? " وتعديلها" : ""}</p>
       </header>
       {!recs && <p className="text-center text-muted-foreground">جارٍ التحميل…</p>}
       {recs && (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
             {TABS.map((k) => (
-              <button key={k} onClick={() => { setTab(k); setQ(""); }}
-                className={`rounded-xl border p-4 text-center transition ${tab === k ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted/40"}`}>
+              <button key={k} onClick={() => { setTab(k); setQ(""); setResTab(false); }}
+                className={`rounded-xl border p-4 text-center transition ${!resTab && tab === k ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted/40"}`}>
                 <div className="text-xs text-muted-foreground">{META[k].title}</div>
                 <div className="mt-1 font-display text-2xl font-bold">{bySheet(k).length}</div>
               </button>
             ))}
+            <button onClick={() => setResTab(true)}
+              className={`rounded-xl border p-4 text-center transition ${resTab ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted/40"}`}>
+              <div className="text-xs text-muted-foreground">الإقامات</div>
+              <div className="mt-1 font-display text-2xl font-bold">🪪</div>
+            </button>
           </div>
-          <section className="rounded-xl border border-border bg-card">
+          {resTab ? <Residencies /> : <section className="rounded-xl border border-border bg-card">
             <div className="flex gap-3 border-b border-border p-4">
               <div className="relative flex-1">
                 <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -149,7 +156,7 @@ function HrFilePage() {
                 </tbody>
               </table>
             </div>
-          </section>
+          </section>}
         </>
       )}
       <Dialog open={!!sel} onOpenChange={(o) => { if (!o) { setSel(null); setDraft(null); } }}>
