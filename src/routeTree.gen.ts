@@ -15,6 +15,7 @@ import { Route as BankRouteImport } from './routes/bank'
 import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as HrDashboardRouteImport } from './routes/hr-dashboard'
 import { Route as HrFileRouteImport } from './routes/hr-file'
+import { Route as LeavesRouteImport } from './routes/leaves'
 import { Route as MyProjectsRouteImport } from './routes/my-projects'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
@@ -60,6 +61,11 @@ const HrDashboardRoute = HrDashboardRouteImport.update({
 const HrFileRoute = HrFileRouteImport.update({
   id: '/hr-file',
   path: '/hr-file',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeavesRoute = LeavesRouteImport.update({
+  id: '/leaves',
+  path: '/leaves',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MyProjectsRoute = MyProjectsRouteImport.update({
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/budget': typeof BudgetRoute
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
+  '/leaves': typeof LeavesRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/budget': typeof BudgetRoute
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
+  '/leaves': typeof LeavesRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/budget': typeof BudgetRoute
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
+  '/leaves': typeof LeavesRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -225,6 +234,7 @@ export interface FileRouteTypes {
     | '/budget'
     | '/hr-dashboard'
     | '/hr-file'
+    | '/leaves'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/budget'
     | '/hr-dashboard'
     | '/hr-file'
+    | '/leaves'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/budget'
     | '/hr-dashboard'
     | '/hr-file'
+    | '/leaves'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -298,6 +310,7 @@ export interface RootRouteChildren {
   BudgetRoute: typeof BudgetRoute
   HrDashboardRoute: typeof HrDashboardRoute
   HrFileRoute: typeof HrFileRoute
+  LeavesRoute: typeof LeavesRoute
   MyProjectsRoute: typeof MyProjectsRoute
   PaymentsRoute: typeof PaymentsRoute
   PayrollRoute: typeof PayrollRoute
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/hr-file'
       fullPath: '/hr-file'
       preLoaderRoute: typeof HrFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaves': {
+      id: '/leaves'
+      path: '/leaves'
+      fullPath: '/leaves'
+      preLoaderRoute: typeof LeavesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/my-projects': {
@@ -482,6 +502,7 @@ const rootRouteChildren: RootRouteChildren = {
   BudgetRoute: BudgetRoute,
   HrDashboardRoute: HrDashboardRoute,
   HrFileRoute: HrFileRoute,
+  LeavesRoute: LeavesRoute,
   MyProjectsRoute: MyProjectsRoute,
   PaymentsRoute: PaymentsRoute,
   PayrollRoute: PayrollRoute,

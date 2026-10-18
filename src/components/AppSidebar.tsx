@@ -13,7 +13,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PieChart,
-  Fingerprint, Smartphone, Landmark, IdCard,
+  Fingerprint, Smartphone, Landmark, IdCard, CalendarOff,
   Users, FolderKanban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 const items = [
   { to: "/hr-dashboard", label: "لوحة التحكم", icon: Bell },
   { to: "/hr-file", label: "بيانات الموظفين", icon: IdCard },
+  { to: "/leaves", label: "الإجازات", icon: CalendarOff },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
   { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Smartphone },

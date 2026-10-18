@@ -213,3 +213,15 @@ Object.assign(translations, {
   "فتح الملف": "Open file", "حذف المشروع؟": "Delete project?", "مساحتك منفصلة — لا يراها إلا أنت والإدارة": "Your space is private — only you and management see it",
   "صاحب الحساب": "Account owner", "كلمة السر 8 أحرف على الأقل": "Password must be at least 8 characters", "اسم المستخدم مستخدم بالفعل": "Username already taken",
 });
+// Leaves page labels
+Object.assign(translations, {
+  "الإجازات": "Leaves", "سجلات الإجازات": "Leave records", "في إجازة الآن": "On leave now", "إجازات قادمة": "Upcoming leaves",
+  "منتهية": "Ended", "جارية": "Running", "قادمة": "Upcoming", "إجمالي أيام الإجازات": "Total leave days", "أيام هذا الشهر": "Days this month",
+  "كل إجازات الموظفين في مكان واحد — تتحدث تلقائيًا": "All employee leaves in one place — updated automatically",
+  "تصدير Excel": "Export Excel", "إضافة إجازة": "Add leave", "جارٍ التحميل…": "Loading…", "الكل": "All", "كل الأنواع": "All types",
+  "بحث…": "Search…", "لا توجد نتائج": "No results", "أيام الإجازات حسب الشهر": "Leave days by month", "أكثر الموظفين إجازات": "Most leave taken",
+  "لا توجد إجازات بعد": "No leaves yet", "حذف هذا السجل؟": "Delete this record?", "تعذر التحميل": "Couldn't load",
+  "تعذر الحذف": "Couldn't delete", "تم الحذف": "Deleted", "تعذر الحفظ": "Couldn't save",
+  "رقم الموظف": "Employee no.", "اسم الموظف": "Employee", "القسم": "Department", "نوع الإجازة": "Leave type",
+  "تاريخ البداية": "Start date", "تاريخ النهاية": "End date", "عدد الأيام": "Days", "الحالة": "Status", "ملاحظات": "Notes",
+});
