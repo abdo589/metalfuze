@@ -16,6 +16,7 @@ import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as HrDashboardRouteImport } from './routes/hr-dashboard'
 import { Route as HrFileRouteImport } from './routes/hr-file'
 import { Route as LeavesRouteImport } from './routes/leaves'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MyProjectsRouteImport } from './routes/my-projects'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
@@ -25,6 +26,7 @@ import { Route as ResidenciesRouteImport } from './routes/residencies'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
@@ -69,6 +71,11 @@ const HrFileRoute = HrFileRouteImport.update({
 const LeavesRoute = LeavesRouteImport.update({
   id: '/leaves',
   path: '/leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MyProjectsRoute = MyProjectsRouteImport.update({
@@ -116,6 +123,12 @@ const WorkersCheckinRoute = WorkersCheckinRouteImport.update({
   path: '/workers-checkin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -175,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
+  '/mcp': typeof McpRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -184,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/checkin/$token': typeof CheckinTokenRoute
@@ -203,6 +218,7 @@ export interface FileRoutesByTo {
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
+  '/mcp': typeof McpRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -212,6 +228,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/checkin/$token': typeof CheckinTokenRoute
@@ -232,6 +249,7 @@ export interface FileRoutesById {
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
+  '/mcp': typeof McpRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -241,6 +259,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/checkin/$token': typeof CheckinTokenRoute
@@ -262,6 +281,7 @@ export interface FileRouteTypes {
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
+    | '/mcp'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -271,6 +291,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
+    | '/.well-known/oauth-protected-resource'
     | '/api/chat'
     | '/assistant/$threadId'
     | '/checkin/$token'
@@ -290,6 +311,7 @@ export interface FileRouteTypes {
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
+    | '/mcp'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -299,6 +321,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
+    | '/.well-known/oauth-protected-resource'
     | '/api/chat'
     | '/assistant/$threadId'
     | '/checkin/$token'
@@ -318,6 +341,7 @@ export interface FileRouteTypes {
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
+    | '/mcp'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -327,6 +351,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
+    | '/.well-known/oauth-protected-resource'
     | '/api/chat'
     | '/assistant/$threadId'
     | '/checkin/$token'
@@ -347,6 +372,7 @@ export interface RootRouteChildren {
   HrDashboardRoute: typeof HrDashboardRoute
   HrFileRoute: typeof HrFileRoute
   LeavesRoute: typeof LeavesRoute
+  McpRoute: typeof McpRoute
   MyProjectsRoute: typeof MyProjectsRoute
   PaymentsRoute: typeof PaymentsRoute
   PayrollRoute: typeof PayrollRoute
@@ -356,6 +382,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UsersRoute: typeof UsersRoute
   WorkersCheckinRoute: typeof WorkersCheckinRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRoute
   AssistantThreadIdRoute: typeof AssistantThreadIdRoute
   CheckinTokenRoute: typeof CheckinTokenRoute
@@ -419,6 +446,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeavesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/my-projects': {
       id: '/my-projects'
       path: '/my-projects'
@@ -480,6 +514,13 @@ declare module '@tanstack/react-router' {
       path: '/workers-checkin'
       fullPath: '/workers-checkin'
       preLoaderRoute: typeof WorkersCheckinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -563,6 +604,7 @@ const rootRouteChildren: RootRouteChildren = {
   HrDashboardRoute: HrDashboardRoute,
   HrFileRoute: HrFileRoute,
   LeavesRoute: LeavesRoute,
+  McpRoute: McpRoute,
   MyProjectsRoute: MyProjectsRoute,
   PaymentsRoute: PaymentsRoute,
   PayrollRoute: PayrollRoute,
@@ -572,6 +614,8 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UsersRoute: UsersRoute,
   WorkersCheckinRoute: WorkersCheckinRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRoute,
   AssistantThreadIdRoute: AssistantThreadIdRoute,
   CheckinTokenRoute: CheckinTokenRoute,
