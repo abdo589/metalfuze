@@ -4,6 +4,8 @@ import { CheckCircle2, ChevronLeft, ChevronRight, Clock, Fingerprint, UserX, Use
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { t, useLanguage } from "@/lib/i18n";
 import { useCanEdit } from "@/lib/permissions";
@@ -43,6 +45,8 @@ function Attendance() {
   const [month, setMonth] = useState(monthKey());
   const punches = useMonthPunches(month);
   const [devices, setDevices] = useState<Device[]>([]);
+  const [excuses, setExcuses] = useState<{ employee_id: string; excuse_date: string; reason: string }[]>([]);
+  const [excuseDraft, setExcuseDraft] = useState<{ empId: string; name: string; date: string; reason: string } | null>(null);
   const { sites, reload: reloadSites } = useSites();
   const [selected, setSelected] = useState<string | null>(null);
   const today = riyadh(new Date().toISOString()).date;
@@ -51,7 +55,11 @@ function Attendance() {
     const { data } = await supabase.from("attendance_devices").select("serial_number,name,approved,last_seen").order("created_at");
     if (data) setDevices(data);
   };
-  useEffect(() => { loadDevices(); }, []);
+  const loadExcuses = async () => {
+    const { data } = await supabase.from("late_excuses").select("employee_id,excuse_date,reason");
+    if (data) setExcuses(data);
+  };
+  useEffect(() => { loadDevices(); loadExcuses(); }, []);
 
   const rows = useMemo(() => employees.filter((e) => e.active).map((e) => ({ e, s: summarize(e, punches, month) })), [employees, punches, month]);
   const todayIn = rows.filter((r) => r.s.days.some((d) => d.date === today)).length;
