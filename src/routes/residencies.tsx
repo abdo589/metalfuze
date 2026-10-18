@@ -33,7 +33,59 @@ const tone = {
   none: "",
 };
 
-function Cell({ r, k, canEdit, reload }: { r: Residency; k: (typeof DOCS)[number]["key"]; canEdit: boolean; reload: () => void }) {
+const inputCls = "w-full rounded border border-input bg-background px-1.5 py-1 text-xs";
+
+type FieldKey = "nationality" | "iqama_no" | "iqama_fee" | "permit_fee";
+
+function Field({ r, k, canEdit, reload, type = "text", ltr = false }: {
+  r: Residency; k: FieldKey; canEdit: boolean; reload: () => void; type?: "text" | "number"; ltr?: boolean;
+}) {
+  const cur = r[k];
+  return (
+    <td className="p-2" dir={ltr ? "ltr" : undefined}>
+      {canEdit ? (
+        <input
+          type={type}
+          defaultValue={cur ?? ""}
+          className={inputCls}
+          onBlur={async (e) => {
+            const raw = e.target.value.trim();
+            let v: string | number | null;
+            if (type === "number") {
+              if (raw === "") v = null; else { v = Number(raw); if (Number.isNaN(v)) return; }
+            } else v = raw || null;
+            if (v === cur) return;
+            const { error } = await supabase.from("residencies").update({ [k]: v } as Partial<Residency>).eq("id", r.id);
+            if (error) toast.error(error.message); else { toast.success(t("تم التحديث")); reload(); }
+          }}
+        />
+      ) : <div className="text-xs" dir={ltr ? "ltr" : undefined}>{cur ?? "—"}</div>}
+    </td>
+  );
+}
+
+function NameCell({ r, canEdit, reload }: { r: Residency; canEdit: boolean; reload: () => void }) {
+  const save = async (k: "name" | "job", v: string) => {
+    v = v.trim();
+    if (v === (r[k] ?? "")) return;
+    const { error } = await supabase.from("residencies").update({ [k]: v || null } as Partial<Residency>).eq("id", r.id);
+    if (error) toast.error(error.message); else { toast.success(t("تم التحديث")); reload(); }
+  };
+  if (!canEdit) return (
+    <>
+      <div className="font-medium">{r.name}</div>
+      <div className="text-xs text-muted-foreground">{r.job ?? ""}</div>
+    </>
+  );
+  return (
+    <>
+      <input type="text" defaultValue={r.name} className={inputCls + " font-medium"} onBlur={(e) => save("name", e.target.value)} />
+      <input type="text" defaultValue={r.job ?? ""} placeholder={t("الوظيفة")} className={inputCls} onBlur={(e) => save("job", e.target.value)} />
+    </>
+  );
+}
+
+function DateCell({ r, k, canEdit, reload }: { r: Residency; k: (typeof DOCS)[number]["key"]; canEdit: boolean; reload: () => void }) {
   const d = daysLeft(r[k]);
   const s = docStatus(d);
   return (
@@ -89,16 +141,22 @@ function Residencies() {
               <th className="p-2">{t("الجنسية")}</th>
               <th className="p-2">{t("رقم الإقامة")}</th>
               {DOCS.map((d) => <th key={d.key} className="p-2">{t(d.label)}</th>)}
+              <th className="p-2">{t("رسوم الإقامة")}</th>
+              <th className="p-2">{t("رسوم رخصة العمل")}</th>
               {canEdit && <th className="print:hidden" />}
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-border">
-                <td className="p-2"><div className="font-medium">{r.name}</div><div className="text-xs text-muted-foreground">{r.job}</div></td>
-                <td className="p-2 text-center">{r.nationality}</td>
-                <td className="p-2 text-center" dir="ltr">{r.iqama_no}</td>
-                {DOCS.map((d) => <Cell key={d.key} r={r} k={d.key} canEdit={canEdit} reload={reload} />)}
+                <td className="p-2 min-w-44 space-y-1">
+                  <NameCell r={r} canEdit={canEdit} reload={reload} />
+                </td>
+                <Field r={r} k="nationality" canEdit={canEdit} reload={reload} />
+                <Field r={r} k="iqama_no" canEdit={canEdit} reload={reload} ltr />
+                {DOCS.map((d) => <DateCell key={d.key} r={r} k={d.key} canEdit={canEdit} reload={reload} />)}
+                <Field r={r} k="iqama_fee" canEdit={canEdit} reload={reload} type="number" />
+                <Field r={r} k="permit_fee" canEdit={canEdit} reload={reload} type="number" />
                 {canEdit && <td className="p-2 print:hidden">
                   <Button size="icon" variant="ghost" aria-label={t("حذف")} onClick={async () => {
                     if (!confirm(t("حذف") + " " + r.name + "؟")) return;
