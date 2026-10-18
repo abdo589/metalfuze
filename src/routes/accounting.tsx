@@ -31,7 +31,7 @@ function Accounting() {
 
   const load = async () => {
     const { data, error } = await supabase.from("acct_sheets").select("id,name,sort,rows").order("sort");
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     const list = (data ?? []) as unknown as Sheet[];
     setSheets(list);
     setActive((a) => a || list[0]?.id || "");
@@ -48,7 +48,7 @@ function Accounting() {
   async function save() {
     if (!sheet || !draft) return;
     const { error } = await supabase.from("acct_sheets").update({ rows: draft, updated_at: new Date().toISOString() }).eq("id", sheet.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(t("تم الحفظ")); setDraft(null); load();
   }
 
@@ -56,7 +56,7 @@ function Accounting() {
     const name = window.prompt(t("اسم الورقة"));
     if (!name?.trim()) return;
     const { data, error } = await supabase.from("acct_sheets").insert({ name: name.trim(), sort: sheets.length, rows: [["", "", "", ""]] }).select("id").single();
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setActive(data.id); setDraft(null); load();
   }
 
