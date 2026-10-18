@@ -26,7 +26,8 @@ describe("employee statuses", () => {
   });
 
   it("stores the canonical Arabic value in both languages", () => {
-    expect(statusOptions("ar")).toEqual(statusOptions("en"));
+    expect(statusOptions("ar").map((o) => o.value)).toEqual(statusOptions("en").map((o) => o.value));
     expect(statusOptions("en").find((o) => o.value === "الاستقالة")?.label).toBe("Resignation");
+    expect(statusOptions("ar").find((o) => o.value === "الاستقالة")?.label).toBe("الاستقالة");
   });
 });
