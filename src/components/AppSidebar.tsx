@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { setSidebar, useSidebar } from "@/lib/sidebar";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
@@ -83,6 +84,7 @@ export function AppSidebar() {
         </div>
         <NavLinks />
         <div className="mt-auto flex flex-col items-stretch gap-2 border-t pt-4">
+          <InstallAppButton />
           <LanguageToggle />
           <ThemeToggle />
         </div>
@@ -108,7 +110,8 @@ export function AppSidebar() {
               <Logo className="w-32" />
               <NavLinks onNavigate={() => setOpen(false)} />
               <div className="mt-auto flex flex-col gap-2 border-t pt-4">
-                <LanguageToggle />
+                <InstallAppButton />
+          <LanguageToggle />
                 <ThemeToggle />
               </div>
             </div>
