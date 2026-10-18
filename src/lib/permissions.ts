@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Role = "admin" | "hr" | "viewer" | null;
+export type Role = "admin" | "hr" | "viewer" | "manager" | null;
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
 export const HR_PATHS = ["/payroll", "/attendance", "/workers-checkin", "/residencies"];
+/** Self-registered project managers (and accounts without a role) only get their own workspace. */
+export const MANAGER_PATHS = ["/my-projects"];
 
-/** Current user's strongest role (admin > hr > viewer). undefined while loading. */
+/** Current user's strongest role (admin > hr > viewer > manager). Accounts without a role are treated as manager. undefined while loading. */
 export function useRole() {
   const [role, setRole] = useState<Role | undefined>(undefined);
   useEffect(() => {
@@ -16,7 +18,7 @@ export function useRole() {
       if (!u.user) return alive && setRole(null);
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id);
       const roles = (data ?? []).map((r) => String(r.role));
-      const r: Role = roles.includes("admin") ? "admin" : roles.includes("hr") ? "hr" : roles.includes("viewer") ? "viewer" : null;
+      const r: Role = roles.includes("admin") ? "admin" : roles.includes("hr") ? "hr" : roles.includes("viewer") ? "viewer" : "manager";
       if (alive) setRole(r);
     };
     check();
