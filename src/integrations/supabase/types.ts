@@ -318,6 +318,24 @@ export type Database = {
           },
         ]
       }
+      exec_snapshot: {
+        Row: {
+          data: Json
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          data?: Json
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          data?: Json
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hr_records: {
         Row: {
           data: Json
@@ -1045,7 +1063,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "viewer" | "hr" | "manager" | "accountant"
+      app_role:
+        | "admin"
+        | "viewer"
+        | "hr"
+        | "manager"
+        | "accountant"
+        | "executive"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1173,7 +1197,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "viewer", "hr", "manager", "accountant"],
+      app_role: ["admin", "viewer", "hr", "manager", "accountant", "executive"],
     },
   },
 } as const
