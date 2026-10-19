@@ -11,23 +11,33 @@ type Row = { data: Record<string, unknown> };
 export function DocsOverview({ rows: given }: { rows?: Row[] }) {
   useLanguage();
   const [fetched, setFetched] = useState<Row[]>([]);
+  const [extra, setExtra] = useState<{ type: string; days: number | null; who: string }[]>([]);
   useEffect(() => {
     if (given) return;
     supabase.from("hr_records").select("data").eq("sheet", "documents").then(({ data }) => setFetched((data ?? []) as never));
   }, [given]);
+  useEffect(() => {
+    // Work permit, health insurance and contract dates live on the employee residency records.
+    supabase.from("residencies").select("name,permit_expiry,insurance_expiry,contract_expiry").then(({ data }) => {
+      const kinds = [["permit_expiry", "رخصة العمل"], ["insurance_expiry", "التأمين الصحي"], ["contract_expiry", "العقد"]] as const;
+      setExtra((data ?? []).flatMap((r) => kinds.map(([k, type]) => ({
+        type, days: r[k] ? daysLeft(String(r[k]).slice(0, 10)) : null, who: r.name,
+      }))));
+    });
+  }, []);
   const rows = given ?? fetched;
 
-  const docs = rows.map((r) => {
+  const docs = [...rows.map((r) => {
     const raw = r.data["تاريخ الانتهاء"];
     return {
       type: String(r.data["نوع الوثيقة"] ?? "").trim() || "وثيقة",
       days: raw ? daysLeft(String(raw).slice(0, 10)) : null,
       who: String(r.data["رقم الموظف"] ?? r.data["اسم الموظف"] ?? ""),
     };
-  });
+  }), ...extra];
+  const people = new Set(rows.map((r) => String(r.data["رقم الموظف"] ?? r.data["اسم الموظف"] ?? "")).filter(Boolean)).size;
   const types = [...new Set(docs.map((d) => d.type))];
   const known = docs.filter((d) => d.days !== null).map((d) => d.days!);
-  const people = new Set(docs.map((d) => d.who).filter(Boolean)).size;
 
   return (
     <div className="space-y-4">
