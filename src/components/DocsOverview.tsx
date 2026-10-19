@@ -17,7 +17,7 @@ export function DocsOverview() {
     supabase.from("hr_records").select("data").eq("sheet", "documents").then(({ data }) => setExtra((data ?? []) as never));
   }, []);
 
-  const covered = new Set<string>(DOCS.map((d) => d.label));
+  const covered = new Set<string>([...DOCS.map((d) => d.label), "إقامة"]);
   const docs: Doc[] = rows.flatMap((r) => DOCS.map((d) => ({ type: d.label, days: daysLeft(r[d.key]), who: r.name })));
   for (const e of extra) {
     const type = String(e.data["نوع الوثيقة"] ?? "وثيقة");
