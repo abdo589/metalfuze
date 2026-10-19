@@ -162,6 +162,13 @@
       "when": 1792403151607,
       "tag": "0022_app_user_connections",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792406126129,
+      "tag": "0023_executive_snapshot",
+      "breakpoints": true
     }
   ]
 }

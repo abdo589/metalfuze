@@ -15,6 +15,7 @@ import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as AttendanceTrackingRouteImport } from './routes/attendance-tracking'
 import { Route as BankRouteImport } from './routes/bank'
 import { Route as BudgetRouteImport } from './routes/budget'
+import { Route as ExecutiveRouteImport } from './routes/executive'
 import { Route as HrDashboardRouteImport } from './routes/hr-dashboard'
 import { Route as HrFileRouteImport } from './routes/hr-file'
 import { Route as LeavesRouteImport } from './routes/leaves'
@@ -75,6 +76,11 @@ const BankRoute = BankRouteImport.update({
 const BudgetRoute = BudgetRouteImport.update({
   id: '/budget',
   path: '/budget',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecutiveRoute = ExecutiveRouteImport.update({
+  id: '/executive',
+  path: '/executive',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HrDashboardRoute = HrDashboardRouteImport.update({
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/attendance-tracking': typeof AttendanceTrackingRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
+  '/executive': typeof ExecutiveRoute
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/attendance-tracking': typeof AttendanceTrackingRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
+  '/executive': typeof ExecutiveRoute
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
@@ -320,6 +328,7 @@ export interface FileRoutesById {
   '/attendance-tracking': typeof AttendanceTrackingRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
+  '/executive': typeof ExecutiveRoute
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
@@ -361,6 +370,7 @@ export interface FileRouteTypes {
     | '/attendance-tracking'
     | '/bank'
     | '/budget'
+    | '/executive'
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/attendance-tracking'
     | '/bank'
     | '/budget'
+    | '/executive'
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
@@ -439,6 +450,7 @@ export interface FileRouteTypes {
     | '/attendance-tracking'
     | '/bank'
     | '/budget'
+    | '/executive'
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
@@ -479,6 +491,7 @@ export interface RootRouteChildren {
   AttendanceTrackingRoute: typeof AttendanceTrackingRoute
   BankRoute: typeof BankRoute
   BudgetRoute: typeof BudgetRoute
+  ExecutiveRoute: typeof ExecutiveRoute
   HrDashboardRoute: typeof HrDashboardRoute
   HrFileRoute: typeof HrFileRoute
   LeavesRoute: typeof LeavesRoute
@@ -554,6 +567,13 @@ declare module '@tanstack/react-router' {
       path: '/budget'
       fullPath: '/budget'
       preLoaderRoute: typeof BudgetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/executive': {
+      id: '/executive'
+      path: '/executive'
+      fullPath: '/executive'
+      preLoaderRoute: typeof ExecutiveRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hr-dashboard': {
@@ -783,6 +803,7 @@ const rootRouteChildren: RootRouteChildren = {
   AttendanceTrackingRoute: AttendanceTrackingRoute,
   BankRoute: BankRoute,
   BudgetRoute: BudgetRoute,
+  ExecutiveRoute: ExecutiveRoute,
   HrDashboardRoute: HrDashboardRoute,
   HrFileRoute: HrFileRoute,
   LeavesRoute: LeavesRoute,
