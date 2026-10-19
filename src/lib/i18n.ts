@@ -212,6 +212,9 @@ Object.assign(translations, {
   "إرسال التقرير": "Submit report", "تم الحفظ": "Saved", "سجل التقارير": "Report history", "لا توجد تقارير بعد": "No reports yet",
   "فتح الملف": "Open file", "حذف المشروع؟": "Delete project?", "مساحتك منفصلة — لا يراها إلا أنت والإدارة": "Your space is private — only you and management see it",
   "صاحب الحساب": "Account owner", "كلمة السر 8 أحرف على الأقل": "Password must be at least 8 characters", "اسم المستخدم مستخدم بالفعل": "Username already taken",
+  "البريد الإلكتروني": "Email", "اسم المستخدم أو البريد الإلكتروني": "Username or email",
+  "بريد إلكتروني غير صحيح": "Invalid email address", "البريد الإلكتروني مستخدم بالفعل": "Email already in use",
+  "تم إنشاء الحساب — تحقق من بريدك الإلكتروني لتفعيله": "Account created — check your email to activate it",
 });
 // Leaves page labels
 Object.assign(translations, {
