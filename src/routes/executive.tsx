@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { fmtMoney, fmtPct } from "@/lib/projects";
 import { summarize, useExecSnapshot } from "@/lib/exec-snapshot";
+import { monthKey, netSalary, usePayroll } from "@/lib/payroll";
+import { useAdjustments } from "@/lib/advances";
 
 export const Route = createFileRoute("/executive")({
   head: () => ({
@@ -35,6 +37,12 @@ function Bar({ value }: { value: number }) {
 function Executive() {
   const { projects, txns, updated, loading } = useExecSnapshot();
   const s = summarize(projects, txns);
+  const month = monthKey();
+  const emps = usePayroll().filter((e) => e.active);
+  const adj = useAdjustments(month);
+  let adv = 0, com = 0; adj.forEach((a) => { adv += a.advances; com += a.commissions; });
+  const gross = emps.reduce((a, e) => a + netSalary(e), 0);
+  const paidCount = emps.filter((e) => e.paidMonths?.includes(month)).length;
   const watch = [...new Map([...s.overdue, ...s.behind, ...s.soon].map((p) => [p.id, p])).values()].slice(0, 6);
   return (
     <div dir="rtl" className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
@@ -73,6 +81,16 @@ function Executive() {
           <Kpi label="إجمالي المدفوعات" value={fmtMoney(s.spent)} />
           <Kpi label="الصافي" value={fmtMoney(s.balance)} tone={s.balance < 0 ? "bad" : "good"} />
           <Kpi label="هذا الشهر" value={fmtMoney(s.monthCollected - s.monthSpent)} hint={`تحصيل ${fmtMoney(s.monthCollected)} · دفع ${fmtMoney(s.monthSpent)}`} />
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-semibold">الرواتب والسلف — الشهر الحالي</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <Kpi label="صافي الرواتب" value={fmtMoney(gross - adv + com)} hint={`${emps.length} موظف نشط`} />
+          <Kpi label="سلف ومخالفات تُخصم" value={fmtMoney(adv)} tone={adv ? "warn" : "good"} />
+          <Kpi label="عمولات تُضاف" value={fmtMoney(com)} tone="good" />
+          <Kpi label="تم صرف رواتبهم" value={`${paidCount} / ${emps.length}`} />
         </div>
       </section>
 
