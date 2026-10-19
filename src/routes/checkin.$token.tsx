@@ -87,7 +87,7 @@ function Checkin() {
                 <MapPin className="size-4 animate-pulse" /> {t("تتبع موقعك شغال أثناء الدوام — اترك الصفحة مفتوحة")}
               </p>
             )}
-            <SelfieCheckin disabled={!info.site} onSubmit={async (d) => {
+            <SelfieCheckin onSubmit={async (d) => {
               const r = await fetch("/api/public/checkin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, ...d }) });
               const j = await r.json().catch(() => ({ ok: false, error: "save" }));
               if (!j.ok) throw new Error(checkinError(j.error));
