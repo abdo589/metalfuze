@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Download, Eye, FileUp, FileText, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
+import { Download, Eye, FileUp, FileText, Pencil, Plus, Save, Search, Trash2, UserRound, X } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/permissions";
 import { importHrFile, type HrKey, type HrRow } from "@/lib/hr-file.functions";
 import sheets from "@/lib/hr-sheets.json";
+import { AdvancesCommissions } from "@/components/AdvancesCommissions";
 import { DocsOverview } from "@/components/DocsOverview";
 import { NationalitySelect } from "@/components/NationalitySelect";
 import { resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
@@ -53,6 +54,7 @@ function HrFilePage() {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<Rec | null>(null);
   const [draft, setDraft] = useState<Record<string, string> | null>(null);
+  const [ptab, setPtab] = useState("basic");
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.from("hr_records").select("id,sheet,data,sort").order("sort");
@@ -69,7 +71,7 @@ function HrFilePage() {
   const rows = useMemo(() => all.filter((r) => r.sheet === tab && Object.values(r.data).join(" ").includes(q)), [all, tab, q]);
   const cols = META[tab].columns.slice(0, 7);
 
-  const open = (r: Rec) => { setSel(r); setDraft(null); };
+  const open = (r: Rec) => { setSel(r); setDraft(null); setPtab("basic"); };
   const startEdit = (r: Rec) => setDraft(Object.fromEntries(META[r.sheet].columns.map((c) => [c, r.data[c] === undefined ? "" : String(r.data[c])])));
 
   async function save() {
@@ -166,14 +168,46 @@ function HrFilePage() {
           </section>}
         </>
       )}
-      <Dialog open={!!sel} onOpenChange={(o) => { if (!o) { setSel(null); setDraft(null); } }}>
-        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-          {sel && (
+      <Dialog open={!!sel} onOpenChange={(o) => { if (!o) { setSel(null); setDraft(null); setPtab("basic"); } }}>
+        <DialogContent className={`max-h-[90vh] overflow-y-auto ${sel?.sheet === "employees" && sel.id ? "max-w-5xl" : "max-w-2xl"}`}>
+          {sel && (() => {
+            const isEmp = sel.sheet === "employees" && !!sel.id;
+            const rel = sel.id ? related(sel) : [];
+            const st = sel.data["حالة الموظف"] ?? sel.data["الحالة"];
+            const inactive = statusLabel(st, lang);
+            const ptabs: [string, string][] = isEmp
+              ? [["basic", "البيانات الأساسية"], ["files", "العقد والمستندات"], ...rel.map((g) => [g.k, META[g.k].title] as [string, string]), ["money", "السلف والعمولات"]]
+              : [];
+            const cur = isEmp ? ptab : "basic";
+            return (
             <>
-              <DialogHeader>
-                <DialogTitle>{sel.id ? show(sel.data[NAME] ?? sel.data[META[sel.sheet].columns[0]!]) : `إضافة — ${META[sel.sheet].title}`}</DialogTitle>
-              </DialogHeader>
-              {sel.id && sel.sheet === "employees" && (
+              {isEmp ? (
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="grid size-16 place-items-center rounded-full bg-muted"><UserRound className="size-8 text-primary" /></div>
+                    <div className="space-y-0.5 text-sm">
+                      <DialogHeader><DialogTitle className="font-display text-2xl">{show(sel.data[NAME])}</DialogTitle></DialogHeader>
+                      <div><span className="text-muted-foreground">رقم الموظف: </span>{show(sel.data[ID])}</div>
+                      <div><span className="text-muted-foreground">المسمى الوظيفي: </span>{show(sel.data["المسمى الوظيفي"])}</div>
+                      <div><span className="text-muted-foreground">الإدارة: </span>{show(sel.data["القسم"])}</div>
+                    </div>
+                  </div>
+                  <span className={`me-8 rounded-full px-3 py-1 text-xs font-semibold ${inactive ? "bg-destructive/15 text-destructive" : "bg-primary/15 text-primary"}`}>● {inactive || (show(st) === "—" ? "على رأس العمل" : show(st))}</span>
+                </div>
+              ) : (
+                <DialogHeader>
+                  <DialogTitle>{sel.id ? show(sel.data[NAME] ?? sel.data[META[sel.sheet].columns[0]!]) : `إضافة — ${META[sel.sheet].title}`}</DialogTitle>
+                </DialogHeader>
+              )}
+              {isEmp && (
+                <div className="flex flex-wrap gap-2 border-b border-border pb-3">
+                  {ptabs.map(([k, l]) => (
+                    <button key={k} onClick={() => { setPtab(k); setDraft(null); }}
+                      className={`rounded-lg border px-4 py-2 text-sm transition ${cur === k ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-muted/50"}`}>{l}</button>
+                  ))}
+                </div>
+              )}
+              {isEmp && cur === "files" && (
                 <>
                   <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
                   <CertificatesBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
@@ -182,10 +216,13 @@ function HrFilePage() {
                   ))}
                 </>
               )}
+              {isEmp && cur === "money" && <AdvancesCommissions empId={String(sel.data[ID] ?? sel.id)} canEdit={canEdit} />}
+              {cur === "basic" && (
+                <>
               {sel.id && (
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" onClick={() => downloadPerson(sel, related(sel)).catch(() => toast.error("تعذر التحميل"))}><Download /> Excel</Button>
-                  <Button variant="outline" onClick={() => downloadPersonPdf(sel, related(sel)).then(() => toast.success("تم حفظ PDF")).catch(() => toast.error("تعذر حفظ PDF"))}><FileText /> PDF</Button>
+                  <Button variant="outline" onClick={() => downloadPerson(sel, rel).catch(() => toast.error("تعذر التحميل"))}><Download /> Excel</Button>
+                  <Button variant="outline" onClick={() => downloadPersonPdf(sel, rel).then(() => toast.success("تم حفظ PDF")).catch(() => toast.error("تعذر حفظ PDF"))}><FileText /> PDF</Button>
                 </div>
               )}
               {canEdit && (
@@ -203,7 +240,7 @@ function HrFilePage() {
                   )}
                 </div>
               )}
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className={`grid gap-2 sm:grid-cols-2 ${isEmp ? "lg:grid-cols-3" : ""}`}>
                 {META[sel.sheet].columns.map((c) => (
                   <div key={c} className="rounded-lg border border-border p-2">
                     <div className="text-xs text-muted-foreground">{c}</div>
@@ -225,7 +262,9 @@ function HrFilePage() {
                   </div>
                 ))}
               </div>
-              {sel.id && !draft && related(sel).map((g) => (
+                </>
+              )}
+              {sel.id && !draft && rel.filter((g) => !isEmp || cur === g.k).map((g) => (
                 <div key={g.k} className="space-y-2">
                   <h3 className="font-bold">{META[g.k].title} <Badge variant="outline">{g.rows.length}</Badge></h3>
                   {g.rows.map((r) => (
@@ -238,7 +277,8 @@ function HrFilePage() {
                 </div>
               ))}
             </>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
