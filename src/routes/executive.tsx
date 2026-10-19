@@ -41,7 +41,7 @@ function Executive() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">الملخص التنفيذي</h1>
-          <p className="text-sm text-muted-foreground">{loading ? "جارٍ التحميل…" : updated ? `آخر تحديث: ${new Date(updated).toLocaleString("ar-SA")}` : "لا توجد بيانات بعد — تظهر تلقائيًا عند فتح أحد المسؤولين للموقع"}</p>
+          <p className="text-sm text-muted-foreground">{loading ? "جارٍ التحميل…" : updated ? `آخر تحديث: ${new Date(updated).toLocaleString("ar-SA")}` : "لا توجد بيانات بعد — تظهر تلقائيًا عند فتح حساب CEO للموقع"}</p>
         </div>
         <ThemeToggle />
       </div>
