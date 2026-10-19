@@ -249,3 +249,14 @@ Object.assign(translations, {
   "اضغط بصمة تجريبية على الجهاز، ثم راقب «آخر اتصال» في قائمة الأجهزة أدناه — إن ظهر وقت حديث فالربط سليم، وستظهر البصمات في الجدول فورًا.": "Press a test fingerprint on the device, then watch «Last seen» in the device list below — a fresh time means the connection works, and punches appear in the sheet right away.",
   "إذا تغيّر عنوان الإنترنت للمكتب (مثلاً بعد إعادة تشغيل الراوتر مع مزود خدمة ديناميكي)، أرسل العنوان الجديد للإدارة لتحديثه.": "If the office internet address changes (for example after a router restart with a dynamic provider), send the new address to management to update it.",
 });
+
+// AI advisor (whole-system)
+Object.assign(translations, {
+  "يجيب على أي سؤال في النظام من بياناته الحية": "Answers any question about the system from its live data",
+  "اسأل أي حاجة في النظام": "Ask anything about the system",
+  "أجيبك من بيانات النظام الحالية": "I answer from the system's current data",
+  "جارٍ تحليل بيانات النظام...": "Analysing system data…",
+  "من قرب انتهاء إقاماته أو وثائقه؟": "Whose iqamas or documents expire soon?",
+  "من حضر اليوم ومن تأخر؟": "Who checked in today and who was late?",
+  "كم صافي رواتب هذا الشهر؟": "What is this month's net payroll?",
+});
