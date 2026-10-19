@@ -17,7 +17,7 @@ export function DocsOverview() {
     supabase.from("hr_records").select("data").eq("sheet", "documents").then(({ data }) => setExtra((data ?? []) as never));
   }, []);
 
-  const covered = new Set(DOCS.map((d) => d.label));
+  const covered = new Set<string>(DOCS.map((d) => d.label));
   const docs: Doc[] = rows.flatMap((r) => DOCS.map((d) => ({ type: d.label, days: daysLeft(r[d.key]), who: r.name })));
   for (const e of extra) {
     const type = String(e.data["نوع الوثيقة"] ?? "وثيقة");
@@ -25,7 +25,7 @@ export function DocsOverview() {
     const raw = e.data["تاريخ الانتهاء"];
     docs.push({ type, days: raw ? daysLeft(String(raw).slice(0, 10)) : null, who: String(e.data["اسم الموظف"] ?? "") });
   }
-  const types = [...DOCS.map((d) => d.label), ...[...new Set(docs.map((d) => d.type))].filter((x) => !covered.has(x))];
+  const types: string[] = [...DOCS.map((d) => d.label as string), ...[...new Set(docs.map((d) => d.type))].filter((x) => !covered.has(x))];
   const known = docs.filter((d) => d.days !== null).map((d) => d.days!);
   const people = new Set(docs.map((d) => d.who).filter(Boolean)).size;
 
