@@ -239,3 +239,13 @@ Object.assign(translations, {
 Object.assign(translations, {
   "اختر الجنسية": "Choose nationality", "ابحث عن جنسية…": "Search a nationality…", "لا توجد جنسية بهذا الاسم": "No nationality with that name", "استخدم": "Use",
 });
+
+// Fingerprint device setup steps (attendance page)
+Object.assign(translations, {
+  "خطوات ربط جهاز البصمة ZKTeco بالإنترنت": "Steps to connect the ZKTeco fingerprint device to the internet",
+  "أضف الرقم التسلسلي للجهاز (SN) في الخانة أدناه واضغط «إضافة جهاز» — الجهاز غير المضاف تُرفض بصماته.": "Add the device serial number (SN) in the box below and press «Add device» — punches from unregistered devices are refused.",
+  "من قائمة الجهاز: الاتصال ← إعداد خادم السحابة (ADMS / Cloud Server).": "On the device menu: Comm ← Cloud Server settings (ADMS).",
+  "تأكد أن بصمات الموقع تمر عبر عنوان الإنترنت العام للمكتب. لمعرفته: افتح whatismyipaddress.com من أي جهاز على شبكة المكتب وأرسل الرقم لشبكة IPv4 للإدارة لإضافته.": "Punches are only accepted from the office's public internet address. To find it: open whatismyipaddress.com from any device on the office network and send the IPv4 number to management to register it.",
+  "اضغط بصمة تجريبية على الجهاز، ثم راقب «آخر اتصال» في قائمة الأجهزة أدناه — إن ظهر وقت حديث فالربط سليم، وستظهر البصمات في الجدول فورًا.": "Press a test fingerprint on the device, then watch «Last seen» in the device list below — a fresh time means the connection works, and punches appear in the sheet right away.",
+  "إذا تغيّر عنوان الإنترنت للمكتب (مثلاً بعد إعادة تشغيل الراوتر مع مزود خدمة ديناميكي)، أرسل العنوان الجديد للإدارة لتحديثه.": "If the office internet address changes (for example after a router restart with a dynamic provider), send the new address to management to update it.",
+});

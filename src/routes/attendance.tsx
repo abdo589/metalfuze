@@ -185,10 +185,15 @@ function Attendance() {
       <section className="space-y-3 rounded-xl border border-border bg-card p-4">
         <h2 className="font-display text-lg font-bold">{t("أجهزة البصمة")}</h2>
         <div className="rounded-lg bg-muted/50 p-3 text-sm leading-7">
-          <div className="font-medium">{t("إعداد جهاز ZKTeco")}:</div>
-          <div>{t("القائمة ← الاتصال ← إعداد خادم السحابة (ADMS)")}</div>
-          <div>{t("عنوان الخادم")}: <b dir="ltr">{origin}</b> — {t("المنفذ")}: <b>443</b> — HTTPS: {t("مفعل")}</div>
-          <div>{t("أضف الرقم التسلسلي للجهاز هنا أولًا؛ الأجهزة غير المضافة تُرفض.")}</div>
+          <div className="font-medium">{t("خطوات ربط جهاز البصمة ZKTeco بالإنترنت")}:</div>
+          <ol className="list-decimal space-y-1 ps-6">
+            <li>{t("أضف الرقم التسلسلي للجهاز (SN) في الخانة أدناه واضغط «إضافة جهاز» — الجهاز غير المضاف تُرفض بصماته.")}</li>
+            <li>{t("من قائمة الجهاز: الاتصال ← إعداد خادم السحابة (ADMS / Cloud Server).")}</li>
+            <li>{t("عنوان الخادم")}: <b dir="ltr">{origin}</b> — {t("المنفذ")}: <b>443</b> — HTTPS: {t("مفعل")}</li>
+            <li>{t("تأكد أن بصمات الموقع تمر عبر عنوان الإنترنت العام للمكتب. لمعرفته: افتح whatismyipaddress.com من أي جهاز على شبكة المكتب وأرسل الرقم لشبكة IPv4 للإدارة لإضافته.")}</li>
+            <li>{t("اضغط بصمة تجريبية على الجهاز، ثم راقب «آخر اتصال» في قائمة الأجهزة أدناه — إن ظهر وقت حديث فالربط سليم، وستظهر البصمات في الجدول فورًا.")}</li>
+          </ol>
+          <div className="mt-1 text-muted-foreground">{t("إذا تغيّر عنوان الإنترنت للمكتب (مثلاً بعد إعادة تشغيل الراوتر مع مزود خدمة ديناميكي)، أرسل العنوان الجديد للإدارة لتحديثه.")}</div>
         </div>
         {canEdit && (
           <div className="flex flex-wrap gap-2">
