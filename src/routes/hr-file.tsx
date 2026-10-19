@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FileUp, FileText, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
+import { Download, Eye, FileUp, FileText, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -143,7 +143,7 @@ function HrFilePage() {
               <table className="w-full text-sm">
                 <thead><tr className="border-b border-border text-right text-xs text-muted-foreground">
                   {cols.map((c) => <th key={c} className="p-3 font-medium">{c}</th>)}
-                  {canEdit && <th className="p-3 font-medium">تعديل</th>}
+                  <th className="p-3 font-medium">عرض</th>
                 </tr></thead>
                 <tbody>
                   {rows.map((r) => (
@@ -156,16 +156,14 @@ function HrFilePage() {
                           )}
                         </td>
                       ))}
-                      {canEdit && (
-                        <td className="p-3">
-                          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setSel(r); startEdit(r); }}>
-                            <Pencil /> تعديل
-                          </Button>
-                        </td>
-                      )}
+                      <td className="p-3">
+                        <Button variant="outline" size="icon" aria-label="عرض" onClick={(e) => { e.stopPropagation(); open(r); }}>
+                          <Eye />
+                        </Button>
+                      </td>
                     </tr>
                   ))}
-                  {!rows.length && <tr><td colSpan={cols.length + (canEdit ? 1 : 0)} className="p-8 text-center text-muted-foreground">لا توجد نتائج</td></tr>}
+                  {!rows.length && <tr><td colSpan={cols.length + 1} className="p-8 text-center text-muted-foreground">لا توجد نتائج</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -180,7 +178,13 @@ function HrFilePage() {
                 <DialogTitle>{sel.id ? show(sel.data[NAME] ?? sel.data[META[sel.sheet].columns[0]!]) : `إضافة — ${META[sel.sheet].title}`}</DialogTitle>
               </DialogHeader>
               {sel.id && sel.sheet === "employees" && (
-                <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
+                <>
+                  <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
+                  <ContractBox rec={sel} field="الشهادات" label="الشهادات" folder="certificates" canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
+                </>
+              )}
+              {sel.id && (
+                <Button variant="outline" className="w-fit" onClick={() => downloadPerson(sel, related(sel))}><Download /> تحميل ملف الموظف</Button>
               )}
               {canEdit && (
                 <div className="flex flex-wrap gap-2">
@@ -239,14 +243,30 @@ function HrFilePage() {
   );
 }
 
-const CONTRACT = "عقد العمل";
-function ContractBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolean; onChange: (d: HrRow) => void }) {
+async function downloadPerson(r: Rec, rel: { k: HrKey; rows: Rec[] }[]) {
+  const { exportBrandedExcel } = await import("@/lib/branded-excel");
+  const groups = [{ k: r.sheet, rows: [r] }, ...rel];
+  const name = String(r.data[NAME] ?? "موظف");
+  await exportBrandedExcel({
+    filename: `ملف-${name}.xlsx`,
+    reportTitle: `ملف الموظف — ${name}`,
+    sheets: groups.map((g) => ({
+      name: META[g.k].title.slice(0, 30),
+      title: META[g.k].title,
+      columns: META[g.k].columns.map((c) => ({ header: c, width: 18 })),
+      rows: g.rows.map((x) => META[g.k].columns.map((c) => { const v = x.data[c]; return v === undefined || v === null ? "" : typeof v === "number" ? v : String(v); })),
+    })),
+  });
+}
+
+function ContractBox({ rec, canEdit, onChange, field = "عقد العمل", label = "عقد العمل", folder = "contracts" }: { rec: Rec; canEdit: boolean; onChange: (d: HrRow) => void; field?: string; label?: string; folder?: string }) {
+  const CONTRACT = field;
   const [busy, setBusy] = useState(false);
   const path = rec.data[CONTRACT] ? String(rec.data[CONTRACT]) : "";
   async function upload(f: File) {
     setBusy(true);
     const ext = f.name.split(".").pop() || "pdf";
-    const p = `contracts/${rec.id}-${Date.now()}.${ext}`;
+    const p = `${folder}/${rec.id}-${Date.now()}.${ext}`;
     const up = await supabase.storage.from("employee-files").upload(p, f);
     if (up.error) { setBusy(false); toast.error("تعذر رفع الملف"); return; }
     if (path) await supabase.storage.from("employee-files").remove([path]);
@@ -254,7 +274,7 @@ function ContractBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolean; o
     const { error } = await supabase.from("hr_records").update({ data, updated_at: new Date().toISOString() }).eq("id", rec.id);
     setBusy(false);
     if (error) { toast.error("تعذر الحفظ"); return; }
-    toast.success("تم رفع عقد العمل"); onChange(data);
+    toast.success(`تم رفع ${label}`); onChange(data);
   }
   async function view() {
     const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(path, 30);
@@ -264,12 +284,12 @@ function ContractBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolean; o
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-3">
       <FileText className="size-4 text-primary" />
-      <span className="font-medium">عقد العمل:</span>
-      {path ? <Button size="sm" variant="outline" onClick={view}>عرض العقد</Button> : <span className="text-sm text-muted-foreground">لم يُرفع بعد</span>}
+      <span className="font-medium">{label}:</span>
+      {path ? <Button size="sm" variant="outline" onClick={view}>عرض الملف</Button> : <span className="text-sm text-muted-foreground">لم يُرفع بعد</span>}
       {canEdit && (
         <Button size="sm" variant="outline" disabled={busy} asChild>
           <label className="cursor-pointer">
-            <FileUp /> {busy ? "جارٍ الرفع…" : path ? "استبدال العقد" : "رفع العقد"}
+            <FileUp /> {busy ? "جارٍ الرفع…" : path ? `استبدال ${label}` : `رفع ${label}`}
             <input type="file" accept=".pdf,image/*,.doc,.docx" className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
           </label>
