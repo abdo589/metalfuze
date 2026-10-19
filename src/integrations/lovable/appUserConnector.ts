@@ -15,7 +15,7 @@ export interface AppUserOAuthAuthorizeParams {
   appUserId: string;
   clientAPIKey: string;
   returnUrl: string;
-  connectionAPIKey?: string;
+  connectionAPIKey?: string | undefined;
   credentialsConfiguration?: Record<string, unknown>;
 }
 
@@ -54,8 +54,8 @@ export interface CallAsAppUserParams {
   connectionAPIKey: string;
   connectorId: string;
   path: string;
-  init?: RequestInit;
-  requiredScopes?: string[];
+  init?: RequestInit | undefined;
+  requiredScopes?: string[] | undefined;
 }
 
 export async function callAsAppUser({ gatewayBaseUrl, connectionAPIKey, connectorId, path, init, requiredScopes }: CallAsAppUserParams): Promise<Response> {

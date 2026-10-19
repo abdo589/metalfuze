@@ -82,7 +82,7 @@ export const disconnectOutlook = createServerFn({ method: "POST" })
 
 export const listOutlookMail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { folder: string; q?: string }) => z.object({ folder: z.enum(["inbox", "sentitems", "drafts", "deleteditems", "junkemail"]), q: z.string().max(200).optional() }).parse(d))
+  .inputValidator((d: { folder: string; q?: string | undefined }) => z.object({ folder: z.enum(["inbox", "sentitems", "drafts", "deleteditems", "junkemail"]), q: z.string().max(200).optional() }).parse(d))
   .handler(async ({ data, context }) => {
     const me = await call(context.userId, "/me?$select=displayName,mail,userPrincipalName");
     if (me.state !== "ok") return { state: me.state, me: null, items: [] as MailItem[] };
@@ -112,7 +112,7 @@ export const getOutlookMessage = createServerFn({ method: "POST" })
 
 export const sendOutlookMail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { to: string; subject: string; body: string; replyTo?: string }) =>
+  .inputValidator((d: { to: string; subject: string; body: string; replyTo?: string | undefined }) =>
     z.object({ to: z.string().max(1000), subject: z.string().max(500), body: z.string().max(50000), replyTo: z.string().max(500).optional() }).parse(d))
   .handler(async ({ data, context }) => {
     if (data.replyTo) {
