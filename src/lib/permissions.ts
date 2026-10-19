@@ -35,3 +35,8 @@ export function useCanEdit() {
   const role = useRole();
   return role === "admin" || role === "hr";
 }
+
+/** HR data (employees, payroll, attendance, documents, leave) is edited by HR (Aisha) only; everyone else views. */
+export function useCanEditHr() {
+  return useRole() === "hr";
+}

@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { t, useLanguage } from "@/lib/i18n";
-import { useCanEdit } from "@/lib/permissions";
+import { useCanEditHr } from "@/lib/permissions";
 import { monthKey, monthLabel, usePayroll } from "@/lib/payroll";
 import { LATE_AFTER, WORK_START, riyadh, summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
@@ -41,7 +41,7 @@ function shift(key: string, d: number) {
 
 function Attendance() {
   useLanguage();
-  const canEdit = useCanEdit();
+  const canEdit = useCanEditHr();
   const employees = usePayroll();
   const [month, setMonth] = useState(monthKey());
   const punches = useMonthPunches(month);

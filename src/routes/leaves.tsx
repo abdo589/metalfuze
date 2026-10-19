@@ -55,8 +55,10 @@ function LeavesPage() {
   useLanguage();
   const lang = currentLanguage();
   const role = useRole();
-  const isAdmin = role === "admin";
-  const isHr = role === "admin" || role === "hr";
+  // Only HR (Aisha) edits leave data; HR and the CEO are the only approvers.
+  const isAdmin = role === "hr";
+  const isHr = role === "hr";
+  const [canApprove, setCanApprove] = useState(false);
   const [me, setMe] = useState<string | null>(null);
   const [types, setTypes] = useState<LeaveType[]>([]);
   const [reqs, setReqs] = useState<LeaveRequest[]>([]);
@@ -86,6 +88,7 @@ function LeavesPage() {
     ]);
     if (rq.error) { toast.error(t("تعذر التحميل")); return; }
     setMe(u.data.user?.id ?? null);
+    if (u.data.user) supabase.rpc("leave_can_approve", { _uid: u.data.user.id }).then(({ data }) => setCanApprove(!!data));
     setTypes((ty.data ?? []) as LeaveType[]);
     setReqs((rq.data ?? []) as unknown as LeaveRequest[]);
     setEmps((em.data ?? []) as Emp[]);
@@ -103,7 +106,7 @@ function LeavesPage() {
   const typeById = useMemo(() => new Map(types.map((x) => [x.id, x])), [types]);
   const typeName = (id: string) => { const x = typeById.get(id); return x ? (lang === "en" ? x.name_en : x.name_ar) : id; };
   const myDepts = useMemo(() => new Set(mgrs.filter((m) => m.user_id === me).map((m) => m.dept)), [mgrs, me]);
-  const canManagerAct = (r: LeaveRequest) => isAdmin || myDepts.has(empById.get(r.employee_id)?.dept ?? "\u0000");
+  const canManagerAct = (_r: LeaveRequest) => canApprove;
   const today = todayIso();
 
   const pendingMgr = reqs.filter((r) => r.status === "pending_manager");
@@ -197,7 +200,7 @@ function LeavesPage() {
 
       <RequestDialog r={sel} onClose={() => setSel(null)} emp={sel ? empById.get(sel.employee_id) : undefined} typeName={typeName} lang={lang}
         events={events.filter((e) => e.request_id === sel?.id)} balance={bal.find((b) => b.employee_id === sel?.employee_id)}
-        canManager={!!sel && canManagerAct(sel)} canHr={isHr} usesBalance={!!sel && !!typeById.get(sel.type_id)?.uses_balance}
+        canManager={canApprove} canHr={isHr} canApprove={canApprove} usesBalance={!!sel && !!typeById.get(sel.type_id)?.uses_balance}
         onDone={() => { setSel(null); load(); }} />
     </div>
   );
@@ -324,9 +327,9 @@ function NewRequest({ emps, types, reqs, bal, settings, lang, onDone }: { emps: 
   );
 }
 
-function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canManager, canHr, usesBalance, onDone }: {
+function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canManager, canHr, canApprove, usesBalance, onDone }: {
   r: LeaveRequest | null; onClose: () => void; emp?: Emp | undefined; typeName: (id: string) => string; lang: "ar" | "en"; events: Ev[];
-  balance?: Balance | undefined; canManager: boolean; canHr: boolean; usesBalance: boolean; onDone: () => void;
+  balance?: Balance | undefined; canManager: boolean; canHr: boolean; canApprove: boolean; usesBalance: boolean; onDone: () => void;
 }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -364,7 +367,7 @@ function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canMa
         {r.attachment_path && <Button variant="outline" size="sm" className="w-fit" onClick={openFile}><Paperclip /> {r.attachment_name ?? t("المرفق")}</Button>}
         {usesBalance && r.status === "pending_hr" && balance && r.working_days > balance.remaining && <p className="text-sm text-destructive">{t("الرصيد المتبقي لا يكفي لهذا الطلب")}</p>}
 
-        {((r.status === "pending_manager" && canManager) || (r.status === "pending_hr" && canHr) || (canHr && !["rejected", "cancelled"].includes(r.status))) && (
+        {((r.status === "pending_manager" && canManager) || (r.status === "pending_hr" && canApprove) || (canHr && !["rejected", "cancelled"].includes(r.status))) && (
           <div className="space-y-2 rounded-lg border border-border p-3">
             <Textarea placeholder={t("ملاحظة / سبب الرفض")} value={note} onChange={(e) => setNote(e.target.value)} />
             <div className="flex flex-wrap gap-2">
@@ -372,7 +375,7 @@ function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canMa
               {r.status === "pending_manager" && canManager && <>
                 <Button disabled={busy} onClick={() => act("manager_approve")}><CheckCircle2 /> {t("موافقة المدير")}</Button>
                 <Button disabled={busy} variant="outline" className="text-destructive" onClick={() => act("manager_reject")}><XCircle /> {t("رفض")}</Button></>}
-              {r.status === "pending_hr" && canHr && <>
+              {r.status === "pending_hr" && canApprove && <>
                 <Button disabled={busy} onClick={() => act("hr_approve")}><CheckCircle2 /> {t("اعتماد نهائي")}</Button>
                 <Button disabled={busy} variant="outline" className="text-destructive" onClick={() => act("hr_reject")}><XCircle /> {t("رفض")}</Button></>}
               {canHr && !["rejected", "cancelled"].includes(r.status) && <Button disabled={busy} variant="ghost" onClick={() => act("cancel")}>{t("إلغاء الطلب")}</Button>}
