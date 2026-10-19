@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useCanEdit } from "@/lib/permissions";
+import { useCanEditPayments } from "@/lib/permissions";
 import { t, useLanguage, locale, translations } from "@/lib/i18n";
 /** Bilingual label for invoices: Arabic / English. */
 const bi = (k: string) => (translations[k] ? `${k} / ${translations[k]}` : k);
@@ -38,7 +38,7 @@ type Doc = { kind: "invoice"; txn: Txn } | { kind: "statement"; manager: string 
 
 function Payments() {
   useLanguage();
-  const canEdit = useCanEdit();
+  const canEdit = useCanEditPayments();
   const txns = useTransactions();
   const projects = useProjects();
   const managers = useMemo(() => {

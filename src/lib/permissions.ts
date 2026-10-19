@@ -42,3 +42,11 @@ export function useCanEdit() {
 export function useCanEditHr() {
   return useRole() === "hr";
 }
+
+/** Payments & collections: admins plus the CEO account (its records feed Hisham's summary). */
+export function useCanEditPayments() {
+  const role = useRole();
+  const [isCeo, setIsCeo] = useState(false);
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => setIsCeo(data.user?.email === "ceo@metalfuze.local")); }, []);
+  return role === "admin" || isCeo;
+}
