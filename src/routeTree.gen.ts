@@ -18,6 +18,7 @@ import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as HrDashboardRouteImport } from './routes/hr-dashboard'
 import { Route as HrFileRouteImport } from './routes/hr-file'
 import { Route as LeavesRouteImport } from './routes/leaves'
+import { Route as MailRouteImport } from './routes/mail'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MyProjectsRouteImport } from './routes/my-projects'
@@ -89,6 +90,11 @@ const HrFileRoute = HrFileRouteImport.update({
 const LeavesRoute = LeavesRouteImport.update({
   id: '/leaves',
   path: '/leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MailRoute = MailRouteImport.update({
+  id: '/mail',
+  path: '/mail',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
+  '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
   '/my-projects': typeof MyProjectsRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
+  '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
   '/my-projects': typeof MyProjectsRoute
@@ -315,6 +323,7 @@ export interface FileRoutesById {
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
+  '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
   '/my-projects': typeof MyProjectsRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
+    | '/mail'
     | '/mcp'
     | '/messages'
     | '/my-projects'
@@ -393,6 +403,7 @@ export interface FileRouteTypes {
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
+    | '/mail'
     | '/mcp'
     | '/messages'
     | '/my-projects'
@@ -431,6 +442,7 @@ export interface FileRouteTypes {
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
+    | '/mail'
     | '/mcp'
     | '/messages'
     | '/my-projects'
@@ -470,6 +482,7 @@ export interface RootRouteChildren {
   HrDashboardRoute: typeof HrDashboardRoute
   HrFileRoute: typeof HrFileRoute
   LeavesRoute: typeof LeavesRoute
+  MailRoute: typeof MailRoute
   McpRoute: typeof McpRoute
   MessagesRoute: typeof MessagesRoute
   MyProjectsRoute: typeof MyProjectsRoute
@@ -562,6 +575,13 @@ declare module '@tanstack/react-router' {
       path: '/leaves'
       fullPath: '/leaves'
       preLoaderRoute: typeof LeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mail': {
+      id: '/mail'
+      path: '/mail'
+      fullPath: '/mail'
+      preLoaderRoute: typeof MailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -766,6 +786,7 @@ const rootRouteChildren: RootRouteChildren = {
   HrDashboardRoute: HrDashboardRoute,
   HrFileRoute: HrFileRoute,
   LeavesRoute: LeavesRoute,
+  MailRoute: MailRoute,
   McpRoute: McpRoute,
   MessagesRoute: MessagesRoute,
   MyProjectsRoute: MyProjectsRoute,

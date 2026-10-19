@@ -16,6 +16,7 @@ import {
   Fingerprint, Smartphone, Landmark, IdCard, CalendarOff,
   Users, FolderKanban, MessageSquare, Calculator,
   Radar,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
