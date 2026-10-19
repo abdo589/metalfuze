@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { recordRemotePunch } from "@/lib/remote-checkin.server";
+import { recordPing, recordRemotePunch } from "@/lib/remote-checkin.server";
 
 // Public endpoint for employee self check-in. The caller is identified only by their
 // secret personal token; only first name and site name are ever returned.
@@ -30,6 +30,11 @@ export const Route = createFileRoute("/api/public/checkin")({
         if (raw.length > 3_000_000) return json({ ok: false, error: "photo" }, 413);
         let body: { token?: unknown; action?: unknown; lat?: unknown; lng?: unknown; photo?: unknown };
         try { body = JSON.parse(raw); } catch { return json({ ok: false, error: "bad" }, 400); }
+        if (body.action === "ping" && validToken(body.token)) {
+          const e = await byToken(body.token);
+          if (!e) return json({ ok: false, error: "invalid" }, 404);
+          return json(await recordPing(e.id, Number(body.lat), Number(body.lng), Number((body as { accuracy?: unknown }).accuracy) || undefined));
+        }
         if (!validToken(body.token) || (body.action !== "in" && body.action !== "out") || typeof body.photo !== "string")
           return json({ ok: false, error: "bad" }, 400);
         const e = await byToken(body.token);
