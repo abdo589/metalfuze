@@ -47,6 +47,8 @@ export function totals(list: Txn[]) {
 
 export const txnStore = {
   all: () => load(),
+  /** Replace the whole list as-is (used to load the CEO's saved records on any device). */
+  replaceAll(list: Txn[]) { save(list); },
   upsert(x: Txn) {
     const list = load();
     const old = list.find((y) => y.id === x.id);
