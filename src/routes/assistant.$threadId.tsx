@@ -19,9 +19,9 @@ export const Route = createFileRoute("/assistant/$threadId")({
   head: () => ({
     meta: [
       { title: "محادثة المستشار الذكي — Metal Fuze" },
-      { name: "description", content: "محادثة تحليل المشاريع مع المستشار الذكي لـ Metal Fuze." },
+      { name: "description", content: "اسأل أي حاجة في نظام Metal Fuze — المشاريع والموظفون والإجازات والحضور والرواتب." },
       { property: "og:title", content: "محادثة المستشار الذكي — Metal Fuze" },
-      { property: "og:description", content: "أسئلة الإدارة وإجابات مدعومة ببيانات اللوحة." },
+      { property: "og:description", content: "أسئلة النظام وإجابات فورية من بياناته الحية." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
