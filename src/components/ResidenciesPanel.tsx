@@ -90,7 +90,7 @@ function EditDialog({ r, onClose, reload }: { r: Residency | null; onClose: () =
   );
 }
 
-function StatCard({ label, value, icon, cls }: { label: string; value: number; icon: React.ReactNode; cls: string }) {
+export function StatCard({ label, value, icon, cls }: { label: string; value: number; icon: React.ReactNode; cls: string }) {
   return (
     <div className={`flex items-center gap-3 rounded-xl border p-4 ${cls}`}>
       <div className="rounded-lg bg-background/60 p-2">{icon}</div>
@@ -102,7 +102,7 @@ function StatCard({ label, value, icon, cls }: { label: string; value: number; i
   );
 }
 
-function DocBar({ label, expired, soon, valid, unset, total }: {
+export function DocBar({ label, expired, soon, valid, unset, total }: {
   label: string; expired: number; soon: number; valid: number; unset: number; total: number;
 }) {
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
