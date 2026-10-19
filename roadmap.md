@@ -15,4 +15,4 @@
 - [x] Internal chat — private 1:1 messages for all accounts
 
 - [x] Add "العنوان الوطني" field to employee data (hr-sheets.json employees columns).
-- [ ] Whole-system AI advisor: /api/chat fetches caller-scoped live system data (HR records, residencies, leave, attendance, settlements) beside project data; verify a real question end-to-end.
+- [x] Whole-system AI advisor: /api/chat fetches caller-scoped live system data (HR records, residencies, leave, attendance, settlements) beside project data; real payroll question verified end-to-end.
