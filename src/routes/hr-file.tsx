@@ -180,7 +180,7 @@ function HrFilePage() {
               {sel.id && sel.sheet === "employees" && (
                 <>
                   <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
-                  <ContractBox rec={sel} field="الشهادات" label="الشهادات" folder="certificates" canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
+                  <CertificatesBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
                 </>
               )}
               {sel.id && (
@@ -289,6 +289,76 @@ async function downloadPersonPdf(r: Rec, rel: { k: HrKey; rows: Rec[] }[]) {
   try { await exportElementPdf(el, `ملف-${name}.pdf`); } finally { el.remove(); }
 }
 
+/** Open a private file: open the tab synchronously (popup blockers), then point it at a signed URL. */
+async function openFile(path: string) {
+  const w = window.open("", "_blank");
+  const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(path, 30);
+  if (error || !data) { w?.close(); toast.error("تعذر فتح الملف"); return; }
+  if (w) w.location.href = data.signedUrl; else window.location.href = data.signedUrl;
+}
+
+type Cert = { path: string; name: string };
+const CERTS = "الشهادات";
+function readCerts(v: unknown): Cert[] {
+  if (!v) return [];
+  try { const a = JSON.parse(String(v)); if (Array.isArray(a)) return a.filter((x) => x?.path); } catch { /* legacy single path */ }
+  return [{ path: String(v), name: "شهادة" }];
+}
+
+function CertificatesBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolean; onChange: (d: HrRow) => void }) {
+  const [busy, setBusy] = useState(false);
+  const certs = readCerts(rec.data[CERTS]);
+  async function persist(list: Cert[]) {
+    const data = { ...rec.data, [CERTS]: JSON.stringify(list) };
+    const { error } = await supabase.from("hr_records").update({ data, updated_at: new Date().toISOString() }).eq("id", rec.id);
+    if (error) { toast.error("تعذر الحفظ"); return false; }
+    onChange(data); return true;
+  }
+  async function upload(files: File[]) {
+    setBusy(true);
+    const added: Cert[] = [];
+    for (const f of files) {
+      const ext = f.name.split(".").pop() || "pdf";
+      const p = `certificates/${rec.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+      const up = await supabase.storage.from("employee-files").upload(p, f, { contentType: f.type || undefined });
+      if (up.error) { toast.error(`تعذر رفع ${f.name}`); continue; }
+      added.push({ path: p, name: f.name });
+    }
+    if (added.length && await persist([...certs, ...added])) toast.success(`تم رفع ${added.length} شهادة`);
+    setBusy(false);
+  }
+  async function del(c: Cert) {
+    if (!confirm(`حذف ${c.name}؟`)) return;
+    await supabase.storage.from("employee-files").remove([c.path]);
+    if (await persist(certs.filter((x) => x.path !== c.path))) toast.success("تم الحذف");
+  }
+  return (
+    <div className="space-y-2 rounded-lg border border-border p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <FileText className="size-4 text-primary" />
+        <span className="font-medium">الشهادات ({certs.length})</span>
+        {canEdit && (
+          <Button size="sm" variant="outline" disabled={busy} asChild>
+            <label className="cursor-pointer">
+              <FileUp /> {busy ? "جارٍ الرفع…" : "إضافة شهادات"}
+              <input type="file" multiple accept=".pdf,image/*,.doc,.docx" className="hidden"
+                onChange={(e) => { const fs = Array.from(e.target.files ?? []); if (fs.length) upload(fs); e.target.value = ""; }} />
+            </label>
+          </Button>
+        )}
+      </div>
+      {!certs.length && <p className="text-sm text-muted-foreground">لا توجد شهادات بعد</p>}
+      {certs.map((c) => (
+        <div key={c.path} className="flex items-center gap-2 rounded-md bg-muted/40 px-2 py-1 text-sm">
+          <span className="flex-1 truncate">{c.name}</span>
+          <Button size="sm" variant="ghost" onClick={() => openFile(c.path)}><Eye /> عرض</Button>
+          {canEdit && <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => del(c)}><Trash2 /></Button>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ContractBox({ rec, canEdit, onChange, field = "عقد العمل", label = "عقد العمل", folder = "contracts" }: { rec: Rec; canEdit: boolean; onChange: (d: HrRow) => void; field?: string; label?: string; folder?: string }) {
   const CONTRACT = field;
   const [busy, setBusy] = useState(false);
@@ -306,11 +376,7 @@ function ContractBox({ rec, canEdit, onChange, field = "عقد العمل", labe
     if (error) { toast.error("تعذر الحفظ"); return; }
     toast.success(`تم رفع ${label}`); onChange(data);
   }
-  async function view() {
-    const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(path, 30);
-    if (error || !data) { toast.error("تعذر فتح الملف"); return; }
-    window.open(data.signedUrl, "_blank");
-  }
+  const view = () => openFile(path);
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-3">
       <FileText className="size-4 text-primary" />
