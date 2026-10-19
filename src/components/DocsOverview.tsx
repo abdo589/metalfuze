@@ -38,7 +38,6 @@ export function DocsOverview({ rows: given }: { rows?: Row[] }) {
   const people = new Set(rows.map((r) => String(r.data["رقم الموظف"] ?? r.data["اسم الموظف"] ?? "")).filter(Boolean)).size;
   const types = [...new Set(docs.map((d) => d.type))];
   const known = docs.filter((d) => d.days !== null).map((d) => d.days!);
-  const people = new Set(docs.map((d) => d.who).filter(Boolean)).size;
 
   return (
     <div className="space-y-4">
