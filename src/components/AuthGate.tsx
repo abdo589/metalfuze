@@ -94,15 +94,15 @@ function Login() {
     if (error) setError(t("اسم المستخدم أو كلمة المرور غير صحيحة"));
   }
 
-  async function onGoogle() {
+  async function onGoogle(provider: "google" | "microsoft" = "google") {
     setGoogleBusy(true);
     setError("");
-    const result = await lovable.auth.signInWithOAuth("google", {
+    const result = await lovable.auth.signInWithOAuth(provider, {
       redirect_uri: window.location.pathname.startsWith("/.lovable/oauth") ? new URL(oauthReturnPath(window.location.pathname + window.location.search), window.location.origin).href : window.location.origin,
     });
     if (result.error) {
       setGoogleBusy(false);
-      setError(t("تعذر الدخول بحساب جوجل، حاول مرة أخرى"));
+      setError(provider === "microsoft" ? t("تعذر الدخول بحساب Outlook، حاول مرة أخرى") : t("تعذر الدخول بحساب جوجل، حاول مرة أخرى"));
       return;
     }
     if (result.redirected) return; // Browser is heading to Google
@@ -144,7 +144,7 @@ function Login() {
           <span className="text-xs text-muted-foreground">{t("أو")}</span>
           <div className="h-px flex-1 bg-border" />
         </div>
-        <Button type="button" variant="outline" className="w-full" disabled={busy || googleBusy} onClick={onGoogle}>
+        <Button type="button" variant="outline" className="w-full" disabled={busy || googleBusy} onClick={() => onGoogle("google")}>
           <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
             <path fill="#4285F4" d="M23.06 12.25c0-.85-.08-1.67-.22-2.45H12v4.64h6.2a5.3 5.3 0 0 1-2.3 3.48v2.9h3.72c2.17-2 3.44-4.95 3.44-8.57Z" />
             <path fill="#34A853" d="M12 23.5c3.1 0 5.7-1.03 7.6-2.78l-3.72-2.9c-1.03.7-2.36 1.1-3.88 1.1-2.98 0-5.5-2.01-6.4-4.72H1.76v2.99A11.5 11.5 0 0 0 12 23.5Z" />
@@ -152,6 +152,13 @@ function Login() {
             <path fill="#EA4335" d="M12 5.08c1.68 0 3.19.58 4.38 1.71l3.28-3.28C17.68 1.63 15.1.5 12 .5A11.5 11.5 0 0 0 1.76 6.81L5.6 9.8c.9-2.71 3.42-4.72 6.4-4.72Z" />
           </svg>
           {googleBusy ? t("جارٍ فتح جوجل...") : t("الدخول بحساب جوجل")}
+        </Button>
+        <Button type="button" variant="outline" className="w-full" disabled={busy || googleBusy} onClick={() => onGoogle("microsoft")}>
+          <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
+            <path fill="#F25022" d="M1 1h10.5v10.5H1z" /><path fill="#7FBA00" d="M12.5 1H23v10.5H12.5z" />
+            <path fill="#00A4EF" d="M1 12.5h10.5V23H1z" /><path fill="#FFB900" d="M12.5 12.5H23V23H12.5z" />
+          </svg>
+          {t("الدخول بحساب Outlook / Microsoft")}
         </Button>
       </form>
     </div>
