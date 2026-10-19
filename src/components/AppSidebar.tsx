@@ -41,6 +41,7 @@ const items = [
   { to: "/attendance-tracking", label: "تتبع الحضور", icon: Radar },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
   { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Smartphone },
+  { to: "/settlements", label: "المخالصات", icon: FileText },
   { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
   { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
   { to: "/bank", label: "رصيد البنك", icon: Landmark },
