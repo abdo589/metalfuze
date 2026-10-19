@@ -603,6 +603,44 @@ export type Database = {
         }
         Relationships: []
       }
+      location_pings: {
+        Row: {
+          accuracy_m: number | null
+          distance_m: number | null
+          employee_id: string
+          id: string
+          lat: number
+          lng: number
+          pinged_at: string
+        }
+        Insert: {
+          accuracy_m?: number | null
+          distance_m?: number | null
+          employee_id: string
+          id?: string
+          lat: number
+          lng: number
+          pinged_at?: string
+        }
+        Update: {
+          accuracy_m?: number | null
+          distance_m?: number | null
+          employee_id?: string
+          id?: string
+          lat?: number
+          lng?: number
+          pinged_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_pings_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mgr_projects: {
         Row: {
           client: string

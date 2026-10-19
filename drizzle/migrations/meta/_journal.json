@@ -141,6 +141,13 @@
       "when": 1792393820861,
       "tag": "0019_hr_only_edits_leave_approvers",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792398284428,
+      "tag": "0020_location_pings",
+      "breakpoints": true
     }
   ]
 }
