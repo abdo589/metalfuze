@@ -8,21 +8,21 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Kind = "advances" | "commissions";
 type Row = { id: string; data: Record<string, string | number> };
-type Field = { k: string; type?: "number" | "date" | "select"; opts?: string[] };
+type Field = { k: string; type?: "number" | "date" | "select" | "month"; opts?: string[] };
 
 const ID = "رقم الموظف";
 const CFG: Record<Kind, { title: string; add: string; no: string; prefix: string; fields: Field[] }> = {
   advances: {
     title: "السلف", add: "تسجيل سلفة", no: "رقم السلفة", prefix: "S-",
     fields: [
-      { k: "رقم السلفة" }, { k: "تاريخ السلفة", type: "date" }, { k: "المبلغ", type: "number" },
+      { k: "رقم السلفة" }, { k: "النوع", type: "select", opts: ["سلفة", "مخالفة"] }, { k: "تاريخ السلفة", type: "date" }, { k: "شهر الخصم", type: "month" }, { k: "المبلغ", type: "number" },
       { k: "المسدد", type: "number" }, { k: "السبب" }, { k: "الحالة", type: "select", opts: ["نشطة", "مغلقة"] },
     ],
   },
   commissions: {
     title: "العمولات", add: "تسجيل عمولة", no: "رقم العمولة", prefix: "C-",
     fields: [
-      { k: "رقم العمولة" }, { k: "نوع العمولة" }, { k: "تاريخ الاستحقاق", type: "date" },
+      { k: "رقم العمولة" }, { k: "نوع العمولة" }, { k: "تاريخ الاستحقاق", type: "date" }, { k: "شهر الصرف", type: "month" },
       { k: "المبلغ", type: "number" }, { k: "الحالة", type: "select", opts: ["معتمدة", "قيد المراجعة", "مسودة"] },
       { k: "ملاحظات" },
     ],
@@ -53,6 +53,8 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
     const d: Record<string, string> = Object.fromEntries(c.fields.map((f) => [f.k, f.opts?.[0] ?? ""]));
     d[c.no] = `${c.prefix}${String(rows[kind].length + 1).padStart(3, "0")}`;
     if (kind === "advances") d["المسدد"] = "0";
+    const m = new Date().toISOString().slice(0, 7);
+    d[kind === "advances" ? "شهر الخصم" : "شهر الصرف"] = m;
     setEdit({ kind, id: "", d, view: false });
   }
   const openRow = (kind: Kind, r: Row, view: boolean) =>
@@ -118,11 +120,11 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
     <div className="space-y-4">
       {section("advances", <Coins className="size-5 text-primary" />,
         [["المسدد", advPaid], ["إجمالي السلف", advTotal], ["الرصيد المتبقي", advTotal - advPaid]],
-        ["رقم السلفة", "تاريخ السلفة", "المبلغ", "المسدد", "المتبقي", "السبب", "الحالة"],
+        ["رقم السلفة", "النوع", "تاريخ السلفة", "شهر الخصم", "المبلغ", "المسدد", "المتبقي", "السبب", "الحالة"],
         (r, c) => c === "المتبقي" ? num(n(r.data["المبلغ"]) - n(r.data["المسدد"])) : c === "الحالة" ? badge(r.data[c]) : c === "المبلغ" || c === "المسدد" ? num(r.data[c]) : String(r.data[c] ?? "—"))}
       {section("commissions", <TrendingUp className="size-5 text-primary" />,
         [["العمولات المستحقة", com.reduce((a, r) => a + n(r.data["المبلغ"]), 0)], ["المعتمدة", sumBy("معتمدة")], ["قيد المراجعة", sumBy("قيد المراجعة")]],
-        ["رقم العمولة", "نوع العمولة", "تاريخ الاستحقاق", "المبلغ", "الحالة"],
+        ["رقم العمولة", "نوع العمولة", "تاريخ الاستحقاق", "شهر الصرف", "المبلغ", "الحالة"],
         (r, c) => c === "الحالة" ? badge(r.data[c]) : c === "المبلغ" ? num(r.data[c]) : String(r.data[c] ?? "—"))}
 
       <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>

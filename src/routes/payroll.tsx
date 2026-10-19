@@ -71,7 +71,7 @@ function Payroll() {
     const paidList = active.filter((e) => e.paidMonths.includes(month));
     const paidSum = paidList.reduce((a, e) => a + finalNet(e), 0);
     return { total, paidCount: paidList.length, paidSum, remaining: total - paidSum };
-  }, [active, month]);
+  }, [active, month, adj]);
 
   const filtered = employees.filter((e) =>
     [e.name, e.role, e.dept, e.project].join(" ").toLowerCase().includes(q.toLowerCase()),
@@ -80,8 +80,8 @@ function Payroll() {
   async function onExport() {
     try {
       const { exportBrandedExcel } = await import("@/lib/branded-excel");
-      const total = active.reduce((x, e) => x + netSalary(e), 0);
-      const paidN = active.filter((e) => e.paidMonths.includes(month)).reduce((x, e) => x + netSalary(e), 0);
+      const total = active.reduce((x, e) => x + finalNet(e), 0);
+      const paidN = active.filter((e) => e.paidMonths.includes(month)).reduce((x, e) => x + finalNet(e), 0);
       await exportBrandedExcel({
         filename: `${locale() === "en-GB" ? "Payroll" : "مسير-رواتب"}-${month}.xlsx`,
         reportTitle: `${t("مسير الرواتب")} — ${month}`,
@@ -106,7 +106,7 @@ function Payroll() {
           rows: employees.map((e) => {
             const a = att(e);
             return [e.id, e.name, e.role || "—", e.dept || "—", e.project || "—", e.deviceUserId || "—",
-              e.base, e.allowances, e.deductions, netSalary(e),
+              e.base, e.allowances, e.deductions + (adj.get(e.id)?.advances ?? 0), finalNet(e),
               e.joined ? new Date(e.joined).toLocaleDateString(locale()) : "—",
               e.paidMonths.includes(month) ? t("مدفوع") : t("غير مدفوع"),
               e.active ? t("نشط") : t("غير نشط"),
