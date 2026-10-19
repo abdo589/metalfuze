@@ -825,6 +825,69 @@ export type Database = {
         }
         Relationships: []
       }
+      settlements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deductions: number
+          employee_id: string
+          employee_name: string
+          eos: number
+          id: string
+          joined: string | null
+          last_day: string
+          leave_days: number
+          leave_pay: number
+          net: number
+          notes: string
+          other_dues: number
+          reason: string
+          status: string
+          updated_at: string
+          wage: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deductions?: number
+          employee_id: string
+          employee_name: string
+          eos?: number
+          id?: string
+          joined?: string | null
+          last_day: string
+          leave_days?: number
+          leave_pay?: number
+          net?: number
+          notes?: string
+          other_dues?: number
+          reason: string
+          status?: string
+          updated_at?: string
+          wage?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deductions?: number
+          employee_id?: string
+          employee_name?: string
+          eos?: number
+          id?: string
+          joined?: string | null
+          last_day?: string
+          leave_days?: number
+          leave_pay?: number
+          net?: number
+          notes?: string
+          other_dues?: number
+          reason?: string
+          status?: string
+          updated_at?: string
+          wage?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
