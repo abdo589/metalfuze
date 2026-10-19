@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Download, Eye, FileUp, FileText, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
+import { Download, Eye, FileUp, FileText, Pencil, Plus, Save, Search, Trash2, UserRound, X } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/permissions";
 import { importHrFile, type HrKey, type HrRow } from "@/lib/hr-file.functions";
 import sheets from "@/lib/hr-sheets.json";
+import { AdvancesCommissions } from "@/components/AdvancesCommissions";
 import { DocsOverview } from "@/components/DocsOverview";
 import { NationalitySelect } from "@/components/NationalitySelect";
 import { resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
@@ -53,6 +54,7 @@ function HrFilePage() {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<Rec | null>(null);
   const [draft, setDraft] = useState<Record<string, string> | null>(null);
+  const [ptab, setPtab] = useState("basic");
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.from("hr_records").select("id,sheet,data,sort").order("sort");
@@ -69,7 +71,7 @@ function HrFilePage() {
   const rows = useMemo(() => all.filter((r) => r.sheet === tab && Object.values(r.data).join(" ").includes(q)), [all, tab, q]);
   const cols = META[tab].columns.slice(0, 7);
 
-  const open = (r: Rec) => { setSel(r); setDraft(null); };
+  const open = (r: Rec) => { setSel(r); setDraft(null); setPtab("basic"); };
   const startEdit = (r: Rec) => setDraft(Object.fromEntries(META[r.sheet].columns.map((c) => [c, r.data[c] === undefined ? "" : String(r.data[c])])));
 
   async function save() {
@@ -190,7 +192,7 @@ function HrFilePage() {
                       <div><span className="text-muted-foreground">الإدارة: </span>{show(sel.data["القسم"])}</div>
                     </div>
                   </div>
-                  <span className={`me-8 rounded-full px-3 py-1 text-xs font-semibold ${inactive ? "bg-destructive/15 text-destructive" : "bg-primary/15 text-primary"}`}>● {inactive || show(st) === "—" ? (inactive || "على رأس العمل") : show(st)}</span>
+                  <span className={`me-8 rounded-full px-3 py-1 text-xs font-semibold ${inactive ? "bg-destructive/15 text-destructive" : "bg-primary/15 text-primary"}`}>● {inactive || (show(st) === "—" ? "على رأس العمل" : show(st))}</span>
                 </div>
               ) : (
                 <DialogHeader>
