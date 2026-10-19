@@ -19,9 +19,9 @@ export const Route = createFileRoute("/assistant/$threadId")({
   head: () => ({
     meta: [
       { title: "محادثة المستشار الذكي — Metal Fuze" },
-      { name: "description", content: "محادثة تحليل المشاريع مع المستشار الذكي لـ Metal Fuze." },
+      { name: "description", content: "اسأل أي حاجة في نظام Metal Fuze — المشاريع والموظفون والإجازات والحضور والرواتب." },
       { property: "og:title", content: "محادثة المستشار الذكي — Metal Fuze" },
-      { property: "og:description", content: "أسئلة الإدارة وإجابات مدعومة ببيانات اللوحة." },
+      { property: "og:description", content: "أسئلة النظام وإجابات فورية من بياناته الحية." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -31,7 +31,9 @@ export const Route = createFileRoute("/assistant/$threadId")({
 
 const SUGGESTIONS = [
   "ما المشاريع الأكثر خطورة الآن ولماذا؟",
-  "قارن الإنجاز الفعلي بالمخطط لكل مشروع",
+  "من قرب انتهاء إقاماته أو وثائقه؟",
+  "من حضر اليوم ومن تأخر؟",
+  "كم صافي رواتب هذا الشهر؟",
   "أين توجد فجوات في التحصيل المالي؟",
   "ما أولويات الإدارة لهذا الأسبوع؟",
 ];
@@ -72,7 +74,7 @@ function AssistantPage() {
             <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground"><BrainCircuit /></span>
             <div>
               <h1 className="font-display text-xl font-extrabold">{t("المستشار الذكي")}</h1>
-              <p className="text-xs text-muted-foreground">{t("يحلل بيانات اللوحة الحالية ويقدم توصيات")}</p>
+              <p className="text-xs text-muted-foreground">{t("يجيب على أي سؤال في النظام من بياناته الحية")}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -128,8 +130,8 @@ function ChatWindow({ threadId }: { threadId: string }) {
       <Conversation className="min-h-0 flex-1">
         <ConversationContent>
           {messages.length === 0 ? (
-            <ConversationEmptyState icon={<BrainCircuit className="size-10" />} title={t("اسأل عن مشاريعك")}
-              description={t("أجيبك من البيانات الموجودة في اللوحة حالياً")}>
+            <ConversationEmptyState icon={<BrainCircuit className="size-10" />} title={t("اسأل أي حاجة في النظام")}
+              description={t("أجيبك من بيانات النظام الحالية")}>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {SUGGESTIONS.map((s) => (
                   <Button key={s} variant="outline" className="h-auto whitespace-normal py-2 text-start" onClick={() => send(t(s))}>{t(s)}</Button>
@@ -145,7 +147,7 @@ function ChatWindow({ threadId }: { threadId: string }) {
               </MessageContent>
             </Message>
           ))}
-          {status === "submitted" && <Shimmer className="text-sm">{t("جارٍ تحليل بيانات المشاريع...")}</Shimmer>}
+          {status === "submitted" && <Shimmer className="text-sm">{t("جارٍ تحليل بيانات النظام...")}</Shimmer>}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
