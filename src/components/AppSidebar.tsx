@@ -16,6 +16,7 @@ import {
   Fingerprint, Smartphone, Landmark, IdCard, CalendarOff,
   Users, FolderKanban, MessageSquare, Calculator,
   Radar,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -37,6 +38,7 @@ const items = [
   { to: "/hr-file", label: "بيانات الموظفين", icon: IdCard },
   { to: "/leaves", label: "الإجازات", icon: CalendarOff },
   { to: "/messages", label: "الرسائل", icon: MessageSquare },
+  { to: "/mail", label: "البريد (Outlook)", icon: Mail },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
   { to: "/attendance-tracking", label: "تتبع الحضور", icon: Radar },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
@@ -58,8 +60,8 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const role = useRole();
   const unread = useUnreadMessages();
   const visible = role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
-    : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
-    : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
+    : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
+    : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === undefined ? [] : role === "admin" ? items : items.filter((i) => i.to !== "/my-projects");
   return (
     <nav className="flex flex-col gap-1">

@@ -18,6 +18,7 @@ import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as HrDashboardRouteImport } from './routes/hr-dashboard'
 import { Route as HrFileRouteImport } from './routes/hr-file'
 import { Route as LeavesRouteImport } from './routes/leaves'
+import { Route as MailRouteImport } from './routes/mail'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MyProjectsRouteImport } from './routes/my-projects'
@@ -42,6 +43,7 @@ import { Route as LeaveTokenRouteImport } from './routes/leave.$token'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
 import { Route as ApiPublicLeaveRouteImport } from './routes/api/public/leave'
+import { Route as ApiOauthOutlookReturnRouteImport } from './routes/api/oauth/outlook/return'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 
@@ -88,6 +90,11 @@ const HrFileRoute = HrFileRouteImport.update({
 const LeavesRoute = LeavesRouteImport.update({
   id: '/leaves',
   path: '/leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MailRoute = MailRouteImport.update({
+  id: '/mail',
+  path: '/mail',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -211,6 +218,11 @@ const ApiPublicLeaveRoute = ApiPublicLeaveRouteImport.update({
   path: '/api/public/leave',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOauthOutlookReturnRoute = ApiOauthOutlookReturnRouteImport.update({
+  id: '/api/oauth/outlook/return',
+  path: '/api/oauth/outlook/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
   path: '/lovable/email/auth/preview',
@@ -232,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
+  '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
   '/my-projects': typeof MyProjectsRoute
@@ -256,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
+  '/api/oauth/outlook/return': typeof ApiOauthOutlookReturnRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
 }
@@ -269,6 +283,7 @@ export interface FileRoutesByTo {
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
+  '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
   '/my-projects': typeof MyProjectsRoute
@@ -293,6 +308,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
+  '/api/oauth/outlook/return': typeof ApiOauthOutlookReturnRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
 }
@@ -307,6 +323,7 @@ export interface FileRoutesById {
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
+  '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
   '/my-projects': typeof MyProjectsRoute
@@ -331,6 +348,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
+  '/api/oauth/outlook/return': typeof ApiOauthOutlookReturnRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
 }
@@ -346,6 +364,7 @@ export interface FileRouteTypes {
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
+    | '/mail'
     | '/mcp'
     | '/messages'
     | '/my-projects'
@@ -370,6 +389,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
+    | '/api/oauth/outlook/return'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -383,6 +403,7 @@ export interface FileRouteTypes {
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
+    | '/mail'
     | '/mcp'
     | '/messages'
     | '/my-projects'
@@ -407,6 +428,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
+    | '/api/oauth/outlook/return'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
   id:
@@ -420,6 +442,7 @@ export interface FileRouteTypes {
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
+    | '/mail'
     | '/mcp'
     | '/messages'
     | '/my-projects'
@@ -444,6 +467,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
+    | '/api/oauth/outlook/return'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
   fileRoutesById: FileRoutesById
@@ -458,6 +482,7 @@ export interface RootRouteChildren {
   HrDashboardRoute: typeof HrDashboardRoute
   HrFileRoute: typeof HrFileRoute
   LeavesRoute: typeof LeavesRoute
+  MailRoute: typeof MailRoute
   McpRoute: typeof McpRoute
   MessagesRoute: typeof MessagesRoute
   MyProjectsRoute: typeof MyProjectsRoute
@@ -482,6 +507,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
   ApiPublicLeaveRoute: typeof ApiPublicLeaveRoute
+  ApiOauthOutlookReturnRoute: typeof ApiOauthOutlookReturnRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
 }
@@ -549,6 +575,13 @@ declare module '@tanstack/react-router' {
       path: '/leaves'
       fullPath: '/leaves'
       preLoaderRoute: typeof LeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mail': {
+      id: '/mail'
+      path: '/mail'
+      fullPath: '/mail'
+      preLoaderRoute: typeof MailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -719,6 +752,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLeaveRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/oauth/outlook/return': {
+      id: '/api/oauth/outlook/return'
+      path: '/api/oauth/outlook/return'
+      fullPath: '/api/oauth/outlook/return'
+      preLoaderRoute: typeof ApiOauthOutlookReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/auth/preview': {
       id: '/lovable/email/auth/preview'
       path: '/lovable/email/auth/preview'
@@ -746,6 +786,7 @@ const rootRouteChildren: RootRouteChildren = {
   HrDashboardRoute: HrDashboardRoute,
   HrFileRoute: HrFileRoute,
   LeavesRoute: LeavesRoute,
+  MailRoute: MailRoute,
   McpRoute: McpRoute,
   MessagesRoute: MessagesRoute,
   MyProjectsRoute: MyProjectsRoute,
@@ -771,6 +812,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicCheckinRoute: ApiPublicCheckinRoute,
   ApiPublicLeaveRoute: ApiPublicLeaveRoute,
+  ApiOauthOutlookReturnRoute: ApiOauthOutlookReturnRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
 }
