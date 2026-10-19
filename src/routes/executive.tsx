@@ -4,6 +4,7 @@ import { fmtMoney, fmtPct } from "@/lib/projects";
 import { summarize, useExecSnapshot } from "@/lib/exec-snapshot";
 import { monthKey, netSalary, usePayroll } from "@/lib/payroll";
 import { useAdjustments } from "@/lib/advances";
+import { ExecCharts } from "@/components/ExecCharts";
 
 export const Route = createFileRoute("/executive")({
   head: () => ({
@@ -43,6 +44,16 @@ function Executive() {
   let adv = 0, com = 0; adj.forEach((a) => { adv += a.advances; com += a.commissions; });
   const gross = emps.reduce((a, e) => a + netSalary(e), 0);
   const paidCount = emps.filter((e) => e.paidMonths?.includes(month)).length;
+  const gap = s.avgProgress - s.avgPlanned;
+  const top = [...projects].sort((a, b) => (b.contract - b.paid) - (a.contract - a.paid))[0];
+  const insights = [
+    gap >= 0 ? `الإنجاز العام متقدم عن المخطط بـ ${fmtPct(gap)}.` : `الإنجاز العام متأخر عن المخطط بـ ${fmtPct(-gap)}.`,
+    `تم تحصيل ${fmtPct(s.collectedPct)} من قيمة العقود، والمتبقي ${fmtMoney(s.remaining)}.`,
+    top && top.contract - top.paid > 0 ? `أكبر مبلغ متبقٍ للتحصيل في مشروع «${top.name}»: ${fmtMoney(top.contract - top.paid)}.` : "",
+    s.overdue.length ? `${s.overdue.length} مشروع تجاوز موعد التسليم: ${s.overdue.map((p) => p.name).join("، ")}.` : "لا توجد مشاريع متجاوزة لموعد التسليم.",
+    txns.length ? `صافي حركة الدفع والتحصيل ${fmtMoney(s.balance)}${s.balance < 0 ? " (المدفوع أكبر من المحصّل)" : ""}.` : "لم تُسجّل حركات دفع أو تحصيل بعد.",
+    gross ? `تكلفة الرواتب هذا الشهر ${fmtMoney(gross - adv + com)}، تعادل ${fmtPct(s.monthCollected ? (gross - adv + com) / s.monthCollected : 0)} من تحصيل الشهر.` : "",
+  ].filter(Boolean);
   const watch = [...new Map([...s.overdue, ...s.behind, ...s.soon].map((p) => [p.id, p])).values()].slice(0, 6);
   return (
     <div dir="rtl" className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
@@ -92,6 +103,18 @@ function Executive() {
           <Kpi label="عمولات تُضاف" value={fmtMoney(com)} tone="good" />
           <Kpi label="تم صرف رواتبهم" value={`${paidCount} / ${emps.length}`} />
         </div>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-semibold">التحليل</h2>
+        <ul className="space-y-1 rounded-xl border bg-card p-4 text-sm leading-7">
+          {insights.map((x, i) => <li key={i}>• {x}</li>)}
+        </ul>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-semibold">الرسوم البيانية</h2>
+        <ExecCharts projects={projects} txns={txns} payroll={{ gross, adv, com }} />
       </section>
 
       {watch.length > 0 && (
