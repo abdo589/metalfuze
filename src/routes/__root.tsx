@@ -21,6 +21,7 @@ import { initializeSidebar, sidebarScript } from "../lib/sidebar";
 import { initializeLanguage, useLanguage } from "@/lib/i18n";
 import { AppSidebar } from "@/components/AppSidebar";
 import { IdleSignOut } from "@/components/IdleSignOut";
+import { ExecSnapshotSync } from "@/lib/exec-snapshot";
 
 function NotFoundComponent() {
   return (
@@ -156,6 +157,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <IdleSignOut />
+      <ExecSnapshotSync />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AuthGate>
         <div data-report-document>
