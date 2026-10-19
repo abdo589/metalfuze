@@ -41,9 +41,9 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
   const [edit, setEdit] = useState<{ kind: Kind; id: string; d: Record<string, string>; view: boolean } | null>(null);
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase.from("hr_records").select("id,sheet,data").in("sheet", ["advances", "commissions"]).eq(`data->>${ID}`, empId).order("sort");
+    const { data, error } = await supabase.from("hr_records").select("id,sheet,data").in("sheet", ["advances", "commissions"]).order("sort");
     if (error) { toast.error("تعذر تحميل السلف والعمولات"); return; }
-    const list = (data ?? []) as unknown as (Row & { sheet: Kind })[];
+    const list = ((data ?? []) as unknown as (Row & { sheet: Kind })[]).filter((r) => String(r.data[ID] ?? "") === empId);
     setRows({ advances: list.filter((r) => r.sheet === "advances"), commissions: list.filter((r) => r.sheet === "commissions") });
   }, [empId]);
   useEffect(() => { load(); }, [load]);
