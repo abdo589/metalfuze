@@ -50,7 +50,7 @@ export const startOutlookConnect = createServerFn({ method: "POST" })
     const { authorizationUrl } = await authorizeAppUserOAuth({
       gatewayBaseUrl: GW, connectorId: CID, appUserId: context.userId, clientAPIKey: clientKey, returnUrl,
       connectionAPIKey: existing ?? undefined,
-      credentialsConfiguration: { scopes: SCOPES, domain_hint: "none", prompt: "select_account" },
+      credentialsConfiguration: { scopes: SCOPES, domain_hint: "organizations" },
     });
     return { authorizationUrl };
   });
