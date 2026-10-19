@@ -4,6 +4,7 @@ import { AlertTriangle, CalendarOff, Clock, FileWarning, IdCard, UserCheck, User
 import { supabase } from "@/integrations/supabase/client";
 import { daysLeft, ALERT_DAYS } from "@/lib/residency";
 import { DOCS, useResidencies } from "@/lib/residency-data";
+import { DocsOverview } from "@/components/DocsOverview";
 
 export const Route = createFileRoute("/hr-dashboard")({
   head: () => ({
@@ -111,14 +112,8 @@ function HrDashboard() {
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="space-y-2 lg:col-span-2">
-          <h2 className="flex items-center gap-2 font-bold"><IdCard className="size-4" /> التنبيهات ({alerts.length})</h2>
-          {!alerts.length && <p className="rounded-xl border border-border p-6 text-center text-muted-foreground">لا توجد تنبيهات — كل شيء سليم</p>}
-          {alerts.map((a, i) => (
-            <Link key={i} to={a.to} className={`block rounded-xl border p-3 transition hover:opacity-80 ${tone[a.level]}`}>
-              <div className="font-medium">{a.title}</div>
-              <div className="text-xs text-muted-foreground">{a.detail}</div>
-            </Link>
-          ))}
+          <h2 className="flex items-center gap-2 font-bold"><IdCard className="size-4" /> الوثائق والانتهاءات</h2>
+          <DocsOverview />
         </section>
         <section className="space-y-2">
           <h2 className="flex items-center gap-2 font-bold"><Clock className="size-4" /> الحضور اليوم</h2>
