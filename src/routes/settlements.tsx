@@ -92,11 +92,11 @@ function SettlementsPage() {
       wage: Number(e.base) + Number(e.allowances), leave_days: Math.max(0, Math.floor(balances[e.id] ?? 0)) }));
   }
   async function save() {
-    if (!edit?.employee_id) return toast.error(t("اختر الموظف"));
+    if (!edit?.employee_id) { toast.error(t("اختر الموظف")); return; }
     const { id, ...body } = recalc(edit);
     const res = id ? await supabase.from("settlements").update({ ...body, updated_at: new Date().toISOString() }).eq("id", id)
       : await supabase.from("settlements").insert(body);
-    if (res.error) return toast.error(res.error.message);
+    if (res.error) { toast.error(res.error.message); return; }
     toast.success(t("تم الحفظ")); setEdit(null); load();
   }
   async function remove(id: string) {
