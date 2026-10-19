@@ -184,7 +184,10 @@ function HrFilePage() {
                 </>
               )}
               {sel.id && (
-                <Button variant="outline" className="w-fit" onClick={() => downloadPerson(sel, related(sel))}><Download /> تحميل ملف الموظف</Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={() => downloadPerson(sel, related(sel)).catch(() => toast.error("تعذر التحميل"))}><Download /> Excel</Button>
+                  <Button variant="outline" onClick={() => downloadPersonPdf(sel, related(sel)).then(() => toast.success("تم حفظ PDF")).catch(() => toast.error("تعذر حفظ PDF"))}><FileText /> PDF</Button>
+                </div>
               )}
               {canEdit && (
                 <div className="flex flex-wrap gap-2">
@@ -257,6 +260,33 @@ async function downloadPerson(r: Rec, rel: { k: HrKey; rows: Rec[] }[]) {
       rows: g.rows.map((x) => META[g.k].columns.map((c) => { const v = x.data[c]; return v === undefined || v === null ? "" : typeof v === "number" ? v : String(v); })),
     })),
   });
+}
+
+async function downloadPersonPdf(r: Rec, rel: { k: HrKey; rows: Rec[] }[]) {
+  const { exportElementPdf } = await import("@/lib/pdf");
+  const logo = (await import("@/assets/metal-fuze-logo.png.asset.json")).default.url;
+  const name = String(r.data[NAME] ?? "موظف");
+  const esc = (v: unknown) => String(v).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  const groups = [{ k: r.sheet, rows: [r] }, ...rel];
+  const el = document.createElement("div");
+  el.dir = "rtl";
+  el.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;padding:28px;background:#fff;color:#1a2b2c;font-family:Tajawal,Arial,sans-serif;font-size:12px";
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1f6b70;padding-bottom:12px;margin-bottom:16px">
+      <div><div style="font-size:22px;font-weight:800;color:#1f6b70">ملف الموظف</div><div style="font-size:16px;font-weight:700;margin-top:4px">${esc(name)}</div>
+      <div style="color:#667;margin-top:4px">${new Date().toLocaleDateString("ar-SA-u-ca-gregory", { dateStyle: "long" })}</div></div>
+      <img src="${logo}" crossorigin="anonymous" style="height:64px" />
+    </div>
+    ${groups.map((g) => `
+      <div style="margin-bottom:16px">
+        <div style="background:#1f6b70;color:#fff;font-weight:700;padding:6px 10px;border-radius:6px 6px 0 0">${esc(META[g.k].title)}</div>
+        ${g.rows.map((x) => `<table style="width:100%;border-collapse:collapse;margin-bottom:6px">${
+          META[g.k].columns.filter((c) => x.data[c] !== undefined && x.data[c] !== "").reduce<string[][]>((a, c, i) => { if (i % 2 === 0) a.push([c]); else a[a.length - 1]!.push(c); return a; }, [])
+            .map((pair, i) => `<tr style="background:${i % 2 ? "#f1f8f7" : "#fff"}">${pair.map((c) => `<td style="border:1px solid #cfdcdb;padding:5px 8px;width:22%;color:#556;font-weight:600">${esc(c)}</td><td style="border:1px solid #cfdcdb;padding:5px 8px;width:28%">${esc(show(x.data[c]))}</td>`).join("")}${pair.length < 2 ? '<td style="border:1px solid #cfdcdb"></td><td style="border:1px solid #cfdcdb"></td>' : ""}</tr>`).join("")
+        }</table>`).join("")}
+      </div>`).join("")}`;
+  document.body.appendChild(el);
+  try { await exportElementPdf(el, `ملف-${name}.pdf`); } finally { el.remove(); }
 }
 
 function ContractBox({ rec, canEdit, onChange, field = "عقد العمل", label = "عقد العمل", folder = "contracts" }: { rec: Rec; canEdit: boolean; onChange: (d: HrRow) => void; field?: string; label?: string; folder?: string }) {
