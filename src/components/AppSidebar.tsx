@@ -15,6 +15,7 @@ import {
   PieChart,
   Fingerprint, Smartphone, Landmark, IdCard, CalendarOff,
   Users, FolderKanban, MessageSquare, Calculator,
+  Radar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -37,6 +38,7 @@ const items = [
   { to: "/leaves", label: "الإجازات", icon: CalendarOff },
   { to: "/messages", label: "الرسائل", icon: MessageSquare },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
+  { to: "/attendance-tracking", label: "تتبع الحضور", icon: Radar },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
   { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Smartphone },
   { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },

@@ -31,6 +31,22 @@ function Checkin() {
   const [now, setNow] = useState(new Date());
   const [done, setDone] = useState<{ action: "in" | "out"; time: string; site: string } | null>(null);
 
+  const [tracking, setTracking] = useState(false);
+  // While on shift and the page is open, send the phone's location every 3 minutes.
+  useEffect(() => {
+    if (info === null || info === "invalid") return;
+    let alive = true;
+    const send = () => navigator.geolocation?.getCurrentPosition(async (p) => {
+      const r = await fetch("/api/public/checkin", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, action: "ping", lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy }) }).catch(() => null);
+      const j = await r?.json().catch(() => null);
+      if (alive && j) setTracking(!!j.onShift);
+    }, () => {}, { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 });
+    send();
+    const id = setInterval(send, 180_000);
+    return () => { alive = false; clearInterval(id); };
+  }, [info, token, done]);
+
   useEffect(() => {
     fetch(`/api/public/checkin?token=${encodeURIComponent(token)}`).then(async (r) => setInfo(r.ok ? await r.json() : "invalid")).catch(() => setInfo("invalid"));
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -65,6 +81,11 @@ function Checkin() {
                   <div className="text-sm">{new Date(done.time).toLocaleTimeString(locale(), { hour: "2-digit", minute: "2-digit" })} — {done.site}</div>
                 </div>
               </div>
+            )}
+            {tracking && (
+              <p className="flex items-center justify-center gap-2 rounded-lg bg-primary/10 p-2 text-sm text-primary">
+                <MapPin className="size-4 animate-pulse" /> {t("تتبع موقعك شغال أثناء الدوام — اترك الصفحة مفتوحة")}
+              </p>
             )}
             <SelfieCheckin disabled={!info.site} onSubmit={async (d) => {
               const r = await fetch("/api/public/checkin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, ...d }) });

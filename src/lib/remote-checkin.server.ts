@@ -50,3 +50,24 @@ export async function recordRemotePunch(input: CheckinInput): Promise<CheckinRes
   if (error) { console.error("remote punch insert failed", error); return { ok: false, error: "save" }; }
   return { ok: true, time: now.toISOString(), distance: check.distance, site: site.name };
 }
+
+/** Location update while on shift: stored only after an arrival with no leaving since, at most every 2 minutes. */
+export async function recordPing(employeeId: string, lat: number, lng: number, accuracy?: number): Promise<{ ok: boolean; onShift: boolean }> {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return { ok: false, onShift: false };
+  const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+  const { data: emp } = await db.from("employees").select("id,device_user_id,site_id").eq("id", employeeId).maybeSingle();
+  if (!emp) return { ok: false, onShift: false };
+  const since = new Date(Date.now() - 16 * 3600_000).toISOString();
+  const { data: last } = await db.from("attendance_logs").select("status").eq("device_user_id", emp.device_user_id || emp.id)
+    .gte("punched_at", since).order("punched_at", { ascending: false }).limit(1).maybeSingle();
+  if (!last || last.status !== 0) return { ok: true, onShift: false };
+  const { data: prev } = await db.from("location_pings").select("pinged_at").eq("employee_id", emp.id).order("pinged_at", { ascending: false }).limit(1).maybeSingle();
+  if (prev && Date.now() - new Date(prev.pinged_at).getTime() < 110_000) return { ok: true, onShift: true };
+  let distance: number | null = null;
+  if (emp.site_id) {
+    const { data: s } = await db.from("work_sites").select("lat,lng,radius_m").eq("id", emp.site_id).maybeSingle();
+    if (s) distance = checkSite({ lat, lng }, s).distance;
+  }
+  await db.from("location_pings").insert({ employee_id: emp.id, lat, lng, accuracy_m: accuracy ? Math.round(accuracy) : null, distance_m: distance });
+  return { ok: true, onShift: true };
+}
