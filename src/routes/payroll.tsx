@@ -17,6 +17,7 @@ import { monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employe
 import { supabase } from "@/integrations/supabase/client";
 import { useApprovedLeaves } from "@/lib/leave-data";
 import { unpaidDaysInMonth, unpaidDeduction } from "@/lib/leave-engine";
+import { useAdjustments } from "@/lib/advances";
 
 export const Route = createFileRoute("/payroll")({
   head: () => ({
@@ -57,17 +58,20 @@ function Payroll() {
   const att = (e: Employee) => summarize(e, punches, month, excuseSets.get(e.id), leaves.dates.get(e.id));
   /** Unpaid-leave deduction for this month (gross / 30 per day). */
   const unpaid = (e: Employee) => { const d = unpaidDaysInMonth(leaves.reqs, leaves.types, e.id, month); return { days: d, amount: unpaidDeduction((e.base || 0) + (e.allowances || 0), d) }; };
+  const adj = useAdjustments(month);
+  /** Net after unpaid leave, advances (deducted) and commissions (added) for this month. */
+  const finalNet = (e: Employee) => netSalary(e) - unpaid(e).amount - (adj.get(e.id)?.advances ?? 0) + (adj.get(e.id)?.commissions ?? 0);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
 
   const active = employees.filter((e) => e.active);
   const s = useMemo(() => {
-    const total = active.reduce((a, e) => a + netSalary(e), 0);
+    const total = active.reduce((a, e) => a + finalNet(e), 0);
     const paidList = active.filter((e) => e.paidMonths.includes(month));
-    const paidSum = paidList.reduce((a, e) => a + netSalary(e), 0);
+    const paidSum = paidList.reduce((a, e) => a + finalNet(e), 0);
     return { total, paidCount: paidList.length, paidSum, remaining: total - paidSum };
-  }, [active, month]);
+  }, [active, month, adj]);
 
   const filtered = employees.filter((e) =>
     [e.name, e.role, e.dept, e.project].join(" ").toLowerCase().includes(q.toLowerCase()),
@@ -76,8 +80,8 @@ function Payroll() {
   async function onExport() {
     try {
       const { exportBrandedExcel } = await import("@/lib/branded-excel");
-      const total = active.reduce((x, e) => x + netSalary(e), 0);
-      const paidN = active.filter((e) => e.paidMonths.includes(month)).reduce((x, e) => x + netSalary(e), 0);
+      const total = active.reduce((x, e) => x + finalNet(e), 0);
+      const paidN = active.filter((e) => e.paidMonths.includes(month)).reduce((x, e) => x + finalNet(e), 0);
       await exportBrandedExcel({
         filename: `${locale() === "en-GB" ? "Payroll" : "مسير-رواتب"}-${month}.xlsx`,
         reportTitle: `${t("مسير الرواتب")} — ${month}`,
@@ -102,7 +106,7 @@ function Payroll() {
           rows: employees.map((e) => {
             const a = att(e);
             return [e.id, e.name, e.role || "—", e.dept || "—", e.project || "—", e.deviceUserId || "—",
-              e.base, e.allowances, e.deductions, netSalary(e),
+              e.base, e.allowances, e.deductions + (adj.get(e.id)?.advances ?? 0), finalNet(e),
               e.joined ? new Date(e.joined).toLocaleDateString(locale()) : "—",
               e.paidMonths.includes(month) ? t("مدفوع") : t("غير مدفوع"),
               e.active ? t("نشط") : t("غير نشط"),
@@ -230,7 +234,11 @@ function Payroll() {
                     <td className="p-3">{fmtMoney(e.base)}</td>
                     <td className="p-3 text-success">{fmtMoney(e.allowances)}</td>
                     <td className="p-3 text-destructive">{fmtMoney(e.deductions)}</td>
-                    <td className="p-3 font-bold">{fmtMoney(netSalary(e) - unpaid(e).amount)}{unpaid(e).days > 0 && <div className="text-xs font-normal text-destructive">{t("بدون راتب")}: {unpaid(e).days} − {fmtMoney(unpaid(e).amount)}</div>}</td>
+                    <td className="p-3 font-bold">{fmtMoney(finalNet(e))}
+                      {unpaid(e).days > 0 && <div className="text-xs font-normal text-destructive">{t("بدون راتب")}: {unpaid(e).days} − {fmtMoney(unpaid(e).amount)}</div>}
+                      {(adj.get(e.id)?.advances ?? 0) > 0 && <div className="text-xs font-normal text-destructive">{t("سلف")}: − {fmtMoney(adj.get(e.id)!.advances)}</div>}
+                      {(adj.get(e.id)?.commissions ?? 0) > 0 && <div className="text-xs font-normal text-success">{t("عمولات")}: + {fmtMoney(adj.get(e.id)!.commissions)}</div>}
+                    </td>
                     <td className="p-3 text-xs">{(() => { const a = att(e); return a.linked ? (
                       <div className="space-y-0.5"><div>{t("حضور")}: <b>{a.present}</b></div>
                         <div className="text-warning">{t("تأخير")}: {a.late}</div>
