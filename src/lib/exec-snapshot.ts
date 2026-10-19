@@ -2,15 +2,20 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProjects, type Project } from "./projects";
 import { useTransactions, type Txn } from "./transactions";
-import { useRole } from "./permissions";
 
-/** Admins' browsers publish their current projects/payments so the executive summary (Hisham) stays live. */
+/** The CEO account's browser publishes their current projects/payments so the executive summary (Hisham) stays live. */
 export function ExecSnapshotSync() {
-  const role = useRole();
+  const [isCeo, setIsCeo] = useState(false);
+  useEffect(() => {
+    const check = () => supabase.auth.getUser().then(({ data }) => setIsCeo(data.user?.email === "ceo@metalfuze.local"));
+    check();
+    const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
+    return () => sub.subscription.unsubscribe();
+  }, []);
   const projects = useProjects();
   const txns = useTransactions();
   useEffect(() => {
-    if (role !== "admin") return;
+    if (!isCeo) return;
     const h = setTimeout(() => {
       const now = new Date().toISOString();
       supabase.from("exec_snapshot").upsert([
@@ -19,7 +24,7 @@ export function ExecSnapshotSync() {
       ]).then(() => {});
     }, 1500);
     return () => clearTimeout(h);
-  }, [role, projects, txns]);
+  }, [isCeo, projects, txns]);
   return null;
 }
 
