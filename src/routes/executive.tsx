@@ -52,7 +52,7 @@ function Executive() {
     top && top.contract - top.paid > 0 ? `أكبر مبلغ متبقٍ للتحصيل في مشروع «${top.name}»: ${fmtMoney(top.contract - top.paid)}.` : "",
     s.overdue.length ? `${s.overdue.length} مشروع تجاوز موعد التسليم: ${s.overdue.map((p) => p.name).join("، ")}.` : "لا توجد مشاريع متجاوزة لموعد التسليم.",
     txns.length ? `صافي حركة الدفع والتحصيل ${fmtMoney(s.balance)}${s.balance < 0 ? " (المدفوع أكبر من المحصّل)" : ""}.` : "لم تُسجّل حركات دفع أو تحصيل بعد.",
-    gross ? `تكلفة الرواتب هذا الشهر ${fmtMoney(gross - adv + com)}، تعادل ${fmtPct(s.monthCollected ? (gross - adv + com) / s.monthCollected : 0)} من تحصيل الشهر.` : "",
+    gross ? `تكلفة الرواتب هذا الشهر ${fmtMoney(gross - adv + com)}${s.monthCollected ? `، تعادل ${fmtPct((gross - adv + com) / s.monthCollected)} من تحصيل الشهر` : ""}.` : "",
   ].filter(Boolean);
   const watch = [...new Map([...s.overdue, ...s.behind, ...s.soon].map((p) => [p.id, p])).values()].slice(0, 6);
   return (
