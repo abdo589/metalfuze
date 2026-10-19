@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useProjects, type Project } from "./projects";
-import { useTransactions, type Txn } from "./transactions";
+import { projectStore, useProjects, type Project } from "./projects";
+import { txnStore, useTransactions, type Txn } from "./transactions";
 
 /** The CEO account's browser publishes their current projects/payments so the executive summary (Hisham) stays live. */
 export function ExecSnapshotSync() {
@@ -12,10 +12,22 @@ export function ExecSnapshotSync() {
     const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
     return () => sub.subscription.unsubscribe();
   }, []);
+  const [ready, setReady] = useState(false);
+  // On any CEO device, first load the saved records from the cloud so every device shares the same data.
+  useEffect(() => {
+    if (!isCeo) { setReady(false); return; }
+    supabase.from("exec_snapshot").select("key,data").then(({ data }) => {
+      const p = data?.find((r) => r.key === "projects")?.data as Project[] | undefined;
+      const t = data?.find((r) => r.key === "transactions")?.data as Txn[] | undefined;
+      if (p?.length) projectStore.replaceAll(p);
+      if (t) txnStore.replaceAll(t);
+      setReady(true);
+    });
+  }, [isCeo]);
   const projects = useProjects();
   const txns = useTransactions();
   useEffect(() => {
-    if (!isCeo) return;
+    if (!isCeo || !ready) return;
     const h = setTimeout(() => {
       const now = new Date().toISOString();
       supabase.from("exec_snapshot").upsert([
@@ -24,7 +36,7 @@ export function ExecSnapshotSync() {
       ]).then(() => {});
     }, 1500);
     return () => clearTimeout(h);
-  }, [isCeo, projects, txns]);
+  }, [isCeo, ready, projects, txns]);
   return null;
 }
 
