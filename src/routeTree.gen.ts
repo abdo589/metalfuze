@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountingRouteImport } from './routes/accounting'
 import { Route as AttendanceRouteImport } from './routes/attendance'
+import { Route as AttendanceTrackingRouteImport } from './routes/attendance-tracking'
 import { Route as BankRouteImport } from './routes/bank'
 import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as HrDashboardRouteImport } from './routes/hr-dashboard'
@@ -56,6 +57,11 @@ const AccountingRoute = AccountingRouteImport.update({
 const AttendanceRoute = AttendanceRouteImport.update({
   id: '/attendance',
   path: '/attendance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AttendanceTrackingRoute = AttendanceTrackingRouteImport.update({
+  id: '/attendance-tracking',
+  path: '/attendance-tracking',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BankRoute = BankRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accounting': typeof AccountingRoute
   '/attendance': typeof AttendanceRoute
+  '/attendance-tracking': typeof AttendanceTrackingRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
   '/hr-dashboard': typeof HrDashboardRoute
@@ -249,6 +256,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accounting': typeof AccountingRoute
   '/attendance': typeof AttendanceRoute
+  '/attendance-tracking': typeof AttendanceTrackingRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
   '/hr-dashboard': typeof HrDashboardRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/accounting': typeof AccountingRoute
   '/attendance': typeof AttendanceRoute
+  '/attendance-tracking': typeof AttendanceTrackingRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
   '/hr-dashboard': typeof HrDashboardRoute
@@ -322,6 +331,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accounting'
     | '/attendance'
+    | '/attendance-tracking'
     | '/bank'
     | '/budget'
     | '/hr-dashboard'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accounting'
     | '/attendance'
+    | '/attendance-tracking'
     | '/bank'
     | '/budget'
     | '/hr-dashboard'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accounting'
     | '/attendance'
+    | '/attendance-tracking'
     | '/bank'
     | '/budget'
     | '/hr-dashboard'
@@ -428,6 +440,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountingRoute: typeof AccountingRoute
   AttendanceRoute: typeof AttendanceRoute
+  AttendanceTrackingRoute: typeof AttendanceTrackingRoute
   BankRoute: typeof BankRoute
   BudgetRoute: typeof BudgetRoute
   HrDashboardRoute: typeof HrDashboardRoute
@@ -481,6 +494,13 @@ declare module '@tanstack/react-router' {
       path: '/attendance'
       fullPath: '/attendance'
       preLoaderRoute: typeof AttendanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/attendance-tracking': {
+      id: '/attendance-tracking'
+      path: '/attendance-tracking'
+      fullPath: '/attendance-tracking'
+      preLoaderRoute: typeof AttendanceTrackingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bank': {
@@ -700,6 +720,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountingRoute: AccountingRoute,
   AttendanceRoute: AttendanceRoute,
+  AttendanceTrackingRoute: AttendanceTrackingRoute,
   BankRoute: BankRoute,
   BudgetRoute: BudgetRoute,
   HrDashboardRoute: HrDashboardRoute,
