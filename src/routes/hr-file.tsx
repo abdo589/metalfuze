@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/permissions";
 import { importHrFile, type HrKey, type HrRow } from "@/lib/hr-file.functions";
 import sheets from "@/lib/hr-sheets.json";
-import { Residencies } from "@/components/ResidenciesPanel";
+import { DocsOverview } from "@/components/DocsOverview";
 import { NationalitySelect } from "@/components/NationalitySelect";
 import { resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
 import { useLanguage } from "@/lib/i18n";
@@ -113,7 +113,7 @@ function HrFilePage() {
       {!recs && <p className="text-center text-muted-foreground">جارٍ التحميل…</p>}
       {recs && (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {GRID.map((k) => (
               <button key={k} onClick={() => { setTab(k); setQ(""); setResTab(false); }}
                 className={`rounded-xl border p-4 text-center transition ${!resTab && tab === k ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted/40"}`}>
@@ -121,13 +121,9 @@ function HrFilePage() {
                 <div className="mt-1 font-display text-2xl font-bold">{bySheet(k).length}</div>
               </button>
             ))}
-            <button onClick={() => setResTab(true)}
-              className={`rounded-xl border p-4 text-center transition ${resTab ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted/40"}`}>
-              <div className="text-xs text-muted-foreground">الإقامات</div>
-              <div className="mt-1 font-display text-2xl font-bold">🪪</div>
-            </button>
           </div>
-          {resTab ? <Residencies /> : <section className="rounded-xl border border-border bg-card">
+          {tab === "documents" && <DocsOverview />}
+          {<section className="rounded-xl border border-border bg-card">
             <div className="flex gap-3 border-b border-border p-4">
               <div className="relative flex-1">
                 <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
