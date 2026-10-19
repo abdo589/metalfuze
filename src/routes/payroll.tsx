@@ -1,4 +1,4 @@
-import { useCanEdit } from "@/lib/permissions";
+import { useCanEditHr } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
@@ -38,7 +38,7 @@ function shiftMonth(key: string, delta: number) {
 }
 
 function Payroll() {
-  const canEdit = useCanEdit();
+  const canEdit = useCanEditHr();
   useLanguage();
   const employees = usePayroll();
   const [month, setMonth] = useState(monthKey());

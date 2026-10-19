@@ -875,6 +875,7 @@ export type Database = {
           used: number
         }[]
       }
+      leave_can_approve: { Args: { _uid: string }; Returns: boolean }
       leave_create: {
         Args: {
           p_attach_name?: string

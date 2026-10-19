@@ -134,6 +134,13 @@
       "when": 1792336362145,
       "tag": "0018_accounting_workspace",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792393820861,
+      "tag": "0019_hr_only_edits_leave_approvers",
+      "breakpoints": true
     }
   ]
 }

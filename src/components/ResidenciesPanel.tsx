@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { t, useLanguage } from "@/lib/i18n";
-import { useCanEdit } from "@/lib/permissions";
+import { useCanEditHr } from "@/lib/permissions";
 import { ALERT_DAYS, daysLeft, docStatus } from "@/lib/residency";
 import { DOCS, useResidencies, type Residency } from "@/lib/residency-data";
 import { PdfButton } from "@/components/PdfButton";
@@ -126,7 +126,7 @@ function DocBar({ label, expired, soon, valid, unset, total }: {
 
 export function Residencies() {
   useLanguage();
-  const canEdit = useCanEdit();
+  const canEdit = useCanEditHr();
   const { rows, reload } = useResidencies();
   const [name, setName] = useState("");
   const [editing, setEditing] = useState<Residency | null>(null);

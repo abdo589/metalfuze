@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SelfieCheckin } from "@/components/SelfieCheckin";
 import { t, useLanguage, locale } from "@/lib/i18n";
-import { useCanEdit } from "@/lib/permissions";
+import { useCanEditHr } from "@/lib/permissions";
 import { usePayroll } from "@/lib/payroll";
 import { supervisorCheckin } from "@/lib/checkin.functions";
 import { checkinError } from "@/lib/checkin-client";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/workers-checkin")({
 
 function WorkersCheckin() {
   useLanguage();
-  const canEdit = useCanEdit();
+  const canEdit = useCanEditHr();
   const employees = usePayroll().filter((e) => e.active);
   const { sites } = useSites();
   const submit = useServerFn(supervisorCheckin);

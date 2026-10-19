@@ -5,7 +5,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { t, useLanguage } from "@/lib/i18n";
+import { t, useLanguage, setLanguage } from "@/lib/i18n";
+
+const MONTHS: Record<string, string> = { "Iqamas etc": "الإقامات والرواتب الأساسية", "Dec-25": "ديسمبر 2025", January: "يناير", February: "فبراير", March: "مارس", April: "أبريل", May: "مايو", June: "يونيو", July: "يوليو", August: "أغسطس", "Today Payment": "مدفوعات اليوم", Sheet4: "جدول دفعات الفرات للرخام", Sheet2: "قائمة الأسماء 2", Sheet1: "قائمة الأسماء 1" };
+const sheetLabel = (n: string) => MONTHS[n] ?? n;
 
 export const Route = createFileRoute("/accounting")({
   head: () => ({
@@ -36,7 +39,7 @@ function Accounting() {
     setSheets(list);
     setActive((a) => a || list[0]?.id || "");
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { setLanguage("ar"); load(); }, []);
 
   const sheet = sheets.find((s) => s.id === active);
   const rows = draft ?? sheet?.rows ?? [];
@@ -61,7 +64,7 @@ function Accounting() {
   }
 
   async function removeSheet() {
-    if (!sheet || !window.confirm(`${t("حذف")} ${sheet.name}?`)) return;
+    if (!sheet || !window.confirm(`${t("حذف")} ${sheetLabel(sheet.name)}؟`)) return;
     await supabase.from("acct_sheets").delete().eq("id", sheet.id);
     setActive(""); setDraft(null); load();
   }
@@ -84,7 +87,7 @@ function Accounting() {
         {sheets.map((s) => (
           <Button key={s.id} size="sm" variant={s.id === active ? "default" : "outline"}
             onClick={() => { if (draft && !window.confirm(t("تجاهل التعديلات غير المحفوظة؟"))) return; setDraft(null); setActive(s.id); }}>
-            {s.name}
+            {sheetLabel(s.name)}
           </Button>
         ))}
         <Button size="sm" variant="ghost" onClick={addSheet}><Plus /> {t("ورقة جديدة")}</Button>
@@ -93,7 +96,7 @@ function Accounting() {
       {sheet && (
         <section className="rounded-xl border border-border bg-card">
           <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
-            <b className="flex-1">{sheet.name}</b>
+            <b className="flex-1">{sheetLabel(sheet.name)}</b>
             {draft ? (
               <>
                 <Button size="sm" variant="outline" onClick={() => setDraft([...rows, Array(width).fill("")])}><Plus /> {t("صف")}</Button>
@@ -103,10 +106,10 @@ function Accounting() {
             ) : (
               <Button size="sm" variant="outline" onClick={() => setDraft(rows.map((r) => [...r]))}><Pencil /> {t("تعديل")}</Button>
             )}
-            <Button size="sm" variant="outline" onClick={exportAll}><FileDown /> Excel</Button>
+            <Button size="sm" variant="outline" onClick={exportAll}><FileDown /> تصدير Excel</Button>
             <Button size="sm" variant="ghost" className="text-destructive" onClick={removeSheet} aria-label={t("حذف")}><Trash2 /></Button>
           </div>
-          <div className="overflow-x-auto" dir="ltr">
+          <div className="overflow-x-auto" dir="rtl">
             <table className="w-full text-sm">
               <tbody>
                 {rows.map((r, i) => (
