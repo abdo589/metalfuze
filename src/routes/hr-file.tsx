@@ -177,6 +177,9 @@ function HrFilePage() {
                 <>
                   <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
                   <CertificatesBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
+                  {([["مباشرة العمل", "work-start"], ["العرض الوظيفي", "job-offers"], ["إقرار عدم الإفصاح", "nda"]] as const).map(([f, folder]) => (
+                    <ContractBox key={f} rec={sel} canEdit={canEdit} field={f} label={f} folder={folder} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
+                  ))}
                 </>
               )}
               {sel.id && (
