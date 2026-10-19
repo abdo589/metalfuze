@@ -320,7 +320,7 @@ function CertificatesBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolea
     for (const f of files) {
       const ext = f.name.split(".").pop() || "pdf";
       const p = `certificates/${rec.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-      const up = await supabase.storage.from("employee-files").upload(p, f, { contentType: f.type || undefined });
+      const up = await supabase.storage.from("employee-files").upload(p, f);
       if (up.error) { toast.error(`تعذر رفع ${f.name}`); continue; }
       added.push({ path: p, name: f.name });
     }
