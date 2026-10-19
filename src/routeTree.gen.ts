@@ -27,6 +27,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProjectReportsRouteImport } from './routes/project-reports'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as ResidenciesRouteImport } from './routes/residencies'
+import { Route as SettlementsRouteImport } from './routes/settlements'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
@@ -134,6 +135,11 @@ const ResidenciesRoute = ResidenciesRouteImport.update({
   path: '/residencies',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettlementsRoute = SettlementsRouteImport.update({
+  id: '/settlements',
+  path: '/settlements',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/residencies': typeof ResidenciesRoute
+  '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
@@ -271,6 +278,7 @@ export interface FileRoutesByTo {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/residencies': typeof ResidenciesRoute
+  '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
@@ -308,6 +316,7 @@ export interface FileRoutesById {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/residencies': typeof ResidenciesRoute
+  '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
@@ -346,6 +355,7 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/residencies'
+    | '/settlements'
     | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
@@ -382,6 +392,7 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/residencies'
+    | '/settlements'
     | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
@@ -418,6 +429,7 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/residencies'
+    | '/settlements'
     | '/sitemap.xml'
     | '/users'
     | '/workers-checkin'
@@ -455,6 +467,7 @@ export interface RootRouteChildren {
   ProjectReportsRoute: typeof ProjectReportsRoute
   ReportRoute: typeof ReportRoute
   ResidenciesRoute: typeof ResidenciesRoute
+  SettlementsRoute: typeof SettlementsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UsersRoute: typeof UsersRoute
   WorkersCheckinRoute: typeof WorkersCheckinRoute
@@ -601,6 +614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResidenciesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settlements': {
+      id: '/settlements'
+      path: '/settlements'
+      fullPath: '/settlements'
+      preLoaderRoute: typeof SettlementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -735,6 +755,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectReportsRoute: ProjectReportsRoute,
   ReportRoute: ReportRoute,
   ResidenciesRoute: ResidenciesRoute,
+  SettlementsRoute: SettlementsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UsersRoute: UsersRoute,
   WorkersCheckinRoute: WorkersCheckinRoute,
