@@ -44,6 +44,10 @@ function Executive() {
   let adv = 0, com = 0; adj.forEach((a) => { adv += a.advances; com += a.commissions; });
   const gross = emps.reduce((a, e) => a + netSalary(e), 0);
   const paidCount = emps.filter((e) => e.paidMonths?.includes(month)).length;
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  const remainingList = projects.filter((p) => (p.progress || 0) < 1)
+    .map((p) => ({ ...p, days: p.end ? Math.ceil((new Date(p.end).getTime() - t0.getTime()) / 86400000) : null }))
+    .sort((a, b) => (a.days ?? 99999) - (b.days ?? 99999));
   const gap = s.avgProgress - s.avgPlanned;
   const top = [...projects].sort((a, b) => (b.contract - b.paid) - (a.contract - a.paid))[0];
   const insights = [
@@ -102,6 +106,22 @@ function Executive() {
           <Kpi label="سلف ومخالفات تُخصم" value={fmtMoney(adv)} tone={adv ? "warn" : "good"} />
           <Kpi label="عمولات تُضاف" value={fmtMoney(com)} tone="good" />
           <Kpi label="تم صرف رواتبهم" value={`${paidCount} / ${emps.length}`} />
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-semibold">المتبقي لكل مشروع</h2>
+        <div className="divide-y rounded-xl border bg-card">
+          {remainingList.map((p) => (
+            <div key={p.id} className="grid grid-cols-1 gap-2 p-3 text-sm md:grid-cols-[1.4fr_1fr_1fr_1fr] md:items-center">
+              <span className="font-medium">{p.name}</span>
+              <div className="space-y-1"><div className="text-xs text-muted-foreground">متبقي من العمل {fmtPct(1 - (p.progress || 0))}</div><Bar value={p.progress || 0} /></div>
+              <span className={p.days === null ? "text-muted-foreground" : p.days < 0 ? "text-destructive" : p.days <= 30 ? "text-primary" : ""}>
+                {p.days === null ? "بدون تاريخ انتهاء" : p.days < 0 ? `متأخر ${-p.days} يوم` : `متبقي ${p.days} يوم`}
+              </span>
+              <span className="text-muted-foreground">متبقي للتحصيل {fmtMoney(Math.max(0, p.contract - p.paid))}</span>
+            </div>
+          ))}
         </div>
       </section>
 
