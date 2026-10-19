@@ -42,6 +42,7 @@ import { Route as LeaveTokenRouteImport } from './routes/leave.$token'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
 import { Route as ApiPublicLeaveRouteImport } from './routes/api/public/leave'
+import { Route as ApiOauthOutlookReturnRouteImport } from './routes/api/oauth/outlook/return'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 
@@ -211,6 +212,11 @@ const ApiPublicLeaveRoute = ApiPublicLeaveRouteImport.update({
   path: '/api/public/leave',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOauthOutlookReturnRoute = ApiOauthOutlookReturnRouteImport.update({
+  id: '/api/oauth/outlook/return',
+  path: '/api/oauth/outlook/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
   path: '/lovable/email/auth/preview',
@@ -256,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
+  '/api/oauth/outlook/return': typeof ApiOauthOutlookReturnRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
 }
@@ -293,6 +300,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
+  '/api/oauth/outlook/return': typeof ApiOauthOutlookReturnRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
 }
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
+  '/api/oauth/outlook/return': typeof ApiOauthOutlookReturnRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
 }
@@ -370,6 +379,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
+    | '/api/oauth/outlook/return'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -407,6 +417,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
+    | '/api/oauth/outlook/return'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
   id:
@@ -444,6 +455,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
+    | '/api/oauth/outlook/return'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
   fileRoutesById: FileRoutesById
@@ -482,6 +494,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
   ApiPublicLeaveRoute: typeof ApiPublicLeaveRoute
+  ApiOauthOutlookReturnRoute: typeof ApiOauthOutlookReturnRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
 }
@@ -719,6 +732,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLeaveRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/oauth/outlook/return': {
+      id: '/api/oauth/outlook/return'
+      path: '/api/oauth/outlook/return'
+      fullPath: '/api/oauth/outlook/return'
+      preLoaderRoute: typeof ApiOauthOutlookReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/auth/preview': {
       id: '/lovable/email/auth/preview'
       path: '/lovable/email/auth/preview'
@@ -771,6 +791,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicCheckinRoute: ApiPublicCheckinRoute,
   ApiPublicLeaveRoute: ApiPublicLeaveRoute,
+  ApiOauthOutlookReturnRoute: ApiOauthOutlookReturnRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
 }
