@@ -3,29 +3,29 @@ import { AlertTriangle, CalendarClock, CheckCircle2, Users } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { t, useLanguage } from "@/lib/i18n";
 import { ALERT_DAYS, daysLeft } from "@/lib/residency";
-import { DOCS, useResidencies } from "@/lib/residency-data";
 import { DocBar, StatCard } from "@/components/ResidenciesPanel";
 
-type Doc = { type: string; days: number | null; who: string };
+type Row = { data: Record<string, unknown> };
 
-/** Summary cards + one status bar per document type (residency documents and the HR documents sheet). */
-export function DocsOverview() {
+/** Summary cards + one status bar per document type, built only from the «الوثائق والانتهاءات» sheet. */
+export function DocsOverview({ rows: given }: { rows?: Row[] }) {
   useLanguage();
-  const { rows } = useResidencies();
-  const [extra, setExtra] = useState<{ data: Record<string, unknown> }[]>([]);
+  const [fetched, setFetched] = useState<Row[]>([]);
   useEffect(() => {
-    supabase.from("hr_records").select("data").eq("sheet", "documents").then(({ data }) => setExtra((data ?? []) as never));
-  }, []);
+    if (given) return;
+    supabase.from("hr_records").select("data").eq("sheet", "documents").then(({ data }) => setFetched((data ?? []) as never));
+  }, [given]);
+  const rows = given ?? fetched;
 
-  const covered = new Set<string>([...DOCS.map((d) => d.label), "إقامة"]);
-  const docs: Doc[] = rows.flatMap((r) => DOCS.map((d) => ({ type: d.label, days: daysLeft(r[d.key]), who: r.name })));
-  for (const e of extra) {
-    const type = String(e.data["نوع الوثيقة"] ?? "وثيقة");
-    if (covered.has(type)) continue;
-    const raw = e.data["تاريخ الانتهاء"];
-    docs.push({ type, days: raw ? daysLeft(String(raw).slice(0, 10)) : null, who: String(e.data["اسم الموظف"] ?? "") });
-  }
-  const types: string[] = [...DOCS.map((d) => d.label as string), ...[...new Set(docs.map((d) => d.type))].filter((x) => !covered.has(x))];
+  const docs = rows.map((r) => {
+    const raw = r.data["تاريخ الانتهاء"];
+    return {
+      type: String(r.data["نوع الوثيقة"] ?? "").trim() || "وثيقة",
+      days: raw ? daysLeft(String(raw).slice(0, 10)) : null,
+      who: String(r.data["رقم الموظف"] ?? r.data["اسم الموظف"] ?? ""),
+    };
+  });
+  const types = [...new Set(docs.map((d) => d.type))];
   const known = docs.filter((d) => d.days !== null).map((d) => d.days!);
   const people = new Set(docs.map((d) => d.who).filter(Boolean)).size;
 

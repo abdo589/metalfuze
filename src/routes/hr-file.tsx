@@ -122,7 +122,7 @@ function HrFilePage() {
               </button>
             ))}
           </div>
-          {tab === "documents" && <DocsOverview />}
+          {tab === "documents" && <DocsOverview rows={bySheet("documents")} />}
           {<section className="rounded-xl border border-border bg-card">
             <div className="flex gap-3 border-b border-border p-4">
               <div className="relative flex-1">
