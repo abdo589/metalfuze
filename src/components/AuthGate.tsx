@@ -60,8 +60,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
 function Login() {
   useLanguage();
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -73,18 +75,21 @@ function Login() {
     setBusy(true);
     setError("");
     if (signup) {
-      const u = username.trim().toLowerCase();
-      if (!/^[a-z0-9._-]{3,30}$/.test(u)) { setBusy(false); return setError(t("اسم المستخدم: 3-30 حرف إنجليزي/أرقام")); }
+      const mail = email.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) { setBusy(false); return setError(t("بريد إلكتروني غير صحيح")); }
       if (password.length < 8) { setBusy(false); return setError(t("كلمة السر 8 أحرف على الأقل")); }
-      const { error } = await supabase.auth.signUp({
-        email: toEmail(u), password,
+      const { data, error } = await supabase.auth.signUp({
+        email: mail, password,
         options: { emailRedirectTo: window.location.origin, data: { display_name: fullName.trim().slice(0, 80), self_signup: "true" } },
       });
       setBusy(false);
-      if (error) setError(error.message.includes("already") ? t("اسم المستخدم مستخدم بالفعل") : error.message.includes("weak") || error.message.includes("pwned") ? t("كلمة السر ضعيفة أو مسربة، اختر غيرها") : t("تعذر إنشاء الحساب"));
+      if (error) setError(error.message.includes("already") ? t("البريد الإلكتروني مستخدم بالفعل") : error.message.includes("weak") || error.message.includes("pwned") ? t("كلمة السر ضعيفة أو مسربة، اختر غيرها") : t("تعذر إنشاء الحساب"));
+      else if (!data.session) setNotice(t("تم إنشاء الحساب — تحقق من بريدك الإلكتروني لتفعيله"));
       return;
     }
-    const { error } = await supabase.auth.signInWithPassword({ email: toEmail(username), password });
+    const id = username.trim().toLowerCase();
+    const mail = id.includes("@") ? id : toEmail(id);
+    const { error } = await supabase.auth.signInWithPassword({ email: mail, password });
     setBusy(false);
     if (error) setError(t("اسم المستخدم أو كلمة المرور غير صحيحة"));
   }
@@ -118,7 +123,9 @@ function Login() {
           <p className="text-sm text-muted-foreground">{t("لوحة متابعة مشاريع Metal Fuze")}</p>
         </div>
         {signup && <Input placeholder={t("الاسم الكامل")} value={fullName} onChange={(e) => setFullName(e.target.value)} required />}
-        <Input placeholder={t("اسم المستخدم")} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" dir="ltr" required />
+        {signup
+          ? <Input placeholder={t("البريد الإلكتروني")} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" dir="ltr" required />
+          : <Input placeholder={t("اسم المستخدم أو البريد الإلكتروني")} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" dir="ltr" required />}
         <div dir="ltr" className="relative">
           <Input placeholder={t("كلمة المرور")} type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" dir="ltr" required className="pe-10" />
           <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? t("إخفاء كلمة المرور") : t("إظهار كلمة المرور")} aria-pressed={showPassword}
@@ -127,8 +134,9 @@ function Login() {
           </button>
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
+        {notice && <p className="text-sm text-primary" dir="auto">{notice}</p>}
         <Button type="submit" className="w-full" disabled={busy || googleBusy}>{signup ? (busy ? t("جارٍ الإنشاء...") : t("إنشاء حساب")) : busy ? t("جارٍ الدخول...") : t("دخول")}</Button>
-        <button type="button" onClick={() => { setSignup((v) => !v); setError(""); }} className="w-full text-center text-sm text-primary hover:underline">
+        <button type="button" onClick={() => { setSignup((v) => !v); setError(""); setNotice(""); setEmail(""); }} className="w-full text-center text-sm text-primary hover:underline">
           {signup ? t("لديك حساب؟ سجل الدخول") : t("مدير مشروع؟ أنشئ حسابك")}
         </button>
         <div className="flex items-center gap-3 py-1">
