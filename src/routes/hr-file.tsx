@@ -68,7 +68,11 @@ function HrFilePage() {
 
   const all = recs ?? [];
   const bySheet = (k: HrKey) => all.filter((r) => r.sheet === k);
-  const rows = useMemo(() => all.filter((r) => r.sheet === tab && Object.values(r.data).join(" ").includes(q)), [all, tab, q]);
+  const months = useMemo(() => [...new Set(bySheet("payroll").map((r) => String(r.data["الشهر"] ?? "")).filter(Boolean))].sort().reverse(), [all]);
+  const [month, setMonth] = useState("");
+  const curMonth = month || months[0] || "";
+  const rows = useMemo(() => all.filter((r) => r.sheet === tab && (tab !== "payroll" || !curMonth || String(r.data["الشهر"] ?? "") === curMonth) && Object.values(r.data).join(" ").includes(q)), [all, tab, q, curMonth]);
+  const monthLabel = (m: string) => { const d = new Date(m); return isNaN(+d) ? m : d.toLocaleDateString("ar-SA-u-ca-gregory", { month: "long", year: "numeric" }); };
   const cols = META[tab].columns.slice(0, 7);
 
   const open = (r: Rec) => { setSel(r); setDraft(null); setPtab("basic"); };
@@ -131,6 +135,11 @@ function HrFilePage() {
                 <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث…" className="pr-9" />
               </div>
+              {tab === "payroll" && months.length > 0 && (
+                <select value={curMonth} onChange={(e) => setMonth(e.target.value)} className="rounded-md border border-input bg-background px-3 text-sm">
+                  {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
+                </select>
+              )}
               {canEdit && (
                 <Button onClick={() => { const r: Rec = { id: "", sheet: tab, data: {}, sort: 0 }; setSel(r); startEdit(r); }}>
                   <Plus /> إضافة
