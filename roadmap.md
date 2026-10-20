@@ -16,3 +16,7 @@
 
 - [x] Add "العنوان الوطني" field to employee data (hr-sheets.json employees columns).
 - [x] Whole-system AI advisor: /api/chat fetches caller-scoped live system data (HR records, residencies, leave, attendance, settlements) beside project data; real payroll question verified end-to-end.
+- [x] Documents: upload file → AI fills fields; view/download per document.
+- [x] Sidebar: payroll + attendance under employee data; removed workers check-in.
+- [x] Reviews use employees from the HR file.
+- [x] Company-only payroll page (/est-payroll) linked to establishment records.
