@@ -1,10 +1,36 @@
 import { useEffect } from "react";
 import { translations, useLanguage } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
+
+// Machine translations of names/notes, cached on this device.
+const CACHE_KEY = "metalfuze.autotr";
+let cache: Record<string, string> = {};
+try { cache = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}"); } catch { /* ignore */ }
+const pending = new Set<string>(); const inflight = new Set<string>();
+let timer: ReturnType<typeof setTimeout> | undefined;
+let onArrive: (() => void) | null = null;
+function queue(s: string) {
+  if (inflight.has(s) || s.length > 500) return;
+  pending.add(s);
+  clearTimeout(timer);
+  timer = setTimeout(flush, 400);
+}
+async function flush() {
+  const batch = [...pending].slice(0, 80); batch.forEach((b) => { pending.delete(b); inflight.add(b); });
+  if (pending.size) timer = setTimeout(flush, 400);
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token || !batch.length) return;
+  try {
+    const r = await fetch("/api/translate", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ texts: batch }) });
+    if (r.ok) { const { map } = await r.json(); Object.assign(cache, map); try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch { /* full */ } onArrive?.(); }
+  } catch { /* offline */ }
+}
 
 /**
  * Safety net for English mode: any on-screen text or placeholder that exactly
- * matches a known Arabic UI label is shown in English. Exact matches only, so
- * user-entered names and notes are never changed. Restores Arabic on switch back.
+ * is shown in English: UI labels from the dictionary, everything else (names,
+ * notes) via /api/translate. Display only — stored data stays as entered.
  */
 const ATTRS = ["placeholder", "title", "aria-label"] as const;
 const SKIP = new Set(["SCRIPT", "STYLE", "TEXTAREA", "INPUT", "CODE", "PRE"]);
@@ -14,7 +40,10 @@ function lookup(text: string): string | null {
   const s = text.trim();
   if (!s || !AR.test(s)) return null;
   const hit = translations[s] ?? (s.endsWith(":") ? translations[s.slice(0, -1).trim()] && translations[s.slice(0, -1).trim()] + ":" : undefined);
-  return hit ? text.replace(s, hit) : null;
+  if (hit) return text.replace(s, hit);
+  if (cache[s]) return text.replace(s, cache[s]);
+  queue(s);
+  return null;
 }
 
 export function AutoTranslate() {
@@ -44,6 +73,7 @@ export function AutoTranslate() {
       for (let n = w.nextNode(); n; n = w.nextNode()) n.nodeType === Node.TEXT_NODE ? doText(n) : doEl(n as Element);
     };
     walk(document.body);
+    onArrive = () => walk(document.body);
     const obs = new MutationObserver((list) => {
       for (const m of list) {
         if (m.type === "characterData") doText(m.target);
@@ -53,7 +83,7 @@ export function AutoTranslate() {
     });
     obs.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: [...ATTRS] });
     return () => {
-      obs.disconnect();
+      obs.disconnect(); onArrive = null;
       originals.forEach((v, n) => { if (n.isConnected) n.nodeValue = v; });
       attrOriginals.forEach(([el, a, v]) => el.setAttribute(a, v));
     };
