@@ -25,6 +25,7 @@ import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MyProjectsRouteImport } from './routes/my-projects'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
+import { Route as PerformanceRouteImport } from './routes/performance'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProjectReportsRouteImport } from './routes/project-reports'
 import { Route as ReportRouteImport } from './routes/report'
@@ -127,6 +128,11 @@ const PaymentsRoute = PaymentsRouteImport.update({
 const PayrollRoute = PayrollRouteImport.update({
   id: '/payroll',
   path: '/payroll',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerformanceRoute = PerformanceRouteImport.update({
+  id: '/performance',
+  path: '/performance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -263,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
+  '/performance': typeof PerformanceRoute
   '/privacy': typeof PrivacyRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
@@ -304,6 +311,7 @@ export interface FileRoutesByTo {
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
+  '/performance': typeof PerformanceRoute
   '/privacy': typeof PrivacyRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
@@ -346,6 +354,7 @@ export interface FileRoutesById {
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
+  '/performance': typeof PerformanceRoute
   '/privacy': typeof PrivacyRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
@@ -389,6 +398,7 @@ export interface FileRouteTypes {
     | '/my-projects'
     | '/payments'
     | '/payroll'
+    | '/performance'
     | '/privacy'
     | '/project-reports'
     | '/report'
@@ -430,6 +440,7 @@ export interface FileRouteTypes {
     | '/my-projects'
     | '/payments'
     | '/payroll'
+    | '/performance'
     | '/privacy'
     | '/project-reports'
     | '/report'
@@ -471,6 +482,7 @@ export interface FileRouteTypes {
     | '/my-projects'
     | '/payments'
     | '/payroll'
+    | '/performance'
     | '/privacy'
     | '/project-reports'
     | '/report'
@@ -513,6 +525,7 @@ export interface RootRouteChildren {
   MyProjectsRoute: typeof MyProjectsRoute
   PaymentsRoute: typeof PaymentsRoute
   PayrollRoute: typeof PayrollRoute
+  PerformanceRoute: typeof PerformanceRoute
   PrivacyRoute: typeof PrivacyRoute
   ProjectReportsRoute: typeof ProjectReportsRoute
   ReportRoute: typeof ReportRoute
@@ -650,6 +663,13 @@ declare module '@tanstack/react-router' {
       path: '/payroll'
       fullPath: '/payroll'
       preLoaderRoute: typeof PayrollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/performance': {
+      id: '/performance'
+      path: '/performance'
+      fullPath: '/performance'
+      preLoaderRoute: typeof PerformanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -833,6 +853,7 @@ const rootRouteChildren: RootRouteChildren = {
   MyProjectsRoute: MyProjectsRoute,
   PaymentsRoute: PaymentsRoute,
   PayrollRoute: PayrollRoute,
+  PerformanceRoute: PerformanceRoute,
   PrivacyRoute: PrivacyRoute,
   ProjectReportsRoute: ProjectReportsRoute,
   ReportRoute: ReportRoute,

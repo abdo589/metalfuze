@@ -16,7 +16,7 @@ import {
   Fingerprint, Smartphone, Landmark, IdCard, CalendarOff,
   Users, FolderKanban, MessageSquare, Calculator,
   Radar,
-  Mail,
+  Mail, Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -37,6 +37,7 @@ const items = [
   { to: "/hr-dashboard", label: "لوحة التحكم", icon: Bell },
   { to: "/hr-file", label: "بيانات الموظفين", icon: IdCard },
   { to: "/leaves", label: "الإجازات", icon: CalendarOff },
+  { to: "/performance", label: "تقييم الأداء", icon: Star },
   { to: "/messages", label: "الرسائل", icon: MessageSquare },
   { to: "/mail", label: "البريد (Outlook)", icon: Mail },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
