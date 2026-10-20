@@ -105,7 +105,7 @@ function PerformancePage() {
 
   async function approve(r: Review) {
     const { data: u } = await supabase.auth.getUser();
-    const { error } = await supabase.from("performance_reviews").update({ status: "approved", approved_by: u.user?.id, approved_at: new Date().toISOString() }).eq("id", r.id);
+    const { error } = await supabase.from("performance_reviews").update({ status: "approved", approved_by: u.user?.id ?? null, approved_at: new Date().toISOString() }).eq("id", r.id);
     if (error) return toast.error(t("تعذر الاعتماد"));
     toast.success(t("تم اعتماد التقييم")); load();
   }
