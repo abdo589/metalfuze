@@ -32,6 +32,19 @@ export async function exportPdf() {
       if (!copy) return;
       copy.style.width = "1050px";
       copy.style.maxWidth = "1050px";
+      // Keep full names on one line: find name columns by their header and stop them wrapping.
+      const NAME_RE = /اسم|الاسم|الموظف|المدير|المقيّم|المقيم|name|employee|manager/i;
+      copy.querySelectorAll("table").forEach((tb) => {
+        const heads = Array.from(tb.querySelectorAll("thead tr:last-child th, thead tr:last-child td"));
+        const idx = heads.map((h, i) => (NAME_RE.test(h.textContent ?? "") ? i : -1)).filter((i) => i >= 0);
+        if (!idx.length) return;
+        tb.querySelectorAll("tr").forEach((tr) => {
+          idx.forEach((i) => {
+            const cell = tr.children[i] as HTMLElement | undefined;
+            if (cell) { cell.style.whiteSpace = "nowrap"; cell.style.wordBreak = "keep-all"; }
+          });
+        });
+      });
       const origin = copy.getBoundingClientRect().top;
       protectedBlocks = Array.from(copy.querySelectorAll<HTMLElement>("tr, header, .print-letterhead, .surface:not(:has(table)), [data-pdf-keep]"))
         .filter((el) => el.getBoundingClientRect().height > 0)
