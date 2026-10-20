@@ -35,6 +35,7 @@ import { Route as UsersRouteImport } from './routes/users'
 import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiTranslateRouteImport } from './routes/api/translate'
 import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
 import { Route as CheckinTokenRouteImport } from './routes/checkin.$token'
@@ -179,6 +180,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTranslateRoute = ApiTranslateRouteImport.update({
+  id: '/api/translate',
+  path: '/api/translate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssistantIndexRoute = AssistantIndexRouteImport.update({
   id: '/assistant/',
   path: '/assistant/',
@@ -267,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/workers-checkin': typeof WorkersCheckinRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/translate': typeof ApiTranslateRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
@@ -307,6 +314,7 @@ export interface FileRoutesByTo {
   '/workers-checkin': typeof WorkersCheckinRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/translate': typeof ApiTranslateRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
@@ -348,6 +356,7 @@ export interface FileRoutesById {
   '/workers-checkin': typeof WorkersCheckinRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/translate': typeof ApiTranslateRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/checkin/$token': typeof CheckinTokenRoute
   '/iclock/cdata': typeof IclockCdataRoute
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/workers-checkin'
     | '/.well-known/oauth-protected-resource'
     | '/api/chat'
+    | '/api/translate'
     | '/assistant/$threadId'
     | '/checkin/$token'
     | '/iclock/cdata'
@@ -430,6 +440,7 @@ export interface FileRouteTypes {
     | '/workers-checkin'
     | '/.well-known/oauth-protected-resource'
     | '/api/chat'
+    | '/api/translate'
     | '/assistant/$threadId'
     | '/checkin/$token'
     | '/iclock/cdata'
@@ -470,6 +481,7 @@ export interface FileRouteTypes {
     | '/workers-checkin'
     | '/.well-known/oauth-protected-resource'
     | '/api/chat'
+    | '/api/translate'
     | '/assistant/$threadId'
     | '/checkin/$token'
     | '/iclock/cdata'
@@ -511,6 +523,7 @@ export interface RootRouteChildren {
   WorkersCheckinRoute: typeof WorkersCheckinRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiTranslateRoute: typeof ApiTranslateRoute
   AssistantThreadIdRoute: typeof AssistantThreadIdRoute
   CheckinTokenRoute: typeof CheckinTokenRoute
   IclockCdataRoute: typeof IclockCdataRoute
@@ -709,6 +722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/translate': {
+      id: '/api/translate'
+      path: '/api/translate'
+      fullPath: '/api/translate'
+      preLoaderRoute: typeof ApiTranslateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/assistant/': {
       id: '/assistant/'
       path: '/assistant'
@@ -824,6 +844,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiTranslateRoute: ApiTranslateRoute,
   AssistantThreadIdRoute: AssistantThreadIdRoute,
   CheckinTokenRoute: CheckinTokenRoute,
   IclockCdataRoute: IclockCdataRoute,
