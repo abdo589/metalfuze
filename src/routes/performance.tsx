@@ -99,7 +99,7 @@ function PerformancePage() {
     const res = d.id ? await supabase.from("performance_reviews").update(payload).eq("id", d.id)
       : await supabase.from("performance_reviews").insert(payload);
     if (res.error) return toast.error(res.error.code === "23505" ? t("يوجد تقييم لهذا الموظف في نفس الربع والسنة") : t("تعذر الحفظ"));
-    toast.success(t("تم حفظ التقييم"));
+    toast.success(t("تم حفظ التقييم")); setEdit(null); load(); return;
     setEdit(null); load();
   }
 
@@ -107,7 +107,7 @@ function PerformancePage() {
     const { data: u } = await supabase.auth.getUser();
     const { error } = await supabase.from("performance_reviews").update({ status: "approved", approved_by: u.user?.id ?? null, approved_at: new Date().toISOString() }).eq("id", r.id);
     if (error) return toast.error(t("تعذر الاعتماد"));
-    toast.success(t("تم اعتماد التقييم")); load();
+    toast.success(t("تم اعتماد التقييم")); load(); return;
   }
 
   const history = view ? rows.filter((r) => r.employee_id === view).sort((a, b) => a.year - b.year || a.quarter - b.quarter) : [];
