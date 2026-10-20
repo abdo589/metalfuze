@@ -12,7 +12,7 @@ import { StatCard } from "@/components/ResidenciesPanel";
 import { PdfButton } from "@/components/PdfButton";
 import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import sheets from "@/lib/hr-sheets.json";
-import { contractOptions, resolveEmployeeStatus, statusOptions } from "@/lib/employee-status";
+import { contractOptions, resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
 import { NationalitySelect } from "@/components/NationalitySelect";
 
 export const Route = createFileRoute("/establishment")({
