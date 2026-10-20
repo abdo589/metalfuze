@@ -355,11 +355,11 @@ function readCerts(v: unknown): Cert[] {
   return [{ path: String(v), name: "شهادة" }];
 }
 
-function CertificatesBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolean; onChange: (d: HrRow) => void }) {
+function CertificatesBox({ rec, canEdit, onChange, field = CERTS, folder = "certificates" }: { rec: Rec; canEdit: boolean; onChange: (d: HrRow) => void; field?: string; folder?: string }) {
   const [busy, setBusy] = useState(false);
-  const certs = readCerts(rec.data[CERTS]);
+  const certs = readCerts(rec.data[field]);
   async function persist(list: Cert[]) {
-    const data = { ...rec.data, [CERTS]: JSON.stringify(list) };
+    const data = { ...rec.data, [field]: JSON.stringify(list) };
     const { error } = await supabase.from("hr_records").update({ data, updated_at: new Date().toISOString() }).eq("id", rec.id);
     if (error) { toast.error("تعذر الحفظ"); return false; }
     onChange(data); return true;
@@ -369,12 +369,12 @@ function CertificatesBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolea
     const added: Cert[] = [];
     for (const f of files) {
       const ext = f.name.split(".").pop() || "pdf";
-      const p = `certificates/${rec.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+      const p = `${folder}/${rec.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
       const up = await supabase.storage.from("employee-files").upload(p, f);
       if (up.error) { toast.error(`تعذر رفع ${f.name}`); continue; }
       added.push({ path: p, name: f.name });
     }
-    if (added.length && await persist([...certs, ...added])) toast.success(`تم رفع ${added.length} شهادة`);
+    if (added.length && await persist([...certs, ...added])) toast.success(`تم رفع ${added.length} ملف`);
     setBusy(false);
   }
   async function del(c: Cert) {
@@ -386,18 +386,18 @@ function CertificatesBox({ rec, canEdit, onChange }: { rec: Rec; canEdit: boolea
     <div className="space-y-2 rounded-lg border border-border p-3">
       <div className="flex flex-wrap items-center gap-2">
         <FileText className="size-4 text-primary" />
-        <span className="font-medium">الشهادات ({certs.length})</span>
+        <span className="font-medium">{field} ({certs.length})</span>
         {canEdit && (
           <Button size="sm" variant="outline" disabled={busy} asChild>
             <label className="cursor-pointer">
-              <FileUp /> {busy ? "جارٍ الرفع…" : "إضافة شهادات"}
+              <FileUp /> {busy ? "جارٍ الرفع…" : "إضافة ملفات"}
               <input type="file" multiple accept=".pdf,image/*,.doc,.docx" className="hidden"
                 onChange={(e) => { const fs = Array.from(e.target.files ?? []); if (fs.length) upload(fs); e.target.value = ""; }} />
             </label>
           </Button>
         )}
       </div>
-      {!certs.length && <p className="text-sm text-muted-foreground">لا توجد شهادات بعد</p>}
+      {!certs.length && <p className="text-sm text-muted-foreground">لا توجد ملفات بعد</p>}
       {certs.map((c) => (
         <div key={c.path} className="flex items-center gap-2 rounded-md bg-muted/40 px-2 py-1 text-sm">
           <span className="flex-1 truncate">{c.name}</span>
