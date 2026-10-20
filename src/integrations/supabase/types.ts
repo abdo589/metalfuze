@@ -351,6 +351,30 @@ export type Database = {
           },
         ]
       }
+      est_records: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          sheet: string
+          sort: number
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          sheet: string
+          sort?: number
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          sheet?: string
+          sort?: number
+        }
+        Relationships: []
+      }
       exec_snapshot: {
         Row: {
           data: Json
