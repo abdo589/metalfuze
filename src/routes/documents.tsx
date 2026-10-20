@@ -63,18 +63,18 @@ function DocumentsPage() {
   const all = rows.map((r) => statusOf(r.expiry_date ? daysLeft(r.expiry_date) : null).key);
 
   async function save() {
-    if (!edit || !edit.doc_type.trim()) return toast.error(t("اختر نوع الوثيقة"));
+    if (!edit || !edit.doc_type.trim()) { toast.error(t("اختر نوع الوثيقة")); return; }
     const { id, ...body } = edit;
     const payload = { ...body, issue_date: body.issue_date || null, expiry_date: body.expiry_date || null };
     const { error } = id ? await supabase.from("company_documents").update(payload).eq("id", id)
       : await supabase.from("company_documents").insert(payload);
-    if (error) return toast.error(t("تعذر الحفظ"));
+    if (error) { toast.error(t("تعذر الحفظ")); return; }
     toast.success(t("تم الحفظ")); setEdit(null); load();
   }
   async function remove(id: string) {
     if (!confirm(t("حذف هذه الوثيقة نهائيًا؟"))) return;
     const { error } = await supabase.from("company_documents").delete().eq("id", id);
-    if (error) return toast.error(t("تعذر الحذف"));
+    if (error) { toast.error(t("تعذر الحذف")); return; }
     load();
   }
 
