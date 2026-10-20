@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type Role = "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | null;
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
-export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/settlements", "/performance", "/messages", "/mail"];
+export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/settlements", "/performance", "/messages", "/mail"];
 /** Self-registered project managers (and accounts without a role) only get their own workspace. */
 /** Accountant (Aiftkhar) sees only the private accounting space. */
 export const ACCOUNTANT_PATHS = ["/accounting", "/messages", "/mail"];
