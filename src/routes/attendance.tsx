@@ -18,6 +18,8 @@ import { MonthlySheet } from "@/components/MonthlySheet";
 import { useApprovedLeaves } from "@/lib/leave-data";
 import { PdfButton } from "@/components/PdfButton";
 import { ManualPunch } from "@/components/ManualPunch";
+import { useServerFn } from "@tanstack/react-start";
+import { deleteManualPunch } from "@/lib/checkin.functions";
 
 export const Route = createFileRoute("/attendance")({
   head: () => ({
@@ -47,6 +49,12 @@ function Attendance() {
   const [month, setMonth] = useState(monthKey());
   const [tick, setTick] = useState(0);
   const punches = useMonthPunches(month, tick);
+  const delPunch = useServerFn(deleteManualPunch);
+  async function removePunch(p: { device_user_id: string; punched_at: string }) {
+    if (!confirm(t("حذف هذا التسجيل اليدوي؟"))) return;
+    const r = await delPunch({ data: { deviceUserId: p.device_user_id, at: p.punched_at } });
+    if (r.ok) { toast.success(t("تم الحذف")); setTick((x) => x + 1); } else toast.error(t("تعذر الحذف"));
+  }
   const [devices, setDevices] = useState<Device[]>([]);
   const [excuses, setExcuses] = useState<{ employee_id: string; excuse_date: string; reason: string }[]>([]);
   const [excuseDraft, setExcuseDraft] = useState<{ empId: string; name: string; date: string; reason: string } | null>(null);
@@ -155,6 +163,7 @@ function Attendance() {
                       {p.source === "remote" && <div className="text-muted-foreground">{p.status === 1 ? t("انصراف") : t("حضور")} · {p.site_name} · {p.distance_m} {t("متر")}</div>}
                     </div>
                     <Badge variant="outline">{p.source === "remote" ? t("جوال") : p.source === "manual" ? t("يدوي") : t("جهاز")}</Badge>
+                    {canEdit && p.source === "manual" && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => removePunch(p)}>{t("حذف")}</Button>}
                   </div>
                 ))}
               </div>
