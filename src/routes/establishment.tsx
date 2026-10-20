@@ -41,6 +41,18 @@ function cols(k: Key) {
   return k === "documents" ? c.filter((x) => x !== "الأيام المتبقية" && x !== "الحالة") : c;
 }
 
+const PDF_COLS = 9;
+const KEY_COLS = ["رقم الموظف", "اسم الموظف"];
+function pdfChunks(all: string[]): string[][] {
+  if (all.length <= PDF_COLS + 1) return [all];
+  const keys = KEY_COLS.filter((k) => all.includes(k));
+  const rest = all.filter((c) => !keys.includes(c));
+  const size = PDF_COLS - keys.length;
+  const out: string[][] = [];
+  for (let i = 0; i < rest.length; i += size) out.push([...keys, ...rest.slice(i, i + size)]);
+  return out;
+}
+
 function EstablishmentPage() {
   const lang = useLanguage();
   const canEdit = useCanEditHr();
@@ -121,7 +133,22 @@ function EstablishmentPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border bg-card">
+      {/* PDF layout: wide sheets split into tables of a few columns, each repeating number + name. */}
+      <div className="hidden space-y-4 print:block">
+        <h2 className="text-lg font-bold">{t(S[tab].title)} <span className="text-sm font-normal">({list.length})</span></h2>
+        {pdfChunks(shown).map((group, gi) => (
+          <table key={gi} className="w-full border-collapse text-xs">
+            <thead><tr>{group.map((c) => <th key={c} className="border p-1.5 text-start">{t(c)}</th>)}</tr></thead>
+            <tbody>
+              {list.map((r) => (
+                <tr key={r.id}>{group.map((c) => <td key={c} className="border p-1.5 align-top">{cell(r, c)}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        ))}
+      </div>
+
+      <div className="overflow-x-auto rounded-lg border bg-card print:hidden">
         <table className="w-full whitespace-nowrap text-sm">
           <thead className="bg-muted/50">
             <tr>{shown.map((c) => <th key={c} className="p-2 text-start font-semibold">{t(c)}</th>)}{canEdit && <th className="print:hidden" />}</tr>
