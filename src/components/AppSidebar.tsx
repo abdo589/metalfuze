@@ -65,7 +65,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === undefined ? [] : role === "admin" ? items : items.filter((i) => i.to !== "/my-projects");
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className="-mx-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-1">
       {visible.map((it) => {
         const active = it.to === "/" ? pathname === "/" : pathname.startsWith(it.to);
         const badge = it.to === "/messages" ? unread : 0;
@@ -142,7 +142,7 @@ export function AppSidebar() {
   return (
     <>
       {/* Desktop: fixed side rail on the page start side (right in Arabic, left in English). */}
-      <aside className="sidebar-rail sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-e bg-card/40 p-4 lg:flex print:hidden">
+      <aside className="sidebar-rail sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 overflow-hidden border-e bg-card/40 p-4 lg:flex print:hidden">
         <div className="flex items-start justify-between gap-1">
           <Logo />
           <Button size="icon" variant="ghost" className="shrink-0" aria-label={t("إخفاء القائمة")}
@@ -151,7 +151,7 @@ export function AppSidebar() {
           </Button>
         </div>
         <NavLinks />
-        <div className="mt-auto flex flex-col items-stretch gap-2 border-t pt-4">
+        <div className="flex shrink-0 flex-col items-stretch gap-2 border-t pt-4">
           <InstallAppButton />
           <LanguageToggle />
           <ThemeToggle />
@@ -174,10 +174,10 @@ export function AppSidebar() {
           </SheetTrigger>
           <SheetContent side={language === "ar" ? "right" : "left"} className="w-64 p-4">
             <SheetTitle className="sr-only">{t("القائمة")}</SheetTitle>
-            <div className="flex h-full flex-col gap-6">
+            <div className="flex h-full min-h-0 flex-col gap-6">
               <Logo className="w-32" />
               <NavLinks onNavigate={() => setOpen(false)} />
-              <div className="mt-auto flex flex-col gap-2 border-t pt-4">
+              <div className="flex shrink-0 flex-col gap-2 border-t pt-4">
                 <InstallAppButton />
           <LanguageToggle />
                 <ThemeToggle />

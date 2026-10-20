@@ -22,6 +22,7 @@ import { initializeLanguage, useLanguage } from "@/lib/i18n";
 import { AppSidebar } from "@/components/AppSidebar";
 import { IdleSignOut } from "@/components/IdleSignOut";
 import { ExecSnapshotSync } from "@/lib/exec-snapshot";
+import { AutoTranslate } from "@/components/AutoTranslate";
 
 function NotFoundComponent() {
   return (
@@ -149,6 +150,7 @@ function RootComponent() {
   // Personal phone check-in links are opened by employees without accounts.
   if (pathname.startsWith("/checkin/") || pathname.startsWith("/leave/") || pathname === "/privacy") return (
     <>
+      <AutoTranslate />
       <Outlet />
       <Toaster position="top-center" richColors />
     </>
@@ -156,6 +158,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AutoTranslate />
       <IdleSignOut />
       <ExecSnapshotSync />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
