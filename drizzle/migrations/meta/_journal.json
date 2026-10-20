@@ -183,6 +183,13 @@
       "when": 1792406581759,
       "tag": "0025_executive_reads_payroll",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792485710693,
+      "tag": "0026_add_mail_role",
+      "breakpoints": true
     }
   ]
 }
