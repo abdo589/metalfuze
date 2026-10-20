@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CalendarClock, CheckCircle2, FileText, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, Download, Eye, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { extractDocument } from "@/lib/doc-extract.functions";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,7 +29,7 @@ export const Route = createFileRoute("/documents")({
   component: DocumentsPage,
 });
 
-type Doc = { id: string; doc_type: string; doc_number: string; branch: string; issue_date: string | null; expiry_date: string | null; notes: string };
+type Doc = { id: string; doc_type: string; doc_number: string; branch: string; issue_date: string | null; expiry_date: string | null; notes: string; file_path?: string | null; file_name?: string | null };
 type Draft = Omit<Doc, "id"> & { id?: string };
 
 const DOC_TYPES = ["سجل تجاري", "رخصة بلدية", "عقد إيجار", "شهادة المحتوى المحلي", "شهادة هيئة الزكاة والضريبة والجمارك", "شهادة تصنيف",
@@ -62,6 +64,44 @@ function DocumentsPage() {
     .sort((a, b) => (a.days ?? 99999) - (b.days ?? 99999)), [rows, q, branch, st]);
   const all = rows.map((r) => statusOf(r.expiry_date ? daysLeft(r.expiry_date) : null).key);
 
+  const extract = useServerFn(extractDocument);
+  const [busy, setBusy] = useState(false);
+
+  async function uploadFile(f: File) {
+    if (f.size > 10 * 1024 * 1024) { toast.error(t("الملف أكبر من 10 ميجا")); return null; }
+    const path = `${crypto.randomUUID()}.${(f.name.split(".").pop() || "bin").replace(/[^a-z0-9]/gi, "")}`;
+    const { error } = await supabase.storage.from("company-docs").upload(path, f, { contentType: f.type });
+    if (error) { toast.error(t("تعذر رفع الملف")); return null; }
+    return path;
+  }
+  async function uploadAndExtract(f: File, base?: Draft) {
+    setBusy(true);
+    try {
+      const path = await uploadFile(f);
+      if (!path) return;
+      const draft: Draft = base ?? { doc_type: "", doc_number: "", branch: "الرياض", issue_date: "", expiry_date: "", notes: "" };
+      const withFile = { ...draft, file_path: path, file_name: f.name };
+      const buf = new Uint8Array(await f.arrayBuffer());
+      let bin = ""; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+      const r = await extract({ data: { base64: btoa(bin), mediaType: f.type || "application/pdf", name: f.name, types: DOC_TYPES } });
+      if (!r.ok) { toast.error(t("تعذر استخراج البيانات، أكمل يدويًا")); setEdit(withFile); return; }
+      const x = r.fields;
+      setEdit({ ...withFile, doc_type: x.doc_type || withFile.doc_type, doc_number: x.doc_number || withFile.doc_number,
+        issue_date: x.issue_date || withFile.issue_date, expiry_date: x.expiry_date || withFile.expiry_date, notes: x.notes || withFile.notes });
+      toast.success(t("تم استخراج البيانات، راجعها ثم احفظ"));
+    } finally { setBusy(false); }
+  }
+  function pick(cb: (f: File) => void) {
+    const i = document.createElement("input"); i.type = "file"; i.accept = "application/pdf,image/*";
+    i.onchange = () => { const f = i.files?.[0]; if (f) cb(f); }; i.click();
+  }
+  async function openFile(r: Doc, download: boolean) {
+    if (!r.file_path) return;
+    const { data, error } = await supabase.storage.from("company-docs").createSignedUrl(r.file_path, 60, download ? { download: r.file_name || true } : undefined);
+    if (error || !data) { toast.error(t("تعذر فتح الملف")); return; }
+    if (download) { const a = document.createElement("a"); a.href = data.signedUrl; a.click(); } else window.open(data.signedUrl, "_blank");
+  }
+
   async function save() {
     if (!edit || !edit.doc_type.trim()) { toast.error(t("اختر نوع الوثيقة")); return; }
     const { id, ...body } = edit;
@@ -87,6 +127,7 @@ function DocumentsPage() {
         </div>
         <div className="flex gap-2 print:hidden">
           <PdfButton />
+          {canEdit && <Button variant="outline" disabled={busy} onClick={() => pick((f) => uploadAndExtract(f))}>{busy ? <Loader2 className="animate-spin" /> : <Upload />} {busy ? t("جارٍ قراءة الملف…") : t("رفع وثيقة واستخراج البيانات")}</Button>}
           {canEdit && <Button onClick={() => setEdit({ doc_type: DOC_TYPES[0]!, doc_number: "", branch: "الرياض", issue_date: "", expiry_date: "", notes: "" })}><Plus /> {t("إضافة وثيقة")}</Button>}
         </div>
       </header>
@@ -118,7 +159,7 @@ function DocumentsPage() {
       <div className="overflow-x-auto rounded-lg border bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-start">
-            <tr>{["م", "نوع الوثيقة", "رقم الوثيقة", "الفرع", "تاريخ الإصدار", "تاريخ الانتهاء", "الأيام المتبقية", "الحالة", "ملاحظات"].map((h) =>
+            <tr>{["م", "نوع الوثيقة", "رقم الوثيقة", "الفرع", "تاريخ الإصدار", "تاريخ الانتهاء", "الأيام المتبقية", "الحالة", "ملاحظات", "الملف"].map((h) =>
               <th key={h} className="p-2 text-start font-semibold">{t(h)}</th>)}
               {canEdit && <th className="p-2 print:hidden" />}
             </tr>
@@ -135,13 +176,17 @@ function DocumentsPage() {
                 <td className="p-2 tabular-nums">{r.days === null ? "—" : r.days}</td>
                 <td className="p-2"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.s.cls}`}>{t(r.s.label)}</span></td>
                 <td className="p-2 text-muted-foreground">{r.notes || "—"}</td>
+                <td className="p-2">{r.file_path ? <div className="flex gap-1 print:hidden">
+                  <Button size="icon" variant="ghost" aria-label={t("عرض")} title={t("عرض")} onClick={() => openFile(r, false)}><Eye /></Button>
+                  <Button size="icon" variant="ghost" aria-label={t("تحميل")} title={t("تحميل")} onClick={() => openFile(r, true)}><Download /></Button>
+                </div> : <span className="text-muted-foreground">—</span>}</td>
                 {canEdit && <td className="p-2 print:hidden"><div className="flex gap-1">
                   <Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => setEdit({ ...r, issue_date: r.issue_date ?? "", expiry_date: r.expiry_date ?? "" })}><Pencil /></Button>
                   <Button size="icon" variant="ghost" className="text-destructive" aria-label={t("حذف")} onClick={() => remove(r.id)}><Trash2 /></Button>
                 </div></td>}
               </tr>
             ))}
-            {!list.length && <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">{t("لا توجد وثائق")}</td></tr>}
+            {!list.length && <tr><td colSpan={11} className="p-6 text-center text-muted-foreground">{t("لا توجد وثائق")}</td></tr>}
           </tbody>
         </table>
       </div>
@@ -163,6 +208,11 @@ function DocumentsPage() {
             <label className="grid gap-1 text-sm">{t("تاريخ الإصدار")}<Input type="date" value={edit.issue_date ?? ""} onChange={(e) => setEdit({ ...edit, issue_date: e.target.value })} /></label>
             <label className="grid gap-1 text-sm">{t("تاريخ الانتهاء")}<Input type="date" value={edit.expiry_date ?? ""} onChange={(e) => setEdit({ ...edit, expiry_date: e.target.value })} /></label>
             <label className="grid gap-1 text-sm sm:col-span-2">{t("ملاحظات")}<Textarea value={edit.notes} onChange={(e) => setEdit({ ...edit, notes: e.target.value })} /></label>
+            <div className="flex flex-wrap items-center gap-2 text-sm sm:col-span-2">
+              <span className="text-muted-foreground">{t("الملف")}:</span>
+              <span className="truncate">{edit.file_name || "—"}</span>
+              <Button size="sm" variant="outline" disabled={busy} onClick={() => pick((f) => uploadAndExtract(f, edit))}>{busy ? <Loader2 className="animate-spin" /> : <Upload />} {edit.file_name ? t("استبدال الملف") : t("إرفاق ملف")}</Button>
+            </div>
             <Button className="sm:col-span-2" onClick={save}>{t("حفظ")}</Button>
           </div>}
         </DialogContent>

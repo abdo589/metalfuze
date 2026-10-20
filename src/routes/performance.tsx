@@ -54,10 +54,15 @@ function PerformancePage() {
 
   const load = useCallback(async () => {
     const [e, r] = await Promise.all([
-      supabase.from("employees").select("id,name,dept,active").order("id"),
+      supabase.from("hr_records").select("data,sort").eq("sheet", "employees").order("sort"),
       supabase.from("performance_reviews").select("*").order("year", { ascending: false }).order("quarter", { ascending: false }),
     ]);
-    setEmps((e.data ?? []) as Emp[]);
+    // Employees come from «بيانات الموظفين» (HR file), keyed by employee number.
+    const seen = new Set<string>();
+    setEmps(((e.data ?? []) as { data: Record<string, unknown> }[]).map(({ data: d }) => {
+      const st = String(d["حالة الموظف"] ?? "").trim();
+      return { id: String(d["رقم الموظف"] ?? "").trim(), name: String(d["اسم الموظف"] ?? "").trim(), dept: String(d["القسم"] ?? "").trim(), active: !st || st === "على رأس العمل" };
+    }).filter((x) => x.id && x.name && !seen.has(x.id + x.name) && seen.add(x.id + x.name)));
     setRows((r.data ?? []) as unknown as Review[]);
   }, []);
   useEffect(() => { load(); }, [load]);

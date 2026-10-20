@@ -16,6 +16,7 @@ import { Route as AttendanceTrackingRouteImport } from './routes/attendance-trac
 import { Route as BankRouteImport } from './routes/bank'
 import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as DocumentsRouteImport } from './routes/documents'
+import { Route as EstPayrollRouteImport } from './routes/est-payroll'
 import { Route as EstablishmentRouteImport } from './routes/establishment'
 import { Route as ExecutiveRouteImport } from './routes/executive'
 import { Route as HrDashboardRouteImport } from './routes/hr-dashboard'
@@ -85,6 +86,11 @@ const BudgetRoute = BudgetRouteImport.update({
 const DocumentsRoute = DocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstPayrollRoute = EstPayrollRouteImport.update({
+  id: '/est-payroll',
+  path: '/est-payroll',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EstablishmentRoute = EstablishmentRouteImport.update({
@@ -272,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
   '/documents': typeof DocumentsRoute
+  '/est-payroll': typeof EstPayrollRoute
   '/establishment': typeof EstablishmentRoute
   '/executive': typeof ExecutiveRoute
   '/hr-dashboard': typeof HrDashboardRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
   '/documents': typeof DocumentsRoute
+  '/est-payroll': typeof EstPayrollRoute
   '/establishment': typeof EstablishmentRoute
   '/executive': typeof ExecutiveRoute
   '/hr-dashboard': typeof HrDashboardRoute
@@ -361,6 +369,7 @@ export interface FileRoutesById {
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
   '/documents': typeof DocumentsRoute
+  '/est-payroll': typeof EstPayrollRoute
   '/establishment': typeof EstablishmentRoute
   '/executive': typeof ExecutiveRoute
   '/hr-dashboard': typeof HrDashboardRoute
@@ -407,6 +416,7 @@ export interface FileRouteTypes {
     | '/bank'
     | '/budget'
     | '/documents'
+    | '/est-payroll'
     | '/establishment'
     | '/executive'
     | '/hr-dashboard'
@@ -451,6 +461,7 @@ export interface FileRouteTypes {
     | '/bank'
     | '/budget'
     | '/documents'
+    | '/est-payroll'
     | '/establishment'
     | '/executive'
     | '/hr-dashboard'
@@ -495,6 +506,7 @@ export interface FileRouteTypes {
     | '/bank'
     | '/budget'
     | '/documents'
+    | '/est-payroll'
     | '/establishment'
     | '/executive'
     | '/hr-dashboard'
@@ -540,6 +552,7 @@ export interface RootRouteChildren {
   BankRoute: typeof BankRoute
   BudgetRoute: typeof BudgetRoute
   DocumentsRoute: typeof DocumentsRoute
+  EstPayrollRoute: typeof EstPayrollRoute
   EstablishmentRoute: typeof EstablishmentRoute
   ExecutiveRoute: typeof ExecutiveRoute
   HrDashboardRoute: typeof HrDashboardRoute
@@ -626,6 +639,13 @@ declare module '@tanstack/react-router' {
       path: '/documents'
       fullPath: '/documents'
       preLoaderRoute: typeof DocumentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/est-payroll': {
+      id: '/est-payroll'
+      path: '/est-payroll'
+      fullPath: '/est-payroll'
+      preLoaderRoute: typeof EstPayrollRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/establishment': {
@@ -884,6 +904,7 @@ const rootRouteChildren: RootRouteChildren = {
   BankRoute: BankRoute,
   BudgetRoute: BudgetRoute,
   DocumentsRoute: DocumentsRoute,
+  EstPayrollRoute: EstPayrollRoute,
   EstablishmentRoute: EstablishmentRoute,
   ExecutiveRoute: ExecutiveRoute,
   HrDashboardRoute: HrDashboardRoute,
