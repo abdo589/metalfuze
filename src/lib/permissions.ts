@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Role = "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | null;
+export type Role = "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | null;
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
 export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/settlements", "/messages", "/mail"];
@@ -11,6 +11,8 @@ export const ACCOUNTANT_PATHS = ["/accounting", "/messages", "/mail"];
 /** Executive (Hisham) sees only the live summary, read-only. */
 export const EXECUTIVE_PATHS = ["/executive", "/messages", "/mail"];
 export const MANAGER_PATHS = ["/my-projects", "/messages", "/mail"];
+/** Mail-only accounts open nothing but their Outlook mailbox. */
+export const MAIL_PATHS = ["/mail"];
 
 /** Current user's strongest role (admin > hr > viewer > manager). Accounts without a role are treated as manager. undefined while loading. */
 export function useRole() {
@@ -22,7 +24,7 @@ export function useRole() {
       if (!u.user) return alive && setRole(null);
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id);
       const roles = (data ?? []).map((r) => String(r.role));
-      const r: Role = roles.includes("admin") ? "admin" : roles.includes("hr") ? "hr" : roles.includes("viewer") ? "viewer" : roles.includes("accountant") ? "accountant" : roles.includes("executive") ? "executive" : "manager";
+      const r: Role = roles.includes("admin") ? "admin" : roles.includes("hr") ? "hr" : roles.includes("viewer") ? "viewer" : roles.includes("accountant") ? "accountant" : roles.includes("executive") ? "executive" : roles.includes("mail") ? "mail" : "manager";
       if (alive) setRole(r);
     };
     check();
