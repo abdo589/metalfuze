@@ -17,6 +17,7 @@ import { AttendanceMap } from "@/components/AttendanceMap";
 import { MonthlySheet } from "@/components/MonthlySheet";
 import { useApprovedLeaves } from "@/lib/leave-data";
 import { PdfButton } from "@/components/PdfButton";
+import { ManualPunch } from "@/components/ManualPunch";
 
 export const Route = createFileRoute("/attendance")({
   head: () => ({
@@ -44,7 +45,8 @@ function Attendance() {
   const canEdit = useCanEditHr();
   const employees = usePayroll();
   const [month, setMonth] = useState(monthKey());
-  const punches = useMonthPunches(month);
+  const [tick, setTick] = useState(0);
+  const punches = useMonthPunches(month, tick);
   const [devices, setDevices] = useState<Device[]>([]);
   const [excuses, setExcuses] = useState<{ employee_id: string; excuse_date: string; reason: string }[]>([]);
   const [excuseDraft, setExcuseDraft] = useState<{ empId: string; name: string; date: string; reason: string } | null>(null);
@@ -130,6 +132,8 @@ function Attendance() {
         ))}
       </div>
 
+      {canEdit && <ManualPunch employees={employees} onDone={() => setTick((x) => x + 1)} />}
+
       <MonthlySheet rows={rows} month={month} today={today} onSelect={setSelected} excuses={excuseMap} leaves={leaveDates} />
 
       <div className="space-y-6 print:hidden">
@@ -150,7 +154,7 @@ function Attendance() {
                       <div className="font-medium">{riyadh(p.punched_at).date} · {riyadh(p.punched_at).time}</div>
                       {p.source === "remote" && <div className="text-muted-foreground">{p.status === 1 ? t("انصراف") : t("حضور")} · {p.site_name} · {p.distance_m} {t("متر")}</div>}
                     </div>
-                    <Badge variant="outline">{p.source === "remote" ? t("جوال") : t("جهاز")}</Badge>
+                    <Badge variant="outline">{p.source === "remote" ? t("جوال") : p.source === "manual" ? t("يدوي") : t("جهاز")}</Badge>
                   </div>
                 ))}
               </div>

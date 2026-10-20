@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Punch } from "./attendance";
 
 /** Punches for a YYYY-MM month (Riyadh time), refreshed live when the device pushes new ones. */
-export function useMonthPunches(month: string) {
+export function useMonthPunches(month: string, tick = 0) {
   const [punches, setPunches] = useState<Punch[]>([]);
   useEffect(() => {
     let alive = true;
@@ -18,6 +18,6 @@ export function useMonthPunches(month: string) {
     load();
     const id = setInterval(load, 30_000);
     return () => { alive = false; clearInterval(id); };
-  }, [month]);
+  }, [month, tick]);
   return punches;
 }
