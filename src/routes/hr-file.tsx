@@ -14,7 +14,7 @@ import { AdvancesCommissions } from "@/components/AdvancesCommissions";
 import { EmployeeReviews } from "@/components/EmployeeReviews";
 import { DocsOverview } from "@/components/DocsOverview";
 import { NationalitySelect } from "@/components/NationalitySelect";
-import { resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
+import { contractOptions, resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
 import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/hr-file")({
@@ -263,6 +263,12 @@ function HrFilePage() {
                           <option value="">{lang === "en" ? "Select status" : "اختر الحالة"}</option>
                           {draft[c] && !resolveEmployeeStatus(draft[c]) && <option value={draft[c]}>{draft[c]}</option>}
                           {statusOptions(lang).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      ) : c === "نوع العقد" ? (
+                        <select className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground" value={draft[c] ?? ""} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })}>
+                          <option value="">{lang === "en" ? "Select contract type" : "اختر نوع العقد"}</option>
+                          {draft[c] && !contractOptions(lang).some((o) => o.value === draft[c]) && <option value={draft[c]}>{draft[c]}</option>}
+                          {contractOptions(lang).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </select>
                       ) : (
                         <Input className="mt-1 h-8" value={draft[c] ?? ""} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })} />
