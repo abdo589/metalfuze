@@ -12,7 +12,7 @@ import { StatCard } from "@/components/ResidenciesPanel";
 import { PdfButton } from "@/components/PdfButton";
 import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import sheets from "@/lib/hr-sheets.json";
-import { contractOptions, resolveEmployeeStatus, statusOptions } from "@/lib/employee-status";
+import { contractOptions, resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
 import { NationalitySelect } from "@/components/NationalitySelect";
 
 export const Route = createFileRoute("/establishment")({
@@ -98,6 +98,10 @@ function EstablishmentPage() {
         : d <= ALERT_DAYS ? ["قرب الانتهاء", "bg-warning/15 text-warning"] : ["سارية", "bg-success/15 text-success"];
       return <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${cls}`}>{t(label)}</span>;
     }
+      if (c === "اسم الموظف") {
+        const st = statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang);
+        if (st) return <span>{fmt(r.data[c]) || "—"} <span className="ms-1 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{st}</span></span>;
+      }
     return fmt(r.data[c]) || "—";
   }
 
@@ -155,7 +159,7 @@ function EstablishmentPage() {
           </thead>
           <tbody>
             {list.map((r) => (
-              <tr key={r.id} className="border-t">
+              <tr key={r.id} className={`border-t ${tab === "employees" && statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang) ? "bg-destructive/10" : ""}`}>
                 {shown.map((c) => <td key={c} className="p-2">{cell(r, c)}</td>)}
                 {canEdit && <td className="p-2 print:hidden"><div className="flex gap-1">
                   <Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => setEdit({ id: r.id, data: { ...r.data } })}><Pencil /></Button>
