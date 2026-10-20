@@ -100,7 +100,7 @@ function EstPayrollPage() {
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label={t("موظفو المؤسسة")} value={emps.length} icon={<Users className="size-5 text-primary" />} cls="border-border bg-card" />
-        <StatCard label={t("صافي الرواتب")} value={fmt(total)} icon={<Banknote className="size-5 text-primary" />} cls="border-border bg-card" />
+        <StatCard label={t("صافي الرواتب")} value={Math.round(total)} icon={<Banknote className="size-5 text-primary" />} cls="border-border bg-card" />
         <StatCard label={t("تم الصرف")} value={paid} icon={<CheckCircle2 className="size-5 text-success" />} cls="border-success/40 bg-success/10" />
         <StatCard label={t("لم يتم الصرف")} value={list.length - paid} icon={<Clock className="size-5 text-warning" />} cls="border-warning/40 bg-warning/10" />
       </section>
