@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Eye, Pencil, Plus, Search, Star } from "lucide-react";
+import { CheckCircle2, Eye, Pencil, Plus, Search, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -109,6 +109,13 @@ function PerformancePage() {
     toast.success(t("تم اعتماد التقييم")); load(); return;
   }
 
+  async function remove(r: Review) {
+    if (!confirm(`${t("حذف تقييم")} ${empMap.get(r.employee_id)?.name ?? ""} — Q${r.quarter} ${r.year}?`)) return;
+    const { error } = await supabase.from("performance_reviews").delete().eq("id", r.id);
+    if (error) { toast.error(t("تعذر الحذف")); return; }
+    toast.success(t("تم حذف التقييم")); load();
+  }
+
   const history = view ? rows.filter((r) => r.employee_id === view).sort((a, b) => a.year - b.year || a.quarter - b.quarter) : [];
 
   return (
@@ -152,6 +159,7 @@ function PerformancePage() {
                   <Button size="icon" variant="ghost" title={t("السجل")} onClick={() => setView(r.employee_id)}><Eye /></Button>
                   {canEdit && r.status !== "approved" && <Button size="icon" variant="ghost" title={t("تعديل")} onClick={() => setEdit({ ...r })}><Pencil /></Button>}
                   {canEdit && r.status === "completed" && <Button size="icon" variant="ghost" title={t("اعتماد")} onClick={() => approve(r)}><CheckCircle2 /></Button>}
+                  {canEdit && <Button size="icon" variant="ghost" className="text-destructive" title={t("حذف")} onClick={() => remove(r)}><Trash2 /></Button>}
                 </div></td>
               </tr>); })}
           </tbody>
