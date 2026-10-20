@@ -13,7 +13,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PieChart,
-  Fingerprint, Smartphone, Landmark, IdCard, CalendarOff,
+  Fingerprint, Wallet, Landmark, IdCard, CalendarOff,
   Users, FolderKanban, MessageSquare, Calculator,
   Radar,
   Mail, Star, FolderOpen, Building2,
