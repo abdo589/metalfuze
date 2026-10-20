@@ -226,7 +226,11 @@ function ReviewForm({ d, emps, onChange, onSave, onCancel }: { d: Draft; emps: E
           <select className={sel} value={d.employee_id} disabled={!!d.id} onChange={(e) => onChange({ ...d, employee_id: e.target.value })}>
             <option value="">{t("اختر الموظف")}</option>{emps.map((e) => <option key={e.id} value={e.id}>{e.id} — {e.name}</option>)}
           </select></label>
-        <label className="text-sm">{t("المدير المقيّم")} *<Input value={d.reviewer_name} onChange={(e) => onChange({ ...d, reviewer_name: e.target.value })} /></label>
+        <label className="text-sm">{t("المدير المقيّم")} *
+          <select className={sel} value={d.reviewer_name} onChange={(e) => onChange({ ...d, reviewer_name: e.target.value })}>
+            <option value="">{t("اختر المدير")}</option>
+            {[...new Set([d.reviewer_name, ...emps.filter((e) => e.id !== d.employee_id).map((e) => e.name)].filter(Boolean))].map((n) => <option key={n} value={n}>{n}</option>)}
+          </select></label>
         <label className="text-sm">{t("الربع")} *
           <select className={sel} value={d.quarter} disabled={!!d.id} onChange={(e) => onChange({ ...d, quarter: Number(e.target.value) })}>
             {QUARTERS.map((x) => <option key={x.q} value={x.q}>{t(x.ar)} ({t(x.months)})</option>)}
