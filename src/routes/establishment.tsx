@@ -12,6 +12,8 @@ import { StatCard } from "@/components/ResidenciesPanel";
 import { PdfButton } from "@/components/PdfButton";
 import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import sheets from "@/lib/hr-sheets.json";
+import { contractOptions, resolveEmployeeStatus, statusOptions } from "@/lib/employee-status";
+import { NationalitySelect } from "@/components/NationalitySelect";
 
 export const Route = createFileRoute("/establishment")({
   head: () => ({
@@ -145,8 +147,24 @@ function EstablishmentPage() {
           {edit && <div className="grid gap-3 sm:grid-cols-2">
             {cols(tab).map((c) => (
               <label key={c} className="grid gap-1 text-sm">{t(c)}
-                <Input type={c.startsWith("تاريخ") && c !== "تاريخ الميلاد" ? "date" : MONEY.includes(c) ? "number" : "text"}
-                  value={String(edit.data[c] ?? "")} onChange={(e) => setEdit({ ...edit, data: { ...edit.data, [c]: e.target.value } })} />
+                {(() => {
+                  const val = String(edit.data[c] ?? "");
+                  const set = (v: string) => setEdit({ ...edit, data: { ...edit.data, [c]: v } });
+                  const opts = tab === "employees" && c === "حالة الموظف" ? statusOptions(lang)
+                    : c === "نوع العقد" ? contractOptions(lang) : null;
+                  if (tab === "employees" && c === "الجنسية") return <NationalitySelect value={val} onChange={set} />;
+                  if (opts) {
+                    const cur = c === "حالة الموظف" ? (resolveEmployeeStatus(val)?.ar ?? val) : val;
+                    return (
+                      <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground" value={cur} onChange={(e) => set(e.target.value)}>
+                        <option value="">{lang === "en" ? "Select" : "اختر"}</option>
+                        {cur && !opts.some((o) => o.value === cur) && <option value={cur}>{cur}</option>}
+                        {opts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    );
+                  }
+                  return <Input type={c.startsWith("تاريخ") && c !== "تاريخ الميلاد" ? "date" : MONEY.includes(c) ? "number" : "text"} value={val} onChange={(e) => set(e.target.value)} />;
+                })()}
               </label>
             ))}
             <Button className="sm:col-span-2" onClick={save}>{t("حفظ")}</Button>

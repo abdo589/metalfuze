@@ -51,3 +51,18 @@ export function statusLabel(raw: unknown, lang: Language): string | null {
 export function statusOptions(lang: Language): { value: string; label: string }[] {
   return EMPLOYEE_STATUSES.map((d) => ({ value: d.ar, label: lang === "en" ? d.en : d.ar }));
 }
+
+/** Contract type choices; stored value is the Arabic label. */
+export const CONTRACT_TYPES: { ar: string; en: string }[] = [
+  { ar: "محدد المدة", en: "Fixed-term" },
+  { ar: "غير محدد المدة", en: "Indefinite" },
+  { ar: "دائم", en: "Permanent" },
+  { ar: "فترة تجربة", en: "Probation" },
+  { ar: "دوام جزئي", en: "Part-time" },
+  { ar: "مؤقت / مشروع", en: "Temporary / Project" },
+  { ar: "تدريب", en: "Training" },
+];
+
+export function contractOptions(lang: Language): { value: string; label: string }[] {
+  return CONTRACT_TYPES.map((d) => ({ value: d.ar, label: lang === "en" ? d.en : d.ar }));
+}
