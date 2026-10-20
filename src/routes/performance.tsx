@@ -100,7 +100,6 @@ function PerformancePage() {
       : await supabase.from("performance_reviews").insert(payload);
     if (res.error) return toast.error(res.error.code === "23505" ? t("يوجد تقييم لهذا الموظف في نفس الربع والسنة") : t("تعذر الحفظ"));
     toast.success(t("تم حفظ التقييم")); setEdit(null); load(); return;
-    setEdit(null); load();
   }
 
   async function approve(r: Review) {
