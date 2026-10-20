@@ -86,7 +86,7 @@ function DocumentsPage() {
           <p className="text-sm text-muted-foreground">{t("السجلات والشهادات والتراخيص وتواريخ انتهائها")}</p>
         </div>
         <div className="flex gap-2 print:hidden">
-          <PdfButton title={t("وثائق الشركة")} />
+          <PdfButton />
           {canEdit && <Button onClick={() => setEdit({ doc_type: DOC_TYPES[0]!, doc_number: "", branch: "الرياض", issue_date: "", expiry_date: "", notes: "" })}><Plus /> {t("إضافة وثيقة")}</Button>}
         </div>
       </header>
