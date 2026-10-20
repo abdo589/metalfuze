@@ -235,6 +235,10 @@ html[dir="ltr"] [data-report-document] td .flex { flex-wrap: wrap; }
     display: none !important;
   }
 
+  .print\:block {
+    display: block !important;
+  }
+
   .surface {
     background: #fff !important;
     box-shadow: none !important;
