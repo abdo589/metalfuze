@@ -208,6 +208,39 @@ export type Database = {
           },
         ]
       }
+      company_documents: {
+        Row: {
+          branch: string
+          created_at: string
+          doc_number: string
+          doc_type: string
+          expiry_date: string | null
+          id: string
+          issue_date: string | null
+          notes: string
+        }
+        Insert: {
+          branch?: string
+          created_at?: string
+          doc_number?: string
+          doc_type: string
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          notes?: string
+        }
+        Update: {
+          branch?: string
+          created_at?: string
+          doc_number?: string
+          doc_type?: string
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          notes?: string
+        }
+        Relationships: []
+      }
       department_managers: {
         Row: {
           dept: string
