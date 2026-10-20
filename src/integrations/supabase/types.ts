@@ -215,6 +215,8 @@ export type Database = {
           doc_number: string
           doc_type: string
           expiry_date: string | null
+          file_name: string | null
+          file_path: string | null
           id: string
           issue_date: string | null
           notes: string
@@ -225,6 +227,8 @@ export type Database = {
           doc_number?: string
           doc_type: string
           expiry_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
           id?: string
           issue_date?: string | null
           notes?: string
@@ -235,6 +239,8 @@ export type Database = {
           doc_number?: string
           doc_type?: string
           expiry_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
           id?: string
           issue_date?: string | null
           notes?: string
@@ -905,15 +911,7 @@ export type Database = {
           updated_at?: string
           year?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "performance_reviews_employee_id_fkey"
-            columns: ["employee_id"]
-            isOneToOne: false
-            referencedRelation: "employees"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
