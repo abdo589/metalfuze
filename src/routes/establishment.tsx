@@ -42,7 +42,7 @@ function cols(k: Key) {
 }
 
 function EstablishmentPage() {
-  useLanguage();
+  const lang = useLanguage();
   const canEdit = useCanEditHr();
   const [rows, setRows] = useState<Rec[]>([]);
   const [tab, setTab] = useState<Key>("employees");
