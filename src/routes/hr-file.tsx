@@ -11,6 +11,7 @@ import { useRole } from "@/lib/permissions";
 import { importHrFile, type HrKey, type HrRow } from "@/lib/hr-file.functions";
 import sheets from "@/lib/hr-sheets.json";
 import { AdvancesCommissions } from "@/components/AdvancesCommissions";
+import { EmployeeReviews } from "@/components/EmployeeReviews";
 import { DocsOverview } from "@/components/DocsOverview";
 import { NationalitySelect } from "@/components/NationalitySelect";
 import { resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
@@ -185,7 +186,7 @@ function HrFilePage() {
             const st = sel.data["حالة الموظف"] ?? sel.data["الحالة"];
             const inactive = statusLabel(st, lang);
             const ptabs: [string, string][] = isEmp
-              ? [["basic", "البيانات الأساسية"], ["files", "العقد والمستندات"], ...rel.map((g) => [g.k, META[g.k].title] as [string, string]), ["money", "السلف والعمولات"]]
+              ? [["basic", "البيانات الأساسية"], ["files", "العقد والمستندات"], ...rel.map((g) => [g.k, META[g.k].title] as [string, string]), ["money", "السلف والعمولات"], ["reviews", "تقييمات الأداء"]]
               : [];
             const cur = isEmp ? ptab : "basic";
             return (
@@ -221,11 +222,12 @@ function HrFilePage() {
                   <ContractBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
                   <CertificatesBox rec={sel} canEdit={canEdit} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
                   {([["مباشرة العمل", "work-start"], ["العرض الوظيفي", "job-offers"], ["إقرار عدم الإفصاح", "nda"]] as const).map(([f, folder]) => (
-                    <ContractBox key={f} rec={sel} canEdit={canEdit} field={f} label={f} folder={folder} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
+                    <CertificatesBox key={f} rec={sel} canEdit={canEdit} field={f} folder={folder} onChange={(d) => { setSel({ ...sel, data: d }); load(); }} />
                   ))}
                 </>
               )}
               {isEmp && cur === "money" && <AdvancesCommissions empId={String(sel.data[ID] ?? sel.id)} canEdit={canEdit} />}
+              {isEmp && cur === "reviews" && <EmployeeReviews empNo={String(sel.data[ID] ?? "")} name={String(sel.data[NAME] ?? "")} />}
               {cur === "basic" && (
                 <>
               {sel.id && (
