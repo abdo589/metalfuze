@@ -20,7 +20,7 @@ export function ManualPunch({ employees, onDone }: { employees: { id: string; na
   const punch = useServerFn(manualPunch);
 
   async function go(action: "in" | "out") {
-    if (!emp) return toast.error(t("اختر الموظف"));
+    if (!emp) { toast.error(t("اختر الموظف")); return; }
     setBusy(true);
     try {
       const r = await punch({ data: { employeeId: emp, action, at: `${at}:00+03:00` } });
