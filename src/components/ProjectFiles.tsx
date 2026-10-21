@@ -10,7 +10,7 @@ import { useRole } from "@/lib/permissions";
 
 const BUCKET = "dashboard-project-files";
 const PHOTOS = "صور المشروع";
-export const DEFAULT_FILE_CATEGORIES = [PHOTOS, "العقود", "الاعتمادات", "المخططات", "عروض الأسعار"];
+export const DEFAULT_FILE_CATEGORIES = ["العقود", "الاعتمادات", "المخططات", "عروض الأسعار", PHOTOS];
 type F = Tables<"project_files">;
 
 function Thumb({ path, alt, onClick }: { path: string; alt: string; onClick: () => void }) {

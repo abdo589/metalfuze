@@ -139,8 +139,8 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
     [t("نسبة الإنجاز المخطط"), bar(project.planned)],
     [t("قيمة العقد"), <span className="tabular-nums">{fmtMoney(project.contract)} {t("ريال")}</span>],
     [t("المدفوع"), <span className="tabular-nums">{fmtMoney(project.paid)} {t("ريال")}</span>],
-    ...warrantyRows(project),
     [t("المتبقي للدفع"), <span className="tabular-nums font-semibold">{fmtMoney(project.contract - project.paid)} {t("ريال")}</span>],
+    ...warrantyRows(project),
   ];
   return (
     <Dialog open={!!project} onOpenChange={(o) => !o && onClose()}>
@@ -172,8 +172,8 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
               {w.alerts.includes("free") && `${t("الإصلاح المجاني ينتهي خلال شهر")} (${w.freeEnd}) `}
               {w.alerts.includes("end") && `${t("الضمان ينتهي خلال شهر")} (${w.end})`}
             </p>) : null; })()}
-          <FinancialGuarantees projectId={project.id} delivered={!!project.deliveryDate} />
           <ProjectFiles projectId={project.id} />
+          <FinancialGuarantees projectId={project.id} delivered={!!project.deliveryDate} />
         </div>
         <div className="flex justify-end">
           <Button disabled={busy} onClick={async () => {
