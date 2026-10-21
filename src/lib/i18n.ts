@@ -196,6 +196,10 @@ export const translations: Record<string, string> = {
   "كل بصمة جوال تظهر في مكانها الفعلي، وكل موقع عمل داخل دائرة المسافة المسموحة.": "Every phone punch appears at its exact spot, and each work site shows its allowed-radius circle.",
   "لا توجد مواقع ولا بصمات جوال على الخريطة بعد": "No work sites or phone punches on the map yet",
 };
+// Project deviation labels
+Object.assign(translations, {
+  "الانحراف بالأيام": "Deviation (days)", "تقديم": "Early", "انتهى في الميعاد": "Finished on time", "حتى الآن": "so far",
+});
 
 /** UI labels only: never translate or mutate user-entered names, notes or credentials. */
 export function t(text: string): string {

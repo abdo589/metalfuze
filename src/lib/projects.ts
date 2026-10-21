@@ -90,6 +90,25 @@ export function deadlineAlert(end: string | null) {
   return t("ساري");
 }
 
+export type Deviation = { days: number; kind: "late" | "early" | "ontime"; finished: boolean };
+
+/** Days of deviation: actual end vs agreed end, or today vs end while running late. */
+export function deviationOf(p: Pick<Project, "end" | "actualEnd">, today = new Date().toISOString().slice(0, 10)): Deviation | null {
+  if (!p.end) return null;
+  const ref = p.actualEnd || (today > p.end ? today : null);
+  if (!ref) return null;
+  const days = Math.round((Date.parse(ref) - Date.parse(p.end)) / 86400000);
+  if (days === 0) return { days: 0, kind: "ontime", finished: !!p.actualEnd };
+  return { days: Math.abs(days), kind: days > 0 ? "late" : "early", finished: !!p.actualEnd };
+}
+
+export function deviationLabel(p: Pick<Project, "end" | "actualEnd">, today?: string): string {
+  const dev = deviationOf(p, today);
+  if (!dev) return "—";
+  if (dev.kind === "ontime") return t("انتهى في الميعاد");
+  return `${dev.kind === "late" ? t("تأخير") : t("تقديم")} ${dev.days} ${t("يوم")}${dev.finished ? "" : ` ${t("حتى الآن")}`}`;
+}
+
 export const fmtMoney = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n || 0);
 export const fmtPct = (n: number) => `${Math.round((n || 0) * 100)}%`;

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileDown, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
-import { deadlineAlert, daysLeft, fmtMoney, fmtPct, type Project } from "@/lib/projects";
+import { deadlineAlert, daysLeft, deviationLabel, deviationOf, fmtMoney, fmtPct, type Project } from "@/lib/projects";
 
 export function statusClass(s: string) {
   if (s.includes("متأخر")) return "bg-destructive/15 text-destructive border-destructive/30";
@@ -35,6 +35,7 @@ async function downloadProjectPdf(p: Project) {
     [t("تاريخ بداية المشروع"), p.start ?? "—"],
     [t("تاريخ انتهاء المشروع"), p.end ? `${p.end} (${deadlineAlert(p.end)}${d !== null ? ` ${d} ${t("يوم")}` : ""})` : "—"],
     [t("تاريخ الانتهاء الفعلي"), p.actualEnd || "—"],
+    [t("الانحراف بالأيام"), deviationLabel(p)],
     [t("حالة المشروع"), p.status],
     [t("هل يوجد عقد شركة"), p.hasContract],
     [t("نسبة الإنجاز"), fmtPct(p.progress)],
@@ -85,10 +86,15 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
     [t("تاريخ بداية المشروع"), project.start ?? "—"],
     [t("تاريخ انتهاء المشروع"), project.end ? (
       <span>{project.end}
-        {d !== null && <span className={`ms-2 text-xs ${d < 0 ? "text-destructive" : d <= 30 ? "text-warning" : "text-muted-foreground"}`}>{deadlineAlert(project.end)} ({d})</span>}
+        {d !== null && <span className={`ms-2 text-xs ${d < 0 ? "text-destructive" : d <= 30 ? "text-warning" : "text-muted-foreground"}`}>{deadlineAlert(project.end)}{d >= 0 ? ` (${d} ${t("يوم")})` : ""}</span>}
       </span>
     ) : "—"],
     [t("تاريخ الانتهاء الفعلي"), project.actualEnd || "—"],
+    [t("الانحراف بالأيام"), (() => {
+      const dev = deviationOf(project);
+      if (!project.end || !dev) return <span className="text-muted-foreground">{deviationLabel(project)}</span>;
+      return <span className={`font-semibold ${dev.kind === "late" ? "text-destructive" : dev.kind === "early" ? "text-success" : ""}`}>{deviationLabel(project)}</span>;
+    })()],
     [t("حالة المشروع"), project.status ? <Badge variant="outline" className={statusClass(project.status)}>{t(project.status)}</Badge> : "—"],
     [t("هل يوجد عقد شركة"), project.hasContract || "—"],
     [t("نسبة الإنجاز"), bar(project.progress)],
