@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { FileDown, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { deadlineAlert, daysLeft, deviationLabel, deviationOf, deviationPct, fmtMoney, fmtPct, type Project } from "@/lib/projects";
+import { ProjectFiles } from "@/components/ProjectFiles";
 
 export function statusClass(s: string) {
   if (s.includes("متأخر")) return "bg-destructive/15 text-destructive border-destructive/30";
@@ -147,6 +148,7 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
               <div className="mt-0.5 whitespace-pre-wrap text-sm">{project.notes}</div>
             </div>
           )}
+          <ProjectFiles projectId={project.id} />
         </div>
         <div className="flex justify-end">
           <Button disabled={busy} onClick={async () => {
