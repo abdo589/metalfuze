@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { autoStatus, newId, projectStore, SECTORS, STATUSES, type Project } from "@/lib/projects";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { autoStatus, newId, projectStore, SECTORS, STATUS_OPTIONS, type Project } from "@/lib/projects";
 
 const empty = (): Project => ({
   id: newId(), code: "", name: "", sector: "", dept: "المشاريع", manager: "", owner: "Metal Fuze",
