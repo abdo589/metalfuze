@@ -19,7 +19,16 @@ export type Employee = {
   siteId?: string | null; // موقع العمل للحضور عن بعد (يُدار من صفحة الحضور)
   checkinToken?: string | null;
   email?: string; // يربط حساب الموظف بملفه تلقائيًا
+  monthly?: Record<string, MonthPay>; // رواتب مختلفة لكل شهر (YYYY-MM)
 };
+export type MonthPay = { base: number; allowances: number; deductions: number };
+
+/** Salary figures for a month: that month's entry, else the latest earlier entry, else the defaults. */
+export function forMonth(e: Employee, month: string): Employee {
+  const keys = Object.keys(e.monthly ?? {}).filter((k) => k <= month).sort();
+  const k = keys[keys.length - 1];
+  return k ? { ...e, ...e.monthly![k] } : e;
+}
 
 export const netSalary = (e: Employee) => (e.base || 0) + (e.allowances || 0) - (e.deductions || 0);
 
@@ -34,18 +43,19 @@ export const monthLabel = (key: string) => {
 type Row = {
   id: string; name: string; role: string; dept: string; project: string; base: number; allowances: number;
   deductions: number; joined: string | null; active: boolean; paid_months: string[]; device_user_id: string | null;
-  site_id?: string | null; checkin_token?: string | null; email?: string | null;
+  site_id?: string | null; checkin_token?: string | null; email?: string | null; monthly?: Record<string, MonthPay> | null;
 };
 const fromRow = (r: Row): Employee => ({
   id: r.id, name: r.name, role: r.role, dept: r.dept, project: r.project, base: Number(r.base),
   allowances: Number(r.allowances), deductions: Number(r.deductions), joined: r.joined, active: r.active,
-  paidMonths: r.paid_months ?? [], deviceUserId: r.device_user_id ?? "", siteId: r.site_id ?? null, checkinToken: r.checkin_token ?? null, email: r.email ?? "",
+  paidMonths: r.paid_months ?? [], deviceUserId: r.device_user_id ?? "", siteId: r.site_id ?? null, checkinToken: r.checkin_token ?? null, email: r.email ?? "", monthly: r.monthly ?? {},
 });
 const toRow = (e: Employee): Row => ({
   id: e.id, name: e.name, role: e.role, dept: e.dept, project: e.project, base: e.base, allowances: e.allowances,
   deductions: e.deductions, joined: e.joined || null, active: e.active, paid_months: e.paidMonths,
   device_user_id: e.deviceUserId?.trim() || null,
   email: e.email?.trim().toLowerCase() || null,
+  monthly: e.monthly ?? {},
 });
 
 const listeners = new Set<() => void>();
