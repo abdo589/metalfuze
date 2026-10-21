@@ -3,15 +3,16 @@ import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, Banknote, CircleAlert, FileDown, FileSpreadsheet, FolderKanban, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
+import { AlertTriangle, Banknote, CircleAlert, Eye, FileDown, FileSpreadsheet, FolderKanban, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ProjectDialog } from "@/components/ProjectDialog";
+import { ProjectDetails } from "@/components/ProjectDetails";
 import { PdfButton } from "@/components/PdfButton";
 import {
-  daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
+  daysLeft, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
 } from "@/lib/projects";
 import { exportExcel } from "@/lib/export";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
@@ -37,13 +38,6 @@ const tip = {
   itemStyle: { color: "var(--foreground)" },
 };
 
-function statusClass(s: string) {
-  if (s.includes("متأخر")) return "bg-destructive/15 text-destructive border-destructive/30";
-  if (s.includes("متقدم")) return "bg-success/15 text-success border-success/30";
-  if (s) return "bg-info/15 text-info border-info/30";
-  return "bg-muted text-muted-foreground";
-}
-
 function groupBy(list: Project[], key: (p: Project) => string, val: (p: Project) => number = () => 1) {
   const m = new Map<string, number>();
   list.forEach((p) => { const k = key(p) || "غير محدد"; m.set(k, (m.get(k) ?? 0) + val(p)); });
@@ -58,6 +52,7 @@ function Dashboard() {
   const [status, setStatus] = useState("الكل");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
+  const [details, setDetails] = useState<Project | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const s = useMemo(() => {
@@ -233,40 +228,21 @@ function Dashboard() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                {[t("الرمز"), t("المشروع"), t("القطاع"), t("المدير"), t("الانتهاء"), t("الحالة"), t("الإنجاز"), t("قيمة العقد"), t("المدفوع"), t("المتبقي للدفع"), ""].map((h) => (
+                {[t("الرمز"), t("المشروع"), t("القطاع"), t("المدير"), ""].map((h) => (
                   <th key={h} className={`whitespace-nowrap px-3 py-3 text-right font-medium ${h === "" ? "print:hidden" : ""}`}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map((p) => {
-                const d = daysLeft(p.end);
                 return (
                   <tr key={p.id} className="border-t transition-colors hover:bg-muted/30">
                     <td className="px-3 py-3 text-muted-foreground">{p.code}</td>
-                    <td className="px-3 py-3 font-medium">
-                      {p.name}
-                      {p.issues && <p className="mt-0.5 line-clamp-1 max-w-xs text-xs text-destructive/80">{p.issues}</p>}
-                    </td>
+                    <td className="px-3 py-3 font-medium">{p.name}</td>
                     <td className="px-3 py-3">{t(p.sector)}</td>
                     <td className="whitespace-nowrap px-3 py-3" dir="ltr">{p.manager}</td>
-                    <td className="whitespace-nowrap px-3 py-3">
-                      {p.end ?? "—"}
-                      {d !== null && <p className={`text-xs ${d < 0 ? "text-destructive" : d <= 30 ? "text-warning" : "text-muted-foreground"}`}>{deadlineAlert(p.end)} ({d})</p>}
-                    </td>
-                    <td className="px-3 py-3">{p.status && <Badge variant="outline" className={statusClass(p.status)}>{t(p.status)}</Badge>}</td>
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
-                          <div className="h-full bg-primary" style={{ width: `${Math.min(100, p.progress * 100)}%` }} />
-                        </div>
-                        <span className="text-xs">{fmtPct(p.progress)}</span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract)}</td>
-                    <td className="px-3 py-3 tabular-nums">{fmtMoney(p.paid)}</td>
-                    <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract - p.paid)}</td>
                     <td className="whitespace-nowrap px-3 py-3 print:hidden">
+                      <Button size="icon" variant="ghost" aria-label={t("عرض التفاصيل")} onClick={() => setDetails(p)}><Eye /></Button>
                       {canEdit && <><Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>
                       <Button size="icon" variant="ghost" aria-label={t("حذف")}
                         onClick={() => { if (confirm(`${t("حذف")} ${p.name}?`)) projectStore.remove(p.id); }}><Trash2 /></Button></>}
@@ -280,6 +256,7 @@ function Dashboard() {
       </section>
 
       <ProjectDialog open={open} onOpenChange={setOpen} project={editing} managers={managers} />
+      <ProjectDetails project={details} onClose={() => setDetails(null)} />
     </div>
   );
 }

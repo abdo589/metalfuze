@@ -90,6 +90,7 @@ export const translations: Record<string, string> = {
   "المستشار الذكي": "AI Advisor", "الرواتب": "Payroll", "الميزانية": "Budget",
   "تحديث من ملف Excel": "Import Excel", "تصدير تقرير Excel": "Export Excel Report",
   "مشروع جديد": "New Project", "حفظ PDF": "Save PDF", "جارٍ تجهيز PDF…": "Preparing PDF…",
+  "عرض التفاصيل": "View details", "تحميل PDF": "Download PDF", "بطاقة مشروع": "Project Card",
   "تم حفظ PDF": "PDF saved", "تعذر حفظ PDF، حاول مرة أخرى": "Unable to save PDF. Please try again.",
   "إجمالي المشاريع": "Total Projects", "إجمالي قيمة العقود": "Total Contract Value", "المدفوع": "Paid",
   "المتبقي للدفع": "Remaining Payment", "ريال": "SAR", "ر.س": "SAR",
