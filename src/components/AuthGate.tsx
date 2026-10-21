@@ -92,7 +92,12 @@ function Login() {
     const mail = id.includes("@") ? id : toEmail(id);
     const { error } = await supabase.auth.signInWithPassword({ email: mail, password });
     setBusy(false);
-    if (error) setError(t("اسم المستخدم أو كلمة المرور غير صحيحة"));
+    if (error) return setError(t("اسم المستخدم أو كلمة المرور غير صحيحة"));
+    // Ask the browser to offer saving the password (SPA login has no page navigation).
+    try {
+      const PC = (window as unknown as { PasswordCredential?: new (d: { id: string; password: string; name?: string }) => Credential }).PasswordCredential;
+      if (PC && navigator.credentials) await navigator.credentials.store(new PC({ id: username.trim(), password, name: username.trim() }));
+    } catch { /* browser doesn't support it */ }
   }
 
   async function onGoogle(provider: "google" | "microsoft" = "google") {
@@ -113,7 +118,7 @@ function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-6 shadow-lg">
+      <form method="post" action="#" autoComplete="on" onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-6 shadow-lg">
         <div className="flex flex-col items-center gap-2 text-center">
           <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
             className="screen-logo logo-on-light mx-auto h-auto w-60" />
@@ -125,10 +130,10 @@ function Login() {
         </div>
         {signup && <Input placeholder={t("الاسم الكامل")} value={fullName} onChange={(e) => setFullName(e.target.value)} required />}
         {signup
-          ? <Input placeholder={t("البريد الإلكتروني")} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" dir="ltr" required />
-          : <Input placeholder={t("اسم المستخدم أو البريد الإلكتروني")} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" dir="ltr" required />}
+          ? <Input placeholder={t("البريد الإلكتروني")} type="email" value={email} onChange={(e) => setEmail(e.target.value)} name="email" id="email" autoComplete="email" dir="ltr" required />
+          : <Input placeholder={t("اسم المستخدم أو البريد الإلكتروني")} value={username} onChange={(e) => setUsername(e.target.value)} name="username" id="username" autoComplete="username" dir="ltr" required />}
         <div dir="ltr" className="relative">
-          <Input placeholder={t("كلمة المرور")} type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" dir="ltr" required className="pe-10" />
+          <Input placeholder={t("كلمة المرور")} type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} name="password" id="password" autoComplete={signup ? "new-password" : "current-password"} dir="ltr" required className="pe-10" />
           <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? t("إخفاء كلمة المرور") : t("إظهار كلمة المرور")} aria-pressed={showPassword}
             className="absolute end-1 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
             {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
