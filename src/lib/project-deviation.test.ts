@@ -37,7 +37,7 @@ describe("deviationLabel", () => {
 describe("deviationPct", () => {
   const p = { start: "2026-01-01", end: "2026-06-30", actualEnd: null }; // 180 days
   it("delay share of the agreed duration", () => {
-    expect(deviationPct(p, "2026-07-19")).toBe(10); // 18 days late of 180
+    expect(deviationPct(p, "2026-07-18")).toBe(10); // 18 days late of 180
   });
   it("finished early share", () => {
     expect(deviationPct({ ...p, actualEnd: "2026-05-13" }, "2026-07-01")).toBe(-27); // 48 days early of 180
