@@ -305,6 +305,7 @@ export type Database = {
           email: string | null
           id: string
           joined: string | null
+          monthly: Json
           name: string
           paid_months: string[]
           project: string
@@ -323,6 +324,7 @@ export type Database = {
           email?: string | null
           id: string
           joined?: string | null
+          monthly?: Json
           name: string
           paid_months?: string[]
           project?: string
@@ -341,6 +343,7 @@ export type Database = {
           email?: string | null
           id?: string
           joined?: string | null
+          monthly?: Json
           name?: string
           paid_months?: string[]
           project?: string

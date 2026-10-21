@@ -13,7 +13,7 @@ import { PdfButton } from "@/components/PdfButton";
 import { fmtMoney } from "@/lib/projects";
 import { summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
-import { monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
+import { forMonth, monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
 import { supabase } from "@/integrations/supabase/client";
 import { useApprovedLeaves } from "@/lib/leave-data";
 import { unpaidDaysInMonth, unpaidDeduction } from "@/lib/leave-engine";
@@ -41,8 +41,9 @@ function shiftMonth(key: string, delta: number) {
 function Payroll() {
   const canEdit = useCanEditHr();
   useLanguage();
-  const employees = usePayroll();
+  const rawEmployees = usePayroll();
   const [month, setMonth] = useState(monthKey());
+  const employees = useMemo(() => rawEmployees.map((e) => forMonth(e, month)), [rawEmployees, month]);
   const punches = useMonthPunches(month);
   const [excuses, setExcuses] = useState<{ employee_id: string; excuse_date: string }[]>([]);
   useEffect(() => {
@@ -296,7 +297,12 @@ function Payroll() {
         onOpenChange={setOpen}
         employee={editing}
         onSave={(e) => {
-          payrollStore.upsert(e);
+          const orig = rawEmployees.find((x) => x.id === e.id);
+          if (orig) {
+            // تعديل المبالغ يُحفظ لهذا الشهر وما بعده فقط؛ الشهور السابقة تبقى كما هي
+            const pay = { base: Number(e.base) || 0, allowances: Number(e.allowances) || 0, deductions: Number(e.deductions) || 0 };
+            payrollStore.upsert({ ...e, base: orig.base, allowances: orig.allowances, deductions: orig.deductions, monthly: { ...(orig.monthly ?? {}), [month]: pay } });
+          } else payrollStore.upsert({ ...e, monthly: { [month]: { base: e.base, allowances: e.allowances, deductions: e.deductions } } });
           toast.success(editing ? t("تم تحديث بيانات الموظف") : t("تمت إضافة الموظف"));
         }}
       />
