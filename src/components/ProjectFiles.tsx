@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Download, Eye, FileUp, LoaderCircle, Plus, Trash2 } from "lucide-react";
+import { Download, Eye, FileUp, LoaderCircle, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,32 @@ export function ProjectFiles({ projectId, editable, defaults = DEFAULT_FILE_CATE
   }, [projectId]);
   useEffect(() => { load(); }, [load]);
 
-  const cats = [...new Set([...DEFAULT_FILE_CATEGORIES, ...all.map((f) => f.category), ...extra])];
+  const HID = "__hidden__:";
+  const hidden = new Set(all.filter((f) => f.category.startsWith(HID)).map((f) => f.category.slice(HID.length)));
+  const cats = [...new Set([...DEFAULT_FILE_CATEGORIES, ...all.map((f) => f.category), ...extra])].filter((c) => !c.startsWith(HID) && !hidden.has(c));
+  const marker = (category: string) => supabase.from("project_files").insert({ project_id: projectId, category, title: "", file_path: "", file_name: "" });
+
+  async function renameCategory(c: string) {
+    const n = prompt(t("الاسم الجديد"), t(c))?.trim();
+    if (!n || n === c) return;
+    setBusy(c);
+    try {
+      const { error } = await supabase.from("project_files").update({ category: n }).eq("project_id", projectId).eq("category", c);
+      if (error) throw error;
+      if (!all.some((f) => f.category === c)) await marker(n);
+      if (DEFAULT_FILE_CATEGORIES.includes(c)) await marker(HID + c);
+      setExtra((x) => x.map((v) => (v === c ? n : v)));
+      toast.success(t("تم الحفظ")); load();
+    } catch { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); }
+    finally { setBusy(null); }
+  }
+
+  async function renameFile(f: F) {
+    const n = prompt(t("الاسم الجديد"), f.file_name)?.trim();
+    if (!n || n === f.file_name) return;
+    const { error } = await supabase.from("project_files").update({ file_name: n, title: n }).eq("id", f.id);
+    if (error) toast.error(t("تعذر الحفظ، حاول مرة أخرى")); else load();
+  }
 
   async function upload(category: string, list: FileList | null) {
     if (!list?.length) return;
@@ -81,6 +106,7 @@ export function ProjectFiles({ projectId, editable, defaults = DEFAULT_FILE_CATE
         const { error } = await supabase.from("project_files").delete().eq("project_id", projectId).eq("category", c);
         if (error) throw error;
       }
+      if (DEFAULT_FILE_CATEGORIES.includes(c)) await marker(HID + c);
       setExtra((x) => x.filter((n) => n !== c));
       toast.success(t("تم الحذف"));
       load();
@@ -93,7 +119,6 @@ export function ProjectFiles({ projectId, editable, defaults = DEFAULT_FILE_CATE
       <h3 className="font-bold">{t(title)}</h3>
       {cats.map((c) => {
         const list = files.filter((f) => f.category === c);
-        const custom = !DEFAULT_FILE_CATEGORIES.includes(c);
         return (
           <div key={c} className="rounded-lg border border-border bg-muted/30 p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
@@ -105,7 +130,12 @@ export function ProjectFiles({ projectId, editable, defaults = DEFAULT_FILE_CATE
                     <input type="file" multiple accept={c === PHOTOS ? "image/*" : undefined} className="hidden" onChange={(e) => { upload(c, e.target.files); e.target.value = ""; }} />
                   </label>
                 )}
-                {canEdit && custom && (
+                {canEdit && (
+                  <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => renameCategory(c)}>
+                    <Pencil className="size-4" />
+                  </Button>
+                )}
+                {canEdit && (
                   <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف المجلد")} onClick={() => removeCategory(c, list)}>
                     <Trash2 className="size-4" />
                   </Button>
@@ -113,14 +143,15 @@ export function ProjectFiles({ projectId, editable, defaults = DEFAULT_FILE_CATE
               </span>
             </div>
             {list.length === 0 && <p className="text-xs text-muted-foreground">{t("لا توجد ملفات")}</p>}
-            {c === PHOTOS ? (
+            {c === PHOTOS || list.some((f) => /\.(jpe?g|png|gif|webp|heic)$/i.test(f.file_path)) ? (
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {list.map((f) => (
                   <div key={f.id} className="group relative overflow-hidden rounded-md border border-border bg-background">
                     <Thumb path={f.file_path} alt={f.file_name} onClick={() => open(f, false)} />
                     <div className="flex justify-center gap-1 p-1">
                       <Button size="icon" variant="ghost" className="size-7" aria-label={t("تحميل")} onClick={() => open(f, true)}><Download className="size-4" /></Button>
-                      {canEdit && <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(f)}><Trash2 className="size-4" /></Button>}
+                      {canEdit && <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => renameFile(f)}><Pencil className="size-4" /></Button>}
+                {canEdit && <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(f)}><Trash2 className="size-4" /></Button>}
                     </div>
                   </div>
                 ))}
@@ -130,6 +161,7 @@ export function ProjectFiles({ projectId, editable, defaults = DEFAULT_FILE_CATE
                 <span className="flex-1 truncate">{f.file_name}</span>
                 <Button size="icon" variant="ghost" className="size-7" aria-label={t("عرض")} onClick={() => open(f, false)}><Eye className="size-4" /></Button>
                 <Button size="icon" variant="ghost" className="size-7" aria-label={t("تحميل")} onClick={() => open(f, true)}><Download className="size-4" /></Button>
+                {canEdit && <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => renameFile(f)}><Pencil className="size-4" /></Button>}
                 {canEdit && <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(f)}><Trash2 className="size-4" /></Button>}
               </div>
             ))}
