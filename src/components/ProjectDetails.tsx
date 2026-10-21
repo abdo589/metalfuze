@@ -88,6 +88,7 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
         {d !== null && <span className={`ms-2 text-xs ${d < 0 ? "text-destructive" : d <= 30 ? "text-warning" : "text-muted-foreground"}`}>{deadlineAlert(project.end)} ({d})</span>}
       </span>
     ) : "—"],
+    [t("تاريخ الانتهاء الفعلي"), project.actualEnd || "—"],
     [t("حالة المشروع"), project.status ? <Badge variant="outline" className={statusClass(project.status)}>{t(project.status)}</Badge> : "—"],
     [t("هل يوجد عقد شركة"), project.hasContract || "—"],
     [t("نسبة الإنجاز"), bar(project.progress)],
