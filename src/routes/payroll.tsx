@@ -44,6 +44,8 @@ function Payroll() {
   const rawEmployees = usePayroll();
   const [month, setMonth] = useState(monthKey());
   const employees = useMemo(() => rawEmployees.map((e) => forMonth(e, month)), [rawEmployees, month]);
+  /** Month options generated from the data: earliest join/salary/paid month to the current month. */
+  const monthsList = useMemo(() => availableMonths(rawEmployees), [rawEmployees]);
   const punches = useMonthPunches(month);
   const [excuses, setExcuses] = useState<{ employee_id: string; excuse_date: string }[]>([]);
   useEffect(() => {
@@ -149,15 +151,16 @@ function Payroll() {
         </div>
       </header>
 
-      {/* اختيار الشهر */}
+      {/* اختيار الشهر — قائمة متولدة من البيانات */}
       <div className="flex items-center justify-center gap-3">
-        <Button variant="outline" size="icon" onClick={() => setMonth(shiftMonth(month, 1))} aria-label={t("الشهر التالي")}>
-          <ChevronRight />
-        </Button>
-        <div className="min-w-40 text-center font-display text-lg font-bold">{monthLabel(month)}</div>
-        <Button variant="outline" size="icon" onClick={() => setMonth(shiftMonth(month, -1))} aria-label={t("الشهر السابق")}>
-          <ChevronLeft />
-        </Button>
+        <select
+          value={month}
+          onChange={(e) => setMonth(e.target.value)}
+          aria-label={t("اختيار الشهر")}
+          className="h-10 min-w-48 rounded-md border border-input bg-background px-3 text-center font-display text-lg font-bold"
+        >
+          {monthsList.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
+        </select>
         {month !== monthKey() && (
           <Button variant="ghost" size="sm" onClick={() => setMonth(monthKey())}>{t("الشهر الحالي")}</Button>
         )}
