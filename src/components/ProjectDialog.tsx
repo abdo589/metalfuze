@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { autoStatus, newId, projectStore, SECTORS, STATUS_OPTIONS, type Project } from "@/lib/projects";
+import { autoStatus, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, type Project } from "@/lib/projects";
 
 const empty = (): Project => ({
   id: newId(), code: "", name: "", sector: "", dept: "المشاريع", manager: "", owner: "Metal Fuze",
@@ -56,6 +56,15 @@ export function ProjectDialog({
       </div>
     );
   };
+  const choice = (k: "clientCapacity" | "ourRole", label: string, opts: string[]) => (
+    <div className="space-y-1.5">
+      <Label>{label}</Label>
+      <Select value={f[k] ?? ""} onValueChange={(v) => set(k, v)}>
+        <SelectTrigger><SelectValue placeholder={label} /></SelectTrigger>
+        <SelectContent>{opts.map((s) => <SelectItem key={s} value={s}>{t(s)}</SelectItem>)}</SelectContent>
+      </Select>
+    </div>
+  );
   const num = (k: keyof Project, label: string, pct = false) => (
     <div className="space-y-1.5">
       <Label>{label}</Label>
@@ -80,11 +89,19 @@ export function ProjectDialog({
         <div className="grid gap-4 sm:grid-cols-2">
           {text("name", t("اسم المشروع"))}
           {text("code", t("رمز المشروع"))}
-          {text("client", t("اسم العميل"))}
+          {text("location", t("موقع المشروع"))}
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>{t("مالك المشروع")}</Label>
+            <Input value={f.owner ?? ""} onChange={(e) => set("owner", e.target.value)} />
+            <p className="text-xs text-muted-foreground">{t("الجهة المالكة للمشروع النهائي (مثل شركة الدرعية)، وليست شركتنا")}</p>
+          </div>
+          {text("mainContractor", t("المقاول الرئيسي (اختياري)"))}
+          {text("client", t("العميل المتعاقد معنا"))}
+          {choice("clientCapacity", t("صفة العميل"), CLIENT_CAPACITIES)}
+          {choice("ourRole", t("دورنا في المشروع"), OUR_ROLES)}
           {pick("sector", t("القطاع"), SECTORS)}
           {pick("dept", t("الإدارة"), ["المشاريع"])}
           {pick("manager", t("مدير المشروع"), managers)}
-          {text("owner", t("مالك المشروع"))}
           {date("start", t("تاريخ البداية"))}
           {date("end", t("تاريخ الانتهاء"))}
           {date("actualEnd", t("تاريخ الانتهاء الفعلي"))}

@@ -7,6 +7,10 @@ export type Project = {
   code: string;
   name: string;
   client?: string;
+  location?: string;
+  mainContractor?: string;
+  clientCapacity?: string;
+  ourRole?: string;
   sector: string;
   dept: string;
   manager: string;
@@ -193,3 +197,6 @@ export async function importExcel(file: File): Promise<Project[]> {
       notes: str(r[col("ملاحظات مهمة")]),
     }));
 }
+
+export const CLIENT_CAPACITIES = ["مالك", "مقاول رئيسي", "مقاول باطن"];
+export const OUR_ROLES = ["مورد", "مورد ومركّب", "مقاول باطن", "مقاول رئيسي"];

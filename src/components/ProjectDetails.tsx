@@ -36,7 +36,7 @@ async function downloadProjectPdf(p: Project) {
   const rows: [string, string][] = [
     [t("رمز المشروع"), p.code],
     [t("اسم المشروع"), p.name],
-    [t("اسم العميل"), p.client ?? ""],
+    [t("مالك المشروع"), p.owner ?? ""], [t("موقع المشروع"), p.location ?? ""], [t("المقاول الرئيسي"), p.mainContractor ?? ""], [t("العميل المتعاقد معنا"), p.client ?? ""], [t("صفة العميل"), p.clientCapacity ?? ""], [t("دورنا في المشروع"), p.ourRole ?? ""],
     [t("القطاع"), p.sector],
     [t("الإدارة"), p.dept],
     [t("مدير المشروع"), p.manager],
@@ -88,7 +88,7 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
   );
   const rows: [string, React.ReactNode][] = [
     [t("رمز المشروع"), project.code || "—"],
-    [t("اسم العميل"), project.client || "—"],
+    [t("موقع المشروع"), project.location || "—"], [t("المقاول الرئيسي"), project.mainContractor || "—"], [t("العميل المتعاقد معنا"), project.client || "—"], [t("صفة العميل"), project.clientCapacity || "—"], [t("دورنا في المشروع"), project.ourRole || "—"],
     [t("القطاع"), project.sector ? t(project.sector) : "—"],
     [t("الإدارة"), project.dept || "—"],
     [t("مدير المشروع"), project.manager ? <span dir="ltr">{project.manager}</span> : "—"],
