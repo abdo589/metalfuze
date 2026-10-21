@@ -289,19 +289,26 @@ function Dashboard() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                {[t("الرمز"), t("المشروع"), t("القطاع"), t("المدير"), ""].map((h) => (
-                  <th key={h} className={`whitespace-nowrap px-3 py-3 text-right font-medium ${h === "" ? "print:hidden" : ""}`}>{h}</th>
+                {[t("الرمز"), t("المشروع"), t("القطاع"), t("المدير"), t("الإدارة"), t("مالك المشروع"), t("موقع المشروع"), t("حالة المشروع"), t("حالة الضمان"), ""].map((h, i) => (
+                  <th key={i} className={`whitespace-nowrap px-3 py-3 text-right font-medium ${h === "" ? "print:hidden" : ""}`}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map((p) => {
+                const w = warrantyInfo(p);
+                const b = statusBucket(p.status);
                 return (
                   <tr key={p.id} className="border-t transition-colors hover:bg-muted/30">
                     <td className="px-3 py-3 text-muted-foreground">{p.code}</td>
                     <td className="px-3 py-3 font-medium">{p.name}</td>
                     <td className="px-3 py-3">{t(p.sector)}</td>
                     <td className="whitespace-nowrap px-3 py-3" dir="ltr">{p.manager}</td>
+                    <td className="px-3 py-3">{t(p.dept) || "—"}</td>
+                    <td className="px-3 py-3">{p.owner || "—"}</td>
+                    <td className="px-3 py-3">{p.location || "—"}</td>
+                    <td className={`whitespace-nowrap px-3 py-3 font-medium ${b === "متأخر" ? "text-destructive" : b === "متقدم" ? "text-success" : b === "منتهي" ? "text-info" : ""}`}>{t(p.status)}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{w ? t(w.status) : t("لا يوجد")}</td>
                     <td className="whitespace-nowrap px-3 py-3 print:hidden">
                       <Button size="icon" variant="ghost" aria-label={t("عرض التفاصيل")} onClick={() => setDetails(p)}><Eye /></Button>
                       {canEdit && <><Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>

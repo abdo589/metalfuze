@@ -69,7 +69,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     : role === "executive" ? [{ to: "/executive", label: "الملخص التنفيذي", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
-    : role === undefined ? [] : role === "admin" ? items : items.filter((i) => i.to !== "/my-projects" && !HR_ADMIN_ONLY.includes(i.to));
+    : role === undefined ? [] : role === "admin" ? items.filter((i) => !["/establishment", "/est-payroll", "/attendance"].includes(i.to)) : items.filter((i) => i.to !== "/my-projects" && !HR_ADMIN_ONLY.includes(i.to));
   return (
     <nav className="-mx-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-1">
       {visible.map((it) => {
