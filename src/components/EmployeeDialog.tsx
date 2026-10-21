@@ -81,15 +81,15 @@ export function EmployeeDialog({
           </div>
           <div className="space-y-1.5">
             <Label>{t("الراتب الأساسي")}</Label>
-            <Input type="number" min={0} value={form.base} onChange={(e) => set("base", num(e.target.value))} />
+            <Input type="text" inputMode="decimal" dir="ltr" placeholder="0" value={form.base || ""} onChange={(e) => set("base", num(e.target.value.replace(/[^\d.]/g, "")))} />
           </div>
           <div className="space-y-1.5">
             <Label>{t("البدلات")}</Label>
-            <Input type="number" min={0} value={form.allowances} onChange={(e) => set("allowances", num(e.target.value))} />
+            <Input type="text" inputMode="decimal" dir="ltr" placeholder="0" value={form.allowances || ""} onChange={(e) => set("allowances", num(e.target.value.replace(/[^\d.]/g, "")))} />
           </div>
           <div className="space-y-1.5">
             <Label>{t("الخصومات")}</Label>
-            <Input type="number" min={0} value={form.deductions} onChange={(e) => set("deductions", num(e.target.value))} />
+            <Input type="text" inputMode="decimal" dir="ltr" placeholder="0" value={form.deductions || ""} onChange={(e) => set("deductions", num(e.target.value.replace(/[^\d.]/g, "")))} />
           </div>
           <div className="space-y-1.5">
             <Label>{t("تاريخ التعيين")}</Label>
