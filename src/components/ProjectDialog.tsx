@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { autoStatus, newId, projectStore, SECTORS, STATUSES, type Project } from "@/lib/projects";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { autoStatus, newId, projectStore, SECTORS, STATUS_OPTIONS, type Project } from "@/lib/projects";
 
 const empty = (): Project => ({
   id: newId(), code: "", name: "", sector: "", dept: "المشاريع", manager: "", owner: "Metal Fuze",
@@ -20,6 +21,13 @@ export function ProjectDialog({
   const [f, setF] = useState<Project>(empty());
   useEffect(() => { if (open) setF(project ?? empty()); }, [open, project]);
   const set = <K extends keyof Project>(k: K, v: Project[K]) => setF((p) => ({ ...p, [k]: v }));
+  // Status suggests itself from the dates; picking an option manually keeps it until a date changes.
+  useEffect(() => {
+    setF((p) => {
+      const auto = autoStatus(p);
+      return auto === p.status ? p : { ...p, status: auto };
+    });
+  }, [f.start, f.end, f.actualEnd]);
 
   const text = (k: keyof Project, label: string, list?: string) => (
     <div className="space-y-1.5">
@@ -49,7 +57,6 @@ export function ProjectDialog({
           <DialogTitle className="font-display text-xl">{project ? t("تعديل مشروع") : t("إضافة مشروع جديد")}</DialogTitle>
         </DialogHeader>
         <datalist id="sectors">{SECTORS.map((s) => <option key={s} value={s} />)}</datalist>
-        <datalist id="statuses">{STATUSES.map((s) => <option key={s} value={s} />)}</datalist>
         <datalist id="managers">{managers.map((s) => <option key={s} value={s} />)}</datalist>
         <div className="grid gap-4 sm:grid-cols-2">
           {text("name", t("اسم المشروع"))}
@@ -62,8 +69,15 @@ export function ProjectDialog({
           {date("end", t("تاريخ الانتهاء"))}
           {date("actualEnd", t("تاريخ الانتهاء الفعلي"))}
           <div className="space-y-1.5">
-            <Label>{t("حالة المشروع")} ({t("تلقائي")})</Label>
-            <Input readOnly value={t(autoStatus(f))} className="bg-muted" />
+            <Label>{t("حالة المشروع")}</Label>
+            <Select value={f.status} onValueChange={(v) => set("status", v)}>
+              <SelectTrigger><SelectValue placeholder={t("حالة المشروع")} /></SelectTrigger>
+              <SelectContent>
+                {[...new Set([...STATUS_OPTIONS, f.status].filter(Boolean))].map((s) => (
+                  <SelectItem key={s} value={s}>{t(s)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {text("hasContract", t("هل يوجد عقد شركة"))}
           {num("progress", t("نسبة الإنجاز %"), true)}

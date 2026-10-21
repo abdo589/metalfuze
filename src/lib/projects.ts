@@ -106,6 +106,7 @@ export function autoStatus(p: Pick<Project, "start" | "end" | "actualEnd" | "sta
 export const withAutoStatus = (p: Project): Project => ({ ...p, status: autoStatus(p) });
 
 export const STATUSES = ["طبيعي", "متقدم", "متأخر"];
+export const STATUS_OPTIONS = ["طبيعي", "متأخر", "متقدم", "منتهي - طبيعي", "منتهي - متقدم", "منتهي - متأخر"];
 export const SECTORS = ["سكني", "تجاري", "مكتبي", "فندقي", "خاص", "خدمات", "صحي", "مطاعم", "فندقي + سكني"];
 
 export function newId() {
