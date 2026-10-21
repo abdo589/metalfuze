@@ -6,14 +6,14 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { t } from "@/lib/i18n";
-import { useCanEdit } from "@/lib/permissions";
+import { useRole } from "@/lib/permissions";
 
 const BUCKET = "dashboard-project-files";
 export const DEFAULT_FILE_CATEGORIES = ["العقود", "الاعتمادات", "المخططات", "عروض الأسعار"];
 type F = Tables<"project_files">;
 
 export function ProjectFiles({ projectId }: { projectId: string }) {
-  const canEdit = useCanEdit();
+  const canEdit = useRole() === "admin";
   const [files, setFiles] = useState<F[]>([]);
   const [extra, setExtra] = useState<string[]>([]);
   const [newCat, setNewCat] = useState("");
