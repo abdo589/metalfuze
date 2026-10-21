@@ -24,7 +24,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { setSidebar, useSidebar } from "@/lib/sidebar";
-import { HR_PATHS, useRole } from "@/lib/permissions";
+import { HR_ADMIN_ONLY, HR_PATHS, useRole } from "@/lib/permissions";
 import { useUnreadMessages } from "@/lib/unread-messages";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -67,7 +67,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     : role === "executive" ? [{ to: "/executive", label: "الملخص التنفيذي", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
-    : role === undefined ? [] : role === "admin" ? items : items.filter((i) => i.to !== "/my-projects");
+    : role === undefined ? [] : role === "admin" ? items : items.filter((i) => i.to !== "/my-projects" && !HR_ADMIN_ONLY.includes(i.to));
   return (
     <nav className="-mx-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-1">
       {visible.map((it) => {
