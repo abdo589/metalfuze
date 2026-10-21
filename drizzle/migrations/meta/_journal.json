@@ -225,6 +225,13 @@
       "when": 1792573236378,
       "tag": "0031_dashboard_project_files",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1792573648793,
+      "tag": "0032_employee_monthly_salary",
+      "breakpoints": true
     }
   ]
 }

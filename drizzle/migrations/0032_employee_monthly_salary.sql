@@ -1,0 +1,1 @@
+ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS monthly jsonb NOT NULL DEFAULT '{}'::jsonb;
