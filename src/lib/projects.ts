@@ -102,13 +102,17 @@ export function deviationOf(p: Pick<Project, "end" | "actualEnd">, today = new D
   return { days: Math.abs(days), kind: days > 0 ? "late" : "early", finished: !!p.actualEnd };
 }
 
-/** Deviation as a share of the agreed project duration (start → end), like progress %. */
+/** Deviation as a share of the agreed project duration (start → end), like progress %.
+ *  Positive = late, negative = finished early. */
 export function deviationPct(p: Pick<Project, "start" | "end" | "actualEnd">, today?: string): number | null {
-  const dev = deviationOf(p, today);
-  if (!dev || !p.start || !p.end) return null;
+  if (!p.start || !p.end) return null;
+  const ref = p.actualEnd || (deviationOf(p, today) ? undefined : null);
+  const day = ref ?? (p.actualEnd ? null : new Date().toISOString().slice(0, 10));
+  const use = p.actualEnd || (day && day > p.end ? day : null);
+  if (!use) return null;
   const total = (Date.parse(p.end) - Date.parse(p.start)) / 86400000;
   if (total <= 0) return null;
-  return Math.round((dev.days / total) * 100);
+  return Math.round(((Date.parse(use) - Date.parse(p.end)) / total) * 100);
 }
 
 export function deviationLabel(p: Pick<Project, "end" | "actualEnd">, today?: string): string {
