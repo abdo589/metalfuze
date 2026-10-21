@@ -13,7 +13,15 @@ import { ProjectDetails } from "@/components/ProjectDetails";
 import { PdfButton } from "@/components/PdfButton";
 import {
   daysLeft, fmtMoney, fmtPct, importExcel, projectStore, STATUS_BUCKETS, statusBucket, useProjects, type Project,
+  warrantyInfo, WARRANTY_STATUSES, addYears,
 } from "@/lib/projects";
+
+function warrMatch(p: import("@/lib/projects").Project, f: string) {
+  if (!f) return true;
+  const w = warrantyInfo(p);
+  if (f === "soon") { const today = new Date().toISOString().slice(0, 10); return !!w?.end && w.end >= today && w.end <= addYears(today, 0.25); }
+  return w?.status === f;
+}
 import { exportExcel } from "@/lib/export";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
