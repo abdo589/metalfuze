@@ -79,11 +79,11 @@ function FleetPage() {
   }
 
   async function saveCar() {
-    if (!editCar?.plate.trim()) return toast.error(t("رقم اللوحة مطلوب"));
+    if (!editCar?.plate.trim()) { toast.error(t("رقم اللوحة مطلوب")); return; }
     const { id, ...rest } = editCar;
     const row = { ...rest, handover_date: nn(rest.handover_date), return_date: nn(rest.return_date), registration_expiry: nn(rest.registration_expiry), insurance_expiry: nn(rest.insurance_expiry) };
     const { error } = id ? await supabase.from("fleet_cars").update(row).eq("id", id) : await supabase.from("fleet_cars").insert(row);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(t("تم الحفظ")); setEditCar(null); load();
   }
   async function saveVio() {
@@ -93,13 +93,13 @@ function FleetPage() {
     const row = { ...rest, amount: Number(rest.amount) || 0, violation_date: nn(rest.violation_date),
       employee_no: rest.employee_no || car?.employee_no || "", employee_name: rest.employee_name || car?.employee_name || "" };
     const { error } = id ? await supabase.from("traffic_violations").update(row).eq("id", id) : await supabase.from("traffic_violations").insert(row);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(t("تم الحفظ")); setEditVio(null); load();
   }
   async function del(table: "fleet_cars" | "traffic_violations", id: string) {
     if (!confirm(t("حذف نهائي؟"))) return;
     const { error } = await supabase.from(table).delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     load();
   }
   async function notify(v: Vio) {
@@ -111,7 +111,7 @@ function FleetPage() {
   }
 
   const Badge = ({ s, map }: { s: string; map: Record<string, string> }) => <span className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs ${map[s] ?? "bg-muted"}`}>{t(s)}</span>;
-  const expiryNote = (d: string | null) => { if (!d) return "—"; const n = daysLeft(d); return <span className={n < 0 ? "text-destructive" : n <= 30 ? "text-warning" : ""}>{d}</span>; };
+  const expiryNote = (d: string | null) => { if (!d) return "—"; const n = daysLeft(d) ?? 0; return <span className={n < 0 ? "text-destructive" : n <= 30 ? "text-warning" : ""}>{d}</span>; };
   const EmpSelect = ({ value, onChange }: { value: string; onChange: (k: string) => void }) => (
     <select className={sel} value={value} onChange={(e) => onChange(e.target.value)}>
       <option value="">—</option>
