@@ -57,7 +57,6 @@ export function ProjectDialog({
           <DialogTitle className="font-display text-xl">{project ? t("تعديل مشروع") : t("إضافة مشروع جديد")}</DialogTitle>
         </DialogHeader>
         <datalist id="sectors">{SECTORS.map((s) => <option key={s} value={s} />)}</datalist>
-        <datalist id="statuses">{STATUSES.map((s) => <option key={s} value={s} />)}</datalist>
         <datalist id="managers">{managers.map((s) => <option key={s} value={s} />)}</datalist>
         <div className="grid gap-4 sm:grid-cols-2">
           {text("name", t("اسم المشروع"))}
