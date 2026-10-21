@@ -109,6 +109,7 @@ export const translations: Record<string, string> = {
   "فندقي + سكني": "Hotel / Residential", "نعم": "Yes", "لا": "No",
   "تعديل مشروع": "Edit Project", "تاريخ الانتهاء الفعلي": "Actual End Date", "تلقائي": "automatic", "منتهي - متقدم": "Finished - Ahead", "منتهي - متأخر": "Finished - Late", "منتهي - طبيعي": "Finished - On time", "إضافة مشروع جديد": "Add New Project", "اسم المشروع": "Project Name",
   "رمز المشروع": "Project Code", "الإدارة": "Department", "مدير المشروع": "Project Manager", "مالك المشروع": "Project Owner", "اسم العميل": "Client Name", "إضافة خيار جديد": "Add new option", "اكتب الاسم الجديد": "Type the new name",
+  "موقع المشروع": "Project Location", "المقاول الرئيسي": "Main Contractor", "المقاول الرئيسي (اختياري)": "Main Contractor (optional)", "العميل المتعاقد معنا": "Our Contracting Client", "صفة العميل": "Client Capacity", "دورنا في المشروع": "Our Role", "مالك": "Owner", "مقاول رئيسي": "Main Contractor", "مقاول باطن": "Subcontractor", "مورد": "Supplier", "مورد ومركّب": "Supplier & Installer", "كل الملاك": "All owners", "كل المواقع": "All locations", "كل الأدوار": "All roles", "الجهة المالكة للمشروع النهائي (مثل شركة الدرعية)، وليست شركتنا": "The final project owner (e.g. Diriyah Company), not our company",
   "تاريخ البداية": "Start Date", "تاريخ الانتهاء": "End Date", "حالة المشروع": "Project Status",
   "هل يوجد عقد شركة": "Company Contract", "نسبة الإنجاز %": "Progress %", "نسبة الإنجاز المخطط %": "Planned Progress %",
   "الإشكاليات / العوائق": "Issues / Obstacles", "ملاحظات مهمة": "Important Notes", "ملاحظات": "Notes",
