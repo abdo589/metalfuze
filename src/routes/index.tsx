@@ -235,7 +235,7 @@ function Dashboard() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                {[t("الرمز"), t("المشروع"), t("القطاع"), t("المدير"), t("الانتهاء"), t("الحالة"), t("الإنجاز"), t("قيمة العقد"), t("المدفوع"), t("المتبقي للدفع"), ""].map((h) => (
+                {[t("الرمز"), t("المشروع"), t("القطاع"), t("المدير"), ""].map((h) => (
                   <th key={h} className={`whitespace-nowrap px-3 py-3 text-right font-medium ${h === "" ? "print:hidden" : ""}`}>{h}</th>
                 ))}
               </tr>
