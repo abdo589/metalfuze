@@ -57,6 +57,9 @@ function Dashboard() {
   const projects = useProjects();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("الكل");
+  const [fOwner, setFOwner] = useState("");
+  const [fLoc, setFLoc] = useState("");
+  const [fRole, setFRole] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
   const [details, setDetails] = useState<Project | null>(null);
@@ -91,6 +94,7 @@ function Dashboard() {
   const filtered = projects.filter(
     (p) =>
       (status === "الكل" || statusBucket(p.status) === status) &&
+      (!fOwner || p.owner === fOwner) && (!fLoc || p.location === fLoc) && (!fRole || p.ourRole === fRole) &&
       [p.name, p.code, p.manager, p.sector].join(" ").toLowerCase().includes(q.toLowerCase()),
   );
   const bucketCounts = useMemo(() => {
@@ -238,6 +242,12 @@ function Dashboard() {
               <Button key={st} size="sm" variant={status === st ? "default" : "outline"} onClick={() => setStatus(st)}>
                 {t(st)} ({st === "الكل" ? projects.length : bucketCounts[st] ?? 0})
               </Button>
+            ))}
+            {([[fOwner, setFOwner, "owner", "كل الملاك"], [fLoc, setFLoc, "location", "كل المواقع"], [fRole, setFRole, "ourRole", "كل الأدوار"]] as const).map(([v, setV, k, all]) => (
+              <select key={k} value={v} onChange={(e) => setV(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+                <option value="">{t(all)}</option>
+                {[...new Set(projects.map((p) => (p[k] ?? "").trim()).filter(Boolean))].map((o) => <option key={o} value={o}>{t(o)}</option>)}
+              </select>
             ))}
             <div className="relative">
               <Search className="absolute right-2.5 top-2.5 size-4 text-muted-foreground" />
