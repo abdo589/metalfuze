@@ -35,7 +35,7 @@ async function downloadProjectPdf(p: Project) {
     [t("تاريخ بداية المشروع"), p.start ?? "—"],
     [t("تاريخ انتهاء المشروع"), p.end ? `${p.end} (${deadlineAlert(p.end)}${d !== null ? ` ${d} ${t("يوم")}` : ""})` : "—"],
     [t("تاريخ الانتهاء الفعلي"), p.actualEnd || "—"],
-    [t("الانحراف بالأيام"), deviationLabel(p)],
+    [t("نسبة الانحراف"), devTxt(p)],
     [t("حالة المشروع"), p.status],
     [t("هل يوجد عقد شركة"), p.hasContract],
     [t("نسبة الإنجاز"), fmtPct(p.progress)],
@@ -90,10 +90,22 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
       </span>
     ) : "—"],
     [t("تاريخ الانتهاء الفعلي"), project.actualEnd || "—"],
-    [t("الانحراف بالأيام"), (() => {
+    [t("نسبة الانحراف"), (() => {
       const dev = deviationOf(project);
-      if (!project.end || !dev) return <span className="text-muted-foreground">{deviationLabel(project)}</span>;
-      return <span className={`font-semibold ${dev.kind === "late" ? "text-destructive" : dev.kind === "early" ? "text-success" : ""}`}>{deviationLabel(project)}</span>;
+      if (!project.end || !dev || dev.days === 0) return <span className={dev && dev.days === 0 ? "" : "text-muted-foreground"}>{deviationLabel(project)}</span>;
+      const pct = deviationPct(project);
+      return (
+        <span className="flex items-center gap-2">
+          {pct !== null && (
+            <span className="inline-block h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+              <span className={`block h-full ${dev.kind === "late" ? "bg-destructive" : "bg-success"}`} style={{ width: `${Math.min(100, pct)}%` }} />
+            </span>
+          )}
+          <span className={`font-semibold ${dev.kind === "late" ? "text-destructive" : "text-success"}`}>
+            {deviationLabel(project)}{pct !== null ? ` (${pct}%)` : ""}
+          </span>
+        </span>
+      );
     })()],
     [t("حالة المشروع"), project.status ? <Badge variant="outline" className={statusClass(project.status)}>{t(project.status)}</Badge> : "—"],
     [t("هل يوجد عقد شركة"), project.hasContract || "—"],
