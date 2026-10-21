@@ -12,6 +12,7 @@ export type Project = {
   owner: string;
   start: string | null;
   end: string | null;
+  actualEnd?: string | null;
   status: string;
   progress: number; // 0..1
   planned: number; // 0..1
@@ -30,14 +31,15 @@ function load(): Project[] {
   if (cache) return cache;
   try {
     const raw = localStorage.getItem(KEY);
-    cache = raw ? JSON.parse(raw) : (seed as Project[]);
+    cache = (raw ? JSON.parse(raw) : (seed as Project[])).map(withAutoStatus);
   } catch {
-    cache = seed as Project[];
+    cache = (seed as Project[]).map(withAutoStatus);
   }
   return cache!;
 }
 
 function save(list: Project[]) {
+  list = list.map(withAutoStatus);
   cache = list;
   localStorage.setItem(KEY, JSON.stringify(list));
   listeners.forEach((l) => l());
@@ -91,6 +93,17 @@ export function deadlineAlert(end: string | null) {
 export const fmtMoney = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n || 0);
 export const fmtPct = (n: number) => `${Math.round((n || 0) * 100)}%`;
+
+/** Status follows the dates: finished early/on time/late, or running on time/late. */
+export function autoStatus(p: Pick<Project, "start" | "end" | "actualEnd" | "status">, today = new Date().toISOString().slice(0, 10)): string {
+  if (!p.end) return p.status;
+  if (p.actualEnd) {
+    const r = p.actualEnd < p.end ? "متقدم" : p.actualEnd > p.end ? "متأخر" : "طبيعي";
+    return `منتهي - ${r}`;
+  }
+  return today > p.end ? "متأخر" : "طبيعي";
+}
+export const withAutoStatus = (p: Project): Project => ({ ...p, status: autoStatus(p) });
 
 export const STATUSES = ["طبيعي", "متقدم", "متأخر"];
 export const SECTORS = ["سكني", "تجاري", "مكتبي", "فندقي", "خاص", "خدمات", "صحي", "مطاعم", "فندقي + سكني"];

@@ -34,6 +34,7 @@ async function downloadProjectPdf(p: Project) {
     [t("مالك المشروع"), p.owner],
     [t("تاريخ بداية المشروع"), p.start ?? "—"],
     [t("تاريخ انتهاء المشروع"), p.end ? `${p.end} (${deadlineAlert(p.end)}${d !== null ? ` ${d} ${t("يوم")}` : ""})` : "—"],
+    [t("تاريخ الانتهاء الفعلي"), p.actualEnd || "—"],
     [t("حالة المشروع"), p.status],
     [t("هل يوجد عقد شركة"), p.hasContract],
     [t("نسبة الإنجاز"), fmtPct(p.progress)],
