@@ -48,6 +48,12 @@ function DocumentsPage() {
   useLanguage();
   const canEdit = useCanEdit();
   const [filesOpen, setFilesOpen] = useState(false);
+  const [fileCount, setFileCount] = useState(0);
+  useEffect(() => {
+    if (filesOpen) return;
+    supabase.from("project_files").select("id", { count: "exact", head: true }).eq("project_id", "hr-documents").neq("file_path", "")
+      .then(({ count }) => setFileCount(count ?? 0));
+  }, [filesOpen]);
   const [rows, setRows] = useState<Doc[]>([]);
   const [q, setQ] = useState("");
   const [branch, setBranch] = useState("");
@@ -141,7 +147,7 @@ function DocumentsPage() {
         <StatCard label={t("منتهية")} value={all.filter((k) => k === "expired").length} icon={<AlertTriangle className="size-5 text-destructive" />} cls="border-destructive/40 bg-destructive/10" />
         <StatCard label={t("سارية")} value={all.filter((k) => k === "valid").length} icon={<CheckCircle2 className="size-5 text-success" />} cls="border-success/40 bg-success/10" />
         <button type="button" onClick={() => setFilesOpen(true)} className="text-start">
-          <StatCard label={t("الملفات")} value="📁" icon={<FolderOpen className="size-5 text-primary" />} cls="border-primary/40 bg-primary/10 hover:bg-primary/20" />
+          <StatCard label={t("الملفات")} value={fileCount} icon={<FolderOpen className="size-5 text-primary" />} cls="border-primary/40 bg-primary/10 hover:bg-primary/20" />
         </button>
       </section>
 
