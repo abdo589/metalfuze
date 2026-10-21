@@ -148,7 +148,7 @@ function EstPayrollPage() {
               </select>
             </label>
             {["الراتب الأساسي", "البدلات", "الخصومات", "الإضافي"].map((k) =>
-              <label key={k} className="grid gap-1 text-sm">{t(k)}<Input type="number" value={String(edit.data[k] ?? "")} onChange={(e) => set(k, e.target.value)} /></label>)}
+              <label key={k} className="grid gap-1 text-sm">{t(k)}<Input type="text" inputMode="decimal" dir="ltr" placeholder="0" value={String(edit.data[k] ?? "")} onChange={(e) => set(k, e.target.value.replace(/[^\d.]/g, ""))} /></label>)}
             <div className="rounded-md bg-muted p-2 text-sm sm:col-span-2">{t("صافي الراتب")}: <b>{fmt(netOf(edit.data))}</b></div>
             <label className="grid gap-1 text-sm sm:col-span-2">{t("ملاحظات")}<Input value={String(edit.data["ملاحظات"] ?? "")} onChange={(e) => set("ملاحظات", e.target.value)} /></label>
             <Button className="sm:col-span-2" onClick={save}>{t("حفظ")}</Button>
