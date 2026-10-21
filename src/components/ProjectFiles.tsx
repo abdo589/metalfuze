@@ -25,8 +25,10 @@ function Thumb({ path, alt, onClick }: { path: string; alt: string; onClick: () 
   );
 }
 
-export function ProjectFiles({ projectId }: { projectId: string }) {
-  const canEdit = useRole() === "admin";
+export function ProjectFiles({ projectId, editable, defaults = DEFAULT_FILE_CATEGORIES, title = "ملفات المشروع" }: { projectId: string; editable?: boolean; defaults?: string[]; title?: string }) {
+  const role = useRole();
+  const canEdit = editable ?? role === "admin";
+  const DEFAULT_FILE_CATEGORIES = defaults;
   const [all, setAll] = useState<F[]>([]);
   // Empty folders are kept as a marker row (file_path "") so they persist until deleted.
   const files = all.filter((f) => f.file_path);
@@ -88,7 +90,7 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-3 sm:col-span-2">
-      <h3 className="font-bold">{t("ملفات المشروع")}</h3>
+      <h3 className="font-bold">{t(title)}</h3>
       {cats.map((c) => {
         const list = files.filter((f) => f.category === c);
         const custom = !DEFAULT_FILE_CATEGORIES.includes(c);

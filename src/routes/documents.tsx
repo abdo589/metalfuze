@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CalendarClock, CheckCircle2, Download, Eye, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, Download, Eye, FileText, FolderOpen, Loader2, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
+import { ProjectFiles } from "@/components/ProjectFiles";
 import { useServerFn } from "@tanstack/react-start";
 import { extractDocument } from "@/lib/doc-extract.functions";
 import { toast } from "sonner";
@@ -46,6 +47,7 @@ function statusOf(d: number | null) {
 function DocumentsPage() {
   useLanguage();
   const canEdit = useCanEdit();
+  const [filesOpen, setFilesOpen] = useState(false);
   const [rows, setRows] = useState<Doc[]>([]);
   const [q, setQ] = useState("");
   const [branch, setBranch] = useState("");
@@ -133,11 +135,14 @@ function DocumentsPage() {
         </div>
       </header>
 
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <StatCard label={t("إجمالي الوثائق")} value={rows.length} icon={<FileText className="size-5 text-primary" />} cls="border-border bg-card" />
         <StatCard label={t("قرب الانتهاء")} value={all.filter((k) => k === "soon").length} icon={<CalendarClock className="size-5 text-warning" />} cls="border-warning/40 bg-warning/10" />
         <StatCard label={t("منتهية")} value={all.filter((k) => k === "expired").length} icon={<AlertTriangle className="size-5 text-destructive" />} cls="border-destructive/40 bg-destructive/10" />
         <StatCard label={t("سارية")} value={all.filter((k) => k === "valid").length} icon={<CheckCircle2 className="size-5 text-success" />} cls="border-success/40 bg-success/10" />
+        <button type="button" onClick={() => setFilesOpen(true)} className="text-start">
+          <StatCard label={t("الملفات")} value="📁" icon={<FolderOpen className="size-5 text-primary" />} cls="border-primary/40 bg-primary/10 hover:bg-primary/20" />
+        </button>
       </section>
 
       <div className="flex flex-wrap gap-2 print:hidden">
@@ -185,6 +190,12 @@ function DocumentsPage() {
         </table>
       </div>
 
+      <Dialog open={filesOpen} onOpenChange={setFilesOpen}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader><DialogTitle>{t("الملفات")}</DialogTitle></DialogHeader>
+          <ProjectFiles projectId="hr-documents" editable={canEdit} defaults={["ملفات عامة"]} title="الملفات" />
+        </DialogContent>
+      </Dialog>
       <Dialog open={!!view} onOpenChange={(o) => !o && setView(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>{view ? t(view.doc_type) : ""}</DialogTitle></DialogHeader>
