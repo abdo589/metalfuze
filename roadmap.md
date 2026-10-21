@@ -21,3 +21,4 @@
 - [x] Reviews use employees from the HR file.
 - [x] Company-only payroll page (/est-payroll) linked to establishment records.
 - [x] Project files in the project card: four ready folders + user-named folders, upload/view/download, delete a single file or a whole custom folder (verified in browser; backend rows and storage objects removed).
+- [x] Projects dashboard: four status cards (طبيعي / متأخر / متقدم / منتهي) with counts, click to filter the table, status pie grouped by the same four groups (verified in browser as Eilaf).
