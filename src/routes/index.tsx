@@ -3,12 +3,13 @@ import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, Banknote, CircleAlert, FileDown, FileSpreadsheet, FolderKanban, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
+import { AlertTriangle, Banknote, CircleAlert, Eye, FileDown, FileSpreadsheet, FolderKanban, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ProjectDialog } from "@/components/ProjectDialog";
+import { ProjectDetails } from "@/components/ProjectDetails";
 import { PdfButton } from "@/components/PdfButton";
 import {
   daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
