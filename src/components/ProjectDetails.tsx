@@ -55,7 +55,7 @@ async function downloadProjectPdf(p: Project) {
     </div>
     <div style="background:${statusClassRaw(p.status)};color:#fff;display:inline-block;font-weight:700;padding:4px 12px;border-radius:6px;margin-bottom:14px">${esc(p.status || "—")}</div>
     <table style="width:100%;border-collapse:collapse;margin-bottom:6px">${
-      rows.filter(([, v]) => v !== undefined && v !== "").reduce<string[][]>((a, r, i) => { if (i % 2 === 0) a.push([r]); else a[a.length - 1]!.push(r); return a; }, [])
+      rows.filter(([, v]) => v !== undefined && v !== "").reduce<[string, string][][]>((a, r, i) => { if (i % 2 === 0) a.push([r]); else a[a.length - 1]!.push(r); return a; }, [])
         .map((pair, i) => `<tr style="background:${i % 2 ? "#f1f8f7" : "#fff"}">${pair.map(([k, v]) => `<td style="border:1px solid #cfdcdb;padding:5px 8px;width:22%;color:#556;font-weight:600">${esc(k)}</td><td style="border:1px solid #cfdcdb;padding:5px 8px;width:28%;white-space:nowrap">${esc(v)}</td>`).join("")}${pair.length < 2 ? '<td style="border:1px solid #cfdcdb"></td><td style="border:1px solid #cfdcdb"></td>' : ""}</tr>`).join("")
     }</table>`;
   document.body.appendChild(el);
