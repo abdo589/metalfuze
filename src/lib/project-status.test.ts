@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { autoStatus } from "./projects";
+import { autoStatus, statusBucket, STATUS_BUCKETS } from "./projects";
 const b = { start: "2026-01-01", end: "2026-06-30", status: "" };
 describe("autoStatus", () => {
   it("running within agreed period is normal", () => expect(autoStatus(b, "2026-05-01")).toBe("طبيعي"));

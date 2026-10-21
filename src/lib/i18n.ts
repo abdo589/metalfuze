@@ -96,6 +96,7 @@ export const translations: Record<string, string> = {
   "إجمالي المشاريع": "Total Projects", "إجمالي قيمة العقود": "Total Contract Value", "المدفوع": "Paid",
   "المتبقي للدفع": "Remaining Payment", "ريال": "SAR", "ر.س": "SAR",
   "الكل": "All", "طبيعي": "On Track", "متقدم": "Ahead", "متأخر": "Delayed", "منتهي": "Finished",
+  "معروض في الجدول": "Shown in the table", "اضغط للفلترة": "Click to filter",
   "حالة المشاريع": "Project Status", "قيمة العقود حسب القطاع": "Contract Value by Sector",
   "المشاريع لكل مدير": "Projects by Manager", "الإنجاز الفعلي مقابل المخطط": "Actual vs Planned Progress",
   "الرمز": "Code", "المشروع": "Project", "القطاع": "Sector", "المدير": "Manager",
