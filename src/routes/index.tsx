@@ -59,6 +59,7 @@ function Dashboard() {
   const [status, setStatus] = useState("الكل");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
+  const [details, setDetails] = useState<Project | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const s = useMemo(() => {
