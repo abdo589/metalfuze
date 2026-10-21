@@ -10,12 +10,22 @@ export function EmployeeReviews({ empNo, name }: { empNo: string; name: string }
   const [rows, setRows] = useState<Review[] | null>(null);
   useEffect(() => {
     (async () => {
-      const { data: emps } = await supabase.from("employees").select("id,name");
-      const ids = (emps ?? []).filter((e) => e.id === empNo || (name && e.name.trim() === name.trim())).map((e) => e.id);
-      if (!ids.length) { setRows([]); return; }
-      const { data } = await supabase.from("performance_reviews").select("*").in("employee_id", ids)
+      // Reviews are stored under the employee's HR number (رقم الموظف), so match
+      // on it directly; also include payroll ids for legacy rows saved that way.
+      const or = `employee_id.eq.${empNo}`;
+      let extra = "";
+      if (name) {
+        const { data: emps } = await supabase.from("employees").select("id,name").eq("name", name.trim());
+        const ids = (emps ?? []).map((e) => e.id).filter(Boolean);
+        if (ids.length) extra = `,employee_id.in.(${ids.join(",")})`;
+      }
+      const { data } = await supabase
+        .from("performance_reviews")
+        .select("*")
+        .or(or + extra)
         .order("year", { ascending: false }).order("quarter", { ascending: false });
-      setRows((data ?? []) as unknown as Review[]);
+      const seen = new Set<string>();
+      setRows(((data ?? []) as Review[]).filter((r) => !seen.has(r.id) && seen.add(r.id)));
     })();
   }, [empNo, name]);
 
