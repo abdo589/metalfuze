@@ -52,15 +52,16 @@ const addMonths = (key: string, delta: number) => {
  */
 export function availableMonths(employees: Employee[], today = new Date()): string[] {
   const cur = monthKey(today);
-  let start = addMonths(cur, -11);
+  let start: string | null = null;
   for (const e of employees) {
     const candidates = [
       e.joined ? String(e.joined).slice(0, 7) : "",
       ...Object.keys(e.monthly ?? {}),
       ...(e.paidMonths ?? []),
     ].filter((k) => /^\d{4}-\d{2}$/.test(k));
-    for (const k of candidates) if (k < start) start = k;
+    for (const k of candidates) if (!start || k < start) start = k;
   }
+  if (!start) start = addMonths(cur, -11); // no data yet: last 12 months
   const list: string[] = [];
   for (let k = start; k <= cur; k = addMonths(k, 1)) list.push(k);
   return list;
