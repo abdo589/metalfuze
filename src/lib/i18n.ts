@@ -106,7 +106,7 @@ export const translations: Record<string, string> = {
   "فندقي": "Hotel", "خاص": "Private", "خدمات": "Services", "صحي": "Healthcare", "مطاعم": "Restaurants",
   "فندقي + سكني": "Hotel / Residential", "نعم": "Yes", "لا": "No",
   "تعديل مشروع": "Edit Project", "تاريخ الانتهاء الفعلي": "Actual End Date", "تلقائي": "automatic", "منتهي - متقدم": "Finished - Ahead", "منتهي - متأخر": "Finished - Late", "منتهي - طبيعي": "Finished - On time", "إضافة مشروع جديد": "Add New Project", "اسم المشروع": "Project Name",
-  "رمز المشروع": "Project Code", "الإدارة": "Department", "مدير المشروع": "Project Manager", "مالك المشروع": "Project Owner",
+  "رمز المشروع": "Project Code", "الإدارة": "Department", "مدير المشروع": "Project Manager", "مالك المشروع": "Project Owner", "اسم العميل": "Client Name", "إضافة خيار جديد": "Add new option", "اكتب الاسم الجديد": "Type the new name",
   "تاريخ البداية": "Start Date", "تاريخ الانتهاء": "End Date", "حالة المشروع": "Project Status",
   "هل يوجد عقد شركة": "Company Contract", "نسبة الإنجاز %": "Progress %", "نسبة الإنجاز المخطط %": "Planned Progress %",
   "الإشكاليات / العوائق": "Issues / Obstacles", "ملاحظات مهمة": "Important Notes", "ملاحظات": "Notes",
