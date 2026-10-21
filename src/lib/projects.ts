@@ -11,6 +11,11 @@ export type Project = {
   mainContractor?: string;
   clientCapacity?: string;
   ourRole?: string;
+  hasWarranty?: string;
+  warrantyNo?: string;
+  warrantyYears?: number;
+  deliveryDate?: string | null;
+  freeRepairYears?: number;
   sector: string;
   dept: string;
   manager: string;
@@ -200,3 +205,28 @@ export async function importExcel(file: File): Promise<Project[]> {
 
 export const CLIENT_CAPACITIES = ["مالك", "مقاول رئيسي", "مقاول باطن"];
 export const OUR_ROLES = ["مورد", "مورد ومركّب", "مقاول باطن", "مقاول رئيسي"];
+
+/** Adds years (fractions allowed, rounded to whole months) to a YYYY-MM-DD date. */
+export function addYears(date: string, years: number): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const dt = new Date(Date.UTC(y!, m! - 1 + Math.round(years * 12), d!));
+  return dt.toISOString().slice(0, 10);
+}
+export const minusMonth = (date: string) => addYears(date, -1 / 12);
+
+export const WARRANTY_STATUSES = ["لم يبدأ", "ساري", "منتهي"];
+
+export type WarrantyInfo = { status: string; freeEnd: string | null; end: string | null; alerts: string[] };
+
+/** Technical warranty: starts at final delivery; free-repair end and warranty end follow from the years. Alerts one month before each. */
+export function warrantyInfo(p: Pick<Project, "hasWarranty" | "deliveryDate" | "warrantyYears" | "freeRepairYears">, today = new Date().toISOString().slice(0, 10)): WarrantyInfo | null {
+  if (p.hasWarranty !== "نعم") return null;
+  if (!p.deliveryDate) return { status: "لم يبدأ", freeEnd: null, end: null, alerts: [] };
+  const freeEnd = p.freeRepairYears ? addYears(p.deliveryDate, p.freeRepairYears) : null;
+  const end = p.warrantyYears ? addYears(p.deliveryDate, p.warrantyYears) : null;
+  const status = today < p.deliveryDate ? "لم يبدأ" : end && today >= end ? "منتهي" : "ساري";
+  const alerts: string[] = [];
+  if (freeEnd && today >= minusMonth(freeEnd) && today < freeEnd) alerts.push("free");
+  if (end && today >= minusMonth(end) && today < end) alerts.push("end");
+  return { status, freeEnd, end, alerts };
+}

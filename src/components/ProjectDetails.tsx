@@ -7,6 +7,22 @@ import { FileDown, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { deadlineAlert, daysLeft, deviationLabel, deviationOf, deviationPct, fmtMoney, fmtPct, type Project } from "@/lib/projects";
 import { ProjectFiles } from "@/components/ProjectFiles";
+import { FinancialGuarantees } from "@/components/FinancialGuarantees";
+import { warrantyInfo } from "@/lib/projects";
+
+function warrantyRows(p: Project): [string, string][] {
+  const w = warrantyInfo(p);
+  if (!w) return [[t("هل يوجد ضمان؟"), p.hasWarranty ? t(p.hasWarranty) : "—"]];
+  return [
+    [t("حالة الضمان"), t(w.status)],
+    [t("رقم خطاب الضمان"), p.warrantyNo || "—"],
+    [t("مدة الضمان (سنوات)"), String(p.warrantyYears ?? "—")],
+    [t("فترة الإصلاح المجاني (سنوات)"), String(p.freeRepairYears ?? "—")],
+    [t("تاريخ التسليم النهائي"), p.deliveryDate || "—"],
+    [t("تاريخ نهاية الإصلاح المجاني"), w.freeEnd ?? "—"],
+    [t("تاريخ انتهاء الضمان"), w.end ?? "—"],
+  ];
+}
 
 export function statusClass(s: string) {
   if (s.includes("متأخر")) return "bg-destructive/15 text-destructive border-destructive/30";
@@ -40,7 +56,7 @@ async function downloadProjectPdf(p: Project) {
     [t("القطاع"), p.sector],
     [t("الإدارة"), p.dept],
     [t("مدير المشروع"), p.manager],
-    [t("مالك المشروع"), p.owner],
+    ...warrantyRows(p),
     [t("تاريخ بداية المشروع"), p.start ?? "—"],
     [t("تاريخ انتهاء المشروع"), p.end ? `${p.end} (${deadlineAlert(p.end)}${d !== null ? ` ${d} ${t("يوم")}` : ""})` : "—"],
     [t("تاريخ الانتهاء الفعلي"), p.actualEnd || "—"],
@@ -123,6 +139,7 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
     [t("نسبة الإنجاز المخطط"), bar(project.planned)],
     [t("قيمة العقد"), <span className="tabular-nums">{fmtMoney(project.contract)} {t("ريال")}</span>],
     [t("المدفوع"), <span className="tabular-nums">{fmtMoney(project.paid)} {t("ريال")}</span>],
+    ...warrantyRows(project),
     [t("المتبقي للدفع"), <span className="tabular-nums font-semibold">{fmtMoney(project.contract - project.paid)} {t("ريال")}</span>],
   ];
   return (
@@ -150,6 +167,12 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
               <div className="mt-0.5 whitespace-pre-wrap text-sm">{project.notes}</div>
             </div>
           )}
+          {(() => { const w = warrantyInfo(project); return w?.alerts.length ? (
+            <p className="rounded-lg bg-warning/15 p-2 text-sm font-medium text-warning sm:col-span-2">
+              {w.alerts.includes("free") && `${t("الإصلاح المجاني ينتهي خلال شهر")} (${w.freeEnd}) `}
+              {w.alerts.includes("end") && `${t("الضمان ينتهي خلال شهر")} (${w.end})`}
+            </p>) : null; })()}
+          <FinancialGuarantees projectId={project.id} delivered={!!project.deliveryDate} />
           <ProjectFiles projectId={project.id} />
         </div>
         <div className="flex justify-end">

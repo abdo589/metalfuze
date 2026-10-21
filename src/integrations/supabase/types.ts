@@ -408,6 +408,57 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_guarantees: {
+        Row: {
+          amount: number
+          bond_no: string
+          created_at: string
+          creditor: string
+          debtor: string
+          file_name: string | null
+          file_path: string | null
+          id: string
+          issue_date: string | null
+          kind: string
+          project_id: string
+          purpose: string
+          return_condition: string
+          status: string
+        }
+        Insert: {
+          amount?: number
+          bond_no?: string
+          created_at?: string
+          creditor?: string
+          debtor?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          issue_date?: string | null
+          kind?: string
+          project_id: string
+          purpose?: string
+          return_condition?: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          bond_no?: string
+          created_at?: string
+          creditor?: string
+          debtor?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          issue_date?: string | null
+          kind?: string
+          project_id?: string
+          purpose?: string
+          return_condition?: string
+          status?: string
+        }
+        Relationships: []
+      }
       fleet_cars: {
         Row: {
           car_type: string

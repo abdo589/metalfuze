@@ -13,7 +13,15 @@ import { ProjectDetails } from "@/components/ProjectDetails";
 import { PdfButton } from "@/components/PdfButton";
 import {
   daysLeft, fmtMoney, fmtPct, importExcel, projectStore, STATUS_BUCKETS, statusBucket, useProjects, type Project,
+  warrantyInfo, WARRANTY_STATUSES, addYears,
 } from "@/lib/projects";
+
+function warrMatch(p: import("@/lib/projects").Project, f: string) {
+  if (!f) return true;
+  const w = warrantyInfo(p);
+  if (f === "soon") { const today = new Date().toISOString().slice(0, 10); return !!w?.end && w.end >= today && w.end <= addYears(today, 0.25); }
+  return w?.status === f;
+}
 import { exportExcel } from "@/lib/export";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
@@ -60,6 +68,7 @@ function Dashboard() {
   const [fOwner, setFOwner] = useState("");
   const [fLoc, setFLoc] = useState("");
   const [fRole, setFRole] = useState("");
+  const [fWarr, setFWarr] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
   const [details, setDetails] = useState<Project | null>(null);
@@ -91,10 +100,15 @@ function Dashboard() {
     [projects],
   );
 
+  const warrantyAlerts = projects.flatMap((p) => {
+    const w = warrantyInfo(p);
+    if (!w) return [];
+    return w.alerts.map((k) => ({ key: p.id + k, p, text: k === "free" ? `${t("الإصلاح المجاني ينتهي خلال شهر")} (${w.freeEnd})` : `${t("الضمان ينتهي خلال شهر")} (${w.end})` }));
+  });
   const filtered = projects.filter(
     (p) =>
       (status === "الكل" || statusBucket(p.status) === status) &&
-      (!fOwner || p.owner === fOwner) && (!fLoc || p.location === fLoc) && (!fRole || p.ourRole === fRole) &&
+      (!fOwner || p.owner === fOwner) && (!fLoc || p.location === fLoc) && (!fRole || p.ourRole === fRole) && warrMatch(p, fWarr) &&
       [p.name, p.code, p.manager, p.sector].join(" ").toLowerCase().includes(q.toLowerCase()),
   );
   const bucketCounts = useMemo(() => {
@@ -234,6 +248,17 @@ function Dashboard() {
       </Panel>
       </div>
 
+      {warrantyAlerts.length > 0 && (
+        <section className="surface space-y-1 border-warning/40 p-4 print:hidden">
+          <h2 className="font-display font-bold text-warning">{t("تنبيهات الضمان")}</h2>
+          {warrantyAlerts.map((a) => (
+            <button key={a.key} className="block text-start text-sm hover:underline" onClick={() => setDetails(a.p)}>
+              • <b>{a.p.name}</b>{a.p.manager ? ` (${a.p.manager})` : ""}: {a.text}
+            </button>
+          ))}
+        </section>
+      )}
+
       <section ref={tableRef} className="surface overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
           <h2 className="font-display text-lg font-bold">{t("جميع المشاريع (")}{filtered.length})</h2>
@@ -249,6 +274,11 @@ function Dashboard() {
                 {[...new Set(projects.map((p) => (p[k] ?? "").trim()).filter(Boolean))].map((o) => <option key={o} value={o}>{t(o)}</option>)}
               </select>
             ))}
+            <select value={fWarr} onChange={(e) => setFWarr(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+              <option value="">{t("كل حالات الضمان")}</option>
+              {WARRANTY_STATUSES.map((w) => <option key={w} value={w}>{t(w)}</option>)}
+              <option value="soon">{t("ضمانات تنتهي خلال 3 شهور")}</option>
+            </select>
             <div className="relative">
               <Search className="absolute right-2.5 top-2.5 size-4 text-muted-foreground" />
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("بحث...")} className="h-9 w-48 pr-8" />

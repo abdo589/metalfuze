@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { autoStatus, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, type Project } from "@/lib/projects";
+import { autoStatus, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, warrantyInfo, type Project } from "@/lib/projects";
 
 const empty = (): Project => ({
   id: newId(), code: "", name: "", sector: "", dept: "المشاريع", manager: "", owner: "Metal Fuze",
@@ -65,6 +65,7 @@ export function ProjectDialog({
       </Select>
     </div>
   );
+  const warrantyBad = f.hasWarranty === "نعم" && (f.freeRepairYears ?? 0) > (f.warrantyYears ?? Infinity);
   const num = (k: keyof Project, label: string, pct = false) => (
     <div className="space-y-1.5">
       <Label>{label}</Label>
@@ -121,6 +122,43 @@ export function ProjectDialog({
           {num("planned", t("نسبة الإنجاز المخطط %"), true)}
           {num("contract", t("قيمة العقد"))}
           {num("paid", t("المدفوع"))}
+          <div className="space-y-3 rounded-lg border border-border p-3 sm:col-span-2">
+            <h3 className="font-display font-bold">{t("الضمان")}</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>{t("هل يوجد ضمان؟")}</Label>
+                <Select value={f.hasWarranty ?? ""} onValueChange={(v) => set("hasWarranty", v)}>
+                  <SelectTrigger><SelectValue placeholder={t("هل يوجد ضمان؟")} /></SelectTrigger>
+                  <SelectContent><SelectItem value="نعم">{t("نعم")}</SelectItem><SelectItem value="لا">{t("لا")}</SelectItem></SelectContent>
+                </Select>
+              </div>
+              {f.hasWarranty === "نعم" && (() => {
+                const w = warrantyInfo(f);
+                const yrs = (k: "warrantyYears" | "freeRepairYears", label: string) => (
+                  <div className="space-y-1.5">
+                    <Label>{label}</Label>
+                    <Input type="number" min={0} step={0.5} dir="ltr" value={f[k] ?? ""} onChange={(e) => set(k, e.target.value === "" ? undefined : Number(e.target.value))} />
+                  </div>
+                );
+                return (
+                  <>
+                    {text("warrantyNo", t("رقم خطاب الضمان"))}
+                    {yrs("warrantyYears", t("مدة الضمان (سنوات)"))}
+                    <div className="space-y-1.5">
+                      <Label>{t("تاريخ التسليم النهائي")}</Label>
+                      <Input type="date" dir="ltr" value={f.deliveryDate ?? ""} onChange={(e) => set("deliveryDate", e.target.value || null)} />
+                    </div>
+                    {yrs("freeRepairYears", t("فترة الإصلاح المجاني (سنوات)"))}
+                    <div className="space-y-1.5"><Label>{t("تاريخ نهاية الإصلاح المجاني")}</Label><Input disabled dir="ltr" value={w?.freeEnd ?? "—"} /></div>
+                    <div className="space-y-1.5"><Label>{t("تاريخ انتهاء الضمان")}</Label><Input disabled dir="ltr" value={w?.end ?? "—"} /></div>
+                    <div className="space-y-1.5"><Label>{t("حالة الضمان")}</Label><Input disabled value={t(w?.status ?? "لم يبدأ")} /></div>
+                    {warrantyBad && <p className="text-sm text-destructive sm:col-span-2">{t("فترة الإصلاح المجاني لا يمكن أن تكون أطول من مدة الضمان")}</p>}
+                    <p className="text-xs text-muted-foreground sm:col-span-2">{t("ارفع خطاب الضمان من «ملفات المشروع» داخل بطاقة المشروع")}</p>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label>{t("الإشكاليات / العوائق")}</Label>
             <Textarea value={f.issues} onChange={(e) => set("issues", e.target.value)} />
@@ -132,7 +170,7 @@ export function ProjectDialog({
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t("إلغاء")}</Button>
-          <Button disabled={!f.name.trim()} onClick={() => { projectStore.upsert(f); onOpenChange(false); }}>
+          <Button disabled={!f.name.trim() || warrantyBad} onClick={() => { projectStore.upsert(f); onOpenChange(false); }}>
             {t("حفظ")}</Button>
         </DialogFooter>
       </DialogContent>
