@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Car, CheckCircle2, Clock, Eye, Mail, Pencil, Plus, Search, Trash2, Wrench } from "lucide-react";
+import { AlertTriangle, Car, CheckCircle2, Clock, Eye, FileSpreadsheet, LoaderCircle, Mail, Pencil, Plus, Search, Trash2, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,7 @@ function FleetPage() {
   const [editCar, setEditCar] = useState<ReturnType<typeof emptyCar> | null>(null);
   const [editVio, setEditVio] = useState<ReturnType<typeof emptyVio> | null>(null);
   const [view, setView] = useState<CarRow | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(async () => {
     const [c, v, e] = await Promise.all([
@@ -72,6 +73,39 @@ function FleetPage() {
   const carList = cars.filter((c) => match(`${c.plate} ${c.car_type} ${c.employee_name} ${c.employee_no}`));
   const vioList = vios.filter((v) => match(`${v.plate} ${v.violation_no} ${v.employee_name} ${v.location}`));
   const unpaid = useMemo(() => vios.filter((v) => v.status !== "تم السداد").reduce((s, v) => s + Number(v.amount || 0), 0), [vios]);
+
+  async function exportFleet() {
+    setExporting(true);
+    try {
+      const { exportBrandedExcel } = await import("@/lib/branded-excel");
+      await exportBrandedExcel({
+        filename: `Metal-Fuze-سيارات-ومخالفات-${new Date().toISOString().slice(0, 10)}.xlsx`,
+        reportTitle: `METAL FUZE — ${t("سجل السيارات والمخالفات")}`,
+        summary: [
+          [t("عدد السيارات"), cars.length, "int"],
+          [t("مسلمة للموظفين"), cars.filter((c) => c.status === "مسلمة للموظف").length, "int"],
+          [t("مخالفات غير مسددة"), vios.filter((v) => v.status !== "تم السداد").length, "int"],
+          [t("مبالغ غير مسددة (ريال)"), unpaid, "money"],
+        ],
+        sheets: [
+          { name: "جميع السيارات", title: t("جميع السيارات"), columns: [
+            { header: t("رقم اللوحة"), width: 14 }, { header: t("نوع السيارة"), width: 16 }, { header: t("الموديل"), width: 10 },
+            { header: t("الموظف المسؤول"), width: 22 }, { header: t("رقم الموظف"), width: 12 },
+            { header: t("تاريخ التسليم"), width: 14 }, { header: t("تاريخ الاستلام"), width: 14 },
+            { header: t("تاريخ انتهاء الاستمارة"), width: 16 }, { header: t("تاريخ انتهاء التأمين"), width: 16 },
+            { header: t("شركة التأمين"), width: 18 }, { header: t("الحالة"), width: 16 }, { header: t("ملاحظات"), width: 30 },
+          ], rows: cars.map((c) => [c.plate, c.car_type, c.model_year, c.employee_name, c.employee_no, c.handover_date, c.return_date, c.registration_expiry, c.insurance_expiry, c.insurance_company, t(c.status), c.notes]) },
+          { name: "المخالفات المرورية", title: t("المخالفات المرورية"), columns: [
+            { header: t("رقم المخالفة"), width: 14 }, { header: t("نوع المخالفة"), width: 18 }, { header: t("رقم اللوحة"), width: 14 },
+            { header: t("الموظف"), width: 22 }, { header: t("تاريخ المخالفة"), width: 14 }, { header: t("الوقت"), width: 10 },
+            { header: t("الموقع"), width: 20 }, { header: t("المبلغ"), width: 14, format: "money" }, { header: t("الحالة"), width: 18 }, { header: t("ملاحظات"), width: 30 },
+          ], rows: vios.map((v) => [v.violation_no, t(v.violation_type), v.plate, v.employee_name, v.violation_date, v.violation_time, v.location, Number(v.amount) || 0, t(v.status), v.notes]), totals: [7] },
+        ],
+      });
+      toast.success(t("تم تصدير التقرير"));
+    } catch { toast.error(t("تعذر التصدير")); }
+    finally { setExporting(false); }
+  }
 
   function pickEmp<T extends { employee_no: string; employee_name: string }>(d: T, key: string): T {
     const e = emps.find((x) => x.no + "|" + x.name === key);
@@ -128,6 +162,7 @@ function FleetPage() {
           <p className="text-sm text-muted-foreground">{t("إدارة سيارات الشركة وربطها بالموظفين ومتابعة المخالفات وإشعار الموظفين عبر البريد")}</p>
         </div>
         <div className="flex flex-wrap gap-2 print:hidden">
+          <Button variant="outline" disabled={exporting} onClick={exportFleet}>{exporting ? <LoaderCircle className="animate-spin" /> : <FileSpreadsheet />}{t("تصدير Excel")}</Button>
           <PdfButton />
           {canEdit && <Button variant="outline" onClick={() => setEditVio(emptyVio())}><Plus /> {t("إضافة مخالفة")}</Button>}
           {canEdit && <Button onClick={() => setEditCar(emptyCar())}><Plus /> {t("إضافة سيارة")}</Button>}
