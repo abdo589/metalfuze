@@ -172,8 +172,8 @@ export function ProjectDetails({ project, onClose }: { project: Project | null; 
               {w.alerts.includes("free") && `${t("الإصلاح المجاني ينتهي خلال شهر")} (${w.freeEnd}) `}
               {w.alerts.includes("end") && `${t("الضمان ينتهي خلال شهر")} (${w.end})`}
             </p>) : null; })()}
-          <ProjectFiles projectId={project.id} />
           <FinancialGuarantees projectId={project.id} delivered={!!project.deliveryDate} />
+          <ProjectFiles projectId={project.id} />
         </div>
         <div className="flex justify-end">
           <Button disabled={busy} onClick={async () => {
