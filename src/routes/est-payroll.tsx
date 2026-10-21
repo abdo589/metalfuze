@@ -37,7 +37,7 @@ function EstPayrollPage() {
   useLanguage();
   const canEdit = useCanEditHr();
   const [rows, setRows] = useState<Rec[]>([]);
-  const [month, setMonth] = useState("");
+  const [month, setMonth] = useState(thisMonth());
   const [edit, setEdit] = useState<{ id?: string; data: D } | null>(null);
 
   const load = useCallback(async () => {
@@ -48,8 +48,16 @@ function EstPayrollPage() {
 
   const emps = rows.filter((r) => r.sheet === "employees");
   const pay = rows.filter((r) => r.sheet === "payroll");
-  const months = useMemo(() => [...new Set(pay.map((r) => String(r.data["الشهر"] ?? "")).filter(Boolean))].sort().reverse(), [rows]);
-  const list = pay.filter((r) => !month || String(r.data["الشهر"] ?? "") === month);
+  // Each month on its own, from the earliest recorded month up to the current month only (no future months).
+  const months = useMemo(() => {
+    const cur = thisMonth();
+    const keys = pay.map((r) => String(r.data["الشهر"] ?? "")).filter((k) => /^\d{4}-\d{2}$/.test(k) && k <= cur);
+    let k = keys.length ? keys.sort()[0]! : cur;
+    const out: string[] = [];
+    while (k <= cur) { out.push(k); const [y, m] = k.split("-").map(Number); k = new Date(Date.UTC(y!, m!, 1)).toISOString().slice(0, 7); }
+    return out.reverse();
+  }, [rows]);
+  const list = pay.filter((r) => String(r.data["الشهر"] ?? "") === month);
   const total = list.reduce((s, r) => s + netOf(r.data), 0);
   const paid = list.filter((r) => String(r.data["حالة الصرف"] ?? "").includes("تم")).length;
 
@@ -63,6 +71,7 @@ function EstPayrollPage() {
   async function save() {
     if (!edit) return;
     if (!edit.data["رقم الموظف"]) { toast.error(t("اختر الموظف")); return; }
+    if (String(edit.data["الشهر"] ?? "") > thisMonth()) { toast.error(t("لا يمكن إضافة راتب لشهر لم يبدأ")); return; }
     const data: D = { ...edit.data };
     for (const k of ["الراتب الأساسي", "البدلات", "الخصومات", "الإضافي"]) data[k] = N(data[k]);
     data["صافي الراتب"] = netOf(data);
@@ -90,7 +99,7 @@ function EstPayrollPage() {
         </div>
         <div className="flex gap-2 print:hidden">
           <select className="h-9 rounded-md border bg-background px-2 text-sm" value={month} onChange={(e) => setMonth(e.target.value)}>
-            <option value="">{t("كل الشهور")}</option>
+            
             {months.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
           <PdfButton />
@@ -141,7 +150,7 @@ function EstPayrollPage() {
                 {emps.map((e) => <option key={e.id} value={String(e.data["رقم الموظف"])}>{String(e.data["رقم الموظف"])} — {String(e.data["اسم الموظف"] ?? "")}</option>)}
               </select>
             </label>
-            <label className="grid gap-1 text-sm">{t("الشهر")}<Input type="month" value={String(edit.data["الشهر"] ?? "")} onChange={(e) => set("الشهر", e.target.value)} /></label>
+            <label className="grid gap-1 text-sm">{t("الشهر")}<Input type="month" max={thisMonth()} value={String(edit.data["الشهر"] ?? "")} onChange={(e) => set("الشهر", e.target.value)} /></label>
             <label className="grid gap-1 text-sm">{t("حالة الصرف")}
               <select className="h-9 rounded-md border bg-background px-2" value={String(edit.data["حالة الصرف"] ?? "")} onChange={(e) => set("حالة الصرف", e.target.value)}>
                 {[...new Set([String(edit.data["حالة الصرف"] ?? ""), ...STATUSES].filter(Boolean))].map((s) => <option key={s} value={s}>{t(s)}</option>)}
