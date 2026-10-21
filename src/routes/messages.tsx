@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MessageSquare, Search, Send } from "lucide-react";
+import { MessageSquare, Paperclip, Search, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/messages")({
 });
 
 type Profile = { id: string; display_name: string };
-type Msg = { id: string; sender_id: string; recipient_id: string; body: string; read_at: string | null; created_at: string };
+type Msg = { id: string; sender_id: string; recipient_id: string; body: string; read_at: string | null; created_at: string; attachment_path?: string | null; attachment_name?: string | null };
 
 function MessagesPage() {
   useLanguage();
@@ -35,6 +35,7 @@ function MessagesPage() {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let alive = true;
@@ -82,15 +83,32 @@ function MessagesPage() {
     if (ids.length) supabase.from("direct_messages").update({ read_at: new Date().toISOString() }).in("id", ids).then(() => {});
   }, [thread, active, me]);
 
-  async function send() {
+  async function send(file?: File) {
     const body = draft.trim();
-    if (!body || !active || !me) return;
+    if ((!body && !file) || !active || !me) return;
     setSending(true);
-    const { data, error } = await supabase.from("direct_messages").insert({ sender_id: me, recipient_id: active, body: body.slice(0, 4000) }).select().single();
+    let attachment_path: string | null = null;
+    if (file) {
+      if (file.size > 20 * 1024 * 1024) { setSending(false); toast.error(t("الملف أكبر من 20 ميجا")); return; }
+      const safe = file.name.replace(/[^\w.\-]+/g, "_");
+      attachment_path = `${me}/${active}/${Date.now()}-${safe}`;
+      const up = await supabase.storage.from("message-files").upload(attachment_path, file);
+      if (up.error) { setSending(false); toast.error(up.error.message); return; }
+    }
+    const { data, error } = await supabase.from("direct_messages").insert({
+      sender_id: me, recipient_id: active, body: (body || "📎").slice(0, 4000),
+      attachment_path, attachment_name: file?.name ?? null,
+    }).select().single();
     setSending(false);
     if (error) { toast.error(error.message); return; }
-    setDraft("");
-    if (data) setMsgs((prev) => prev.some((x) => x.id === data.id) ? prev : [...prev, data]);
+    if (!file) setDraft("");
+    if (data) setMsgs((prev) => prev.some((x) => x.id === data.id) ? prev : [...prev, data as Msg]);
+  }
+
+  async function openFile(path: string) {
+    const { data, error } = await supabase.storage.from("message-files").createSignedUrl(path, 60);
+    if (error || !data) { toast.error(error?.message ?? "Error"); return; }
+    window.open(data.signedUrl, "_blank", "noopener");
   }
 
   const activePerson = people.find((p) => p.id === active);
@@ -136,7 +154,12 @@ function MessagesPage() {
                   return (
                     <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[75%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
-                        {m.body}
+                        {m.attachment_path && (
+                          <button type="button" onClick={() => openFile(m.attachment_path!)} className="mb-1 flex items-center gap-1 underline">
+                            <Paperclip className="size-4" />{m.attachment_name || t("ملف")}
+                          </button>
+                        )}
+                        {!(m.attachment_path && m.body === "📎") && m.body}
                         <div className={`mt-1 text-[10px] ${mine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                           {new Date(m.created_at).toLocaleString()}{mine && m.read_at ? ` · ${t("تمت القراءة")}` : ""}
                         </div>
@@ -147,10 +170,12 @@ function MessagesPage() {
                 <div ref={endRef} />
               </div>
               <div className="flex items-end gap-2 border-t border-border p-3">
+                <input ref={fileRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) send(f); }} />
+                <Button variant="outline" size="icon" disabled={sending} onClick={() => fileRef.current?.click()} aria-label={t("إرفاق ملف")}><Paperclip /></Button>
                 <Textarea autoFocus rows={1} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={t("اكتب رسالة…")}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                   className="max-h-40 min-h-10 resize-none" />
-                <Button onClick={send} disabled={sending || !draft.trim()} size="icon" aria-label={t("إرسال")}><Send /></Button>
+                <Button onClick={() => send()} disabled={sending || !draft.trim()} size="icon" aria-label={t("إرسال")}><Send /></Button>
               </div>
             </>
           )}
