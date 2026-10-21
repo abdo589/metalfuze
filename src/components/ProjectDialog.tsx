@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { newId, projectStore, SECTORS, STATUSES, type Project } from "@/lib/projects";
+import { autoStatus, newId, projectStore, SECTORS, STATUSES, type Project } from "@/lib/projects";
 
 const empty = (): Project => ({
   id: newId(), code: "", name: "", sector: "", dept: "المشاريع", manager: "", owner: "Metal Fuze",
@@ -35,7 +35,7 @@ export function ProjectDialog({
         onChange={(e) => set(k, (pct ? Number(e.target.value) / 100 : Number(e.target.value)) as never)} />
     </div>
   );
-  const date = (k: "start" | "end", label: string) => (
+  const date = (k: "start" | "end" | "actualEnd", label: string) => (
     <div className="space-y-1.5">
       <Label>{label}</Label>
       <Input type="date" dir="ltr" value={f[k] ?? ""} onChange={(e) => set(k, e.target.value || null)} />
@@ -60,7 +60,11 @@ export function ProjectDialog({
           {text("owner", t("مالك المشروع"))}
           {date("start", t("تاريخ البداية"))}
           {date("end", t("تاريخ الانتهاء"))}
-          {text("status", t("حالة المشروع"), "statuses")}
+          {date("actualEnd", t("تاريخ الانتهاء الفعلي"))}
+          <div className="space-y-1.5">
+            <Label>{t("حالة المشروع")} ({t("تلقائي")})</Label>
+            <Input readOnly value={t(autoStatus(f))} className="bg-muted" />
+          </div>
           {text("hasContract", t("هل يوجد عقد شركة"))}
           {num("progress", t("نسبة الإنجاز %"), true)}
           {num("planned", t("نسبة الإنجاز المخطط %"), true)}
