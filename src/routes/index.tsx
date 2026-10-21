@@ -3,7 +3,7 @@ import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, Banknote, CircleAlert, Eye, FileDown, FileSpreadsheet, FolderKanban, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
+import { AlertTriangle, Banknote, CheckCircle2, CircleAlert, Eye, FileDown, FileSpreadsheet, FolderKanban, Gauge, Pencil, Plus, Printer, Search, Trash2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { ProjectDialog } from "@/components/ProjectDialog";
 import { ProjectDetails } from "@/components/ProjectDetails";
 import { PdfButton } from "@/components/PdfButton";
 import {
-  daysLeft, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
+  daysLeft, fmtMoney, fmtPct, importExcel, projectStore, STATUS_BUCKETS, statusBucket, useProjects, type Project,
 } from "@/lib/projects";
 import { exportExcel } from "@/lib/export";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
@@ -36,6 +36,13 @@ const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--cha
 const tip = {
   contentStyle: { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--foreground)" },
   itemStyle: { color: "var(--foreground)" },
+};
+
+const STATUS_ICONS: Record<string, React.ReactNode> = {
+  "طبيعي": <Gauge />, "متأخر": <CircleAlert />, "متقدم": <TrendingUp />, "منتهي": <CheckCircle2 />,
+};
+const STATUS_TONES: Record<string, string> = {
+  "طبيعي": "text-primary", "متأخر": "text-destructive", "متقدم": "text-success", "منتهي": "text-chart-2",
 };
 
 function groupBy(list: Project[], key: (p: Project) => string, val: (p: Project) => number = () => 1) {
@@ -73,7 +80,7 @@ function Dashboard() {
   }
 
   const managers = useMemo(() => [...new Set(projects.map((p) => p.manager).filter(Boolean))], [projects]);
-  const byStatus = useMemo(() => groupBy(projects, (p) => p.status), [projects]);
+  const byStatus = useMemo(() => groupBy(projects, (p) => statusBucket(p.status)), [projects]);
   const bySector = useMemo(() => groupBy(projects, (p) => p.sector, (p) => p.contract), [projects]);
   const byManager = useMemo(() => groupBy(projects, (p) => p.manager), [projects]);
   const progressData = useMemo(
@@ -83,10 +90,15 @@ function Dashboard() {
 
   const filtered = projects.filter(
     (p) =>
-      (status === "الكل" || p.status === status) &&
+      (status === "الكل" || statusBucket(p.status) === status) &&
       [p.name, p.code, p.manager, p.sector].join(" ").toLowerCase().includes(q.toLowerCase()),
   );
-  const statuses = ["الكل", ...new Set(projects.map((p) => p.status).filter(Boolean))];
+  const bucketCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    STATUS_BUCKETS.forEach((b) => { m[b] = 0; });
+    projects.forEach((p) => { const b = statusBucket(p.status); m[b] = (m[b] ?? 0) + 1; });
+    return m;
+  }, [projects]);
 
   async function onImport(file: File) {
     try {
@@ -130,6 +142,13 @@ function Dashboard() {
         <Kpi icon={<TrendingUp />} label={t("المدفوع")} value={fmtMoney(s.paid)}
           sub={`${t("نسبة الصرف")} ${fmtPct(s.contract ? s.paid / s.contract : 0)}`} />
         <Kpi icon={<Banknote />} label={t("المتبقي للدفع")} value={fmtMoney(s.remaining)} sub={`${t("متوسط الإنجاز")} ${fmtPct(s.avg)}`} />
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
+        {STATUS_BUCKETS.map((b) => (
+          <StatusCard key={b} label={t(b)} count={bucketCounts[b] ?? 0} tone={STATUS_TONES[b] ?? "text-primary"}
+            icon={STATUS_ICONS[b]} active={status === b} onClick={() => scrollToTable(status === b ? "الكل" : b)} />
+        ))}
       </section>
 
       {(s.overdue.length > 0 || s.soon.length > 0) && (
@@ -215,8 +234,10 @@ function Dashboard() {
         <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
           <h2 className="font-display text-lg font-bold">{t("جميع المشاريع (")}{filtered.length})</h2>
           <div className="flex flex-wrap gap-2 print:hidden">
-            {statuses.map((st) => (
-              <Button key={st} size="sm" variant={status === st ? "default" : "outline"} onClick={() => setStatus(st)}>{t(st)}</Button>
+            {["الكل", ...STATUS_BUCKETS].map((st) => (
+              <Button key={st} size="sm" variant={status === st ? "default" : "outline"} onClick={() => setStatus(st)}>
+                {t(st)} ({st === "الكل" ? projects.length : bucketCounts[st] ?? 0})
+              </Button>
             ))}
             <div className="relative">
               <Search className="absolute right-2.5 top-2.5 size-4 text-muted-foreground" />
@@ -258,6 +279,23 @@ function Dashboard() {
       <ProjectDialog open={open} onOpenChange={setOpen} project={editing} managers={managers} />
       <ProjectDetails project={details} onClose={() => setDetails(null)} />
     </div>
+  );
+}
+
+function StatusCard({ label, count, tone, icon, active, onClick }: {
+  label: string; count: number; tone: string; icon: React.ReactNode; active: boolean; onClick: () => void;
+}) {
+  useLanguage();
+  return (
+    <button onClick={onClick}
+      className={`surface p-5 text-right transition-colors hover:border-primary/60 ${active ? "border-primary ring-1 ring-primary" : ""}`}>
+      <div className="flex items-center justify-between text-muted-foreground">
+        <span className="text-sm">{label}</span>
+        <span className={`${tone} [&_svg]:size-5`}>{icon}</span>
+      </div>
+      <p className={`mt-3 font-display text-3xl font-extrabold tabular-nums ${tone}`}>{count}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{active ? t("معروض في الجدول") : t("اضغط للفلترة")}</p>
+    </button>
   );
 }
 
