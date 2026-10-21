@@ -9,8 +9,21 @@ import { t } from "@/lib/i18n";
 import { useRole } from "@/lib/permissions";
 
 const BUCKET = "dashboard-project-files";
-export const DEFAULT_FILE_CATEGORIES = ["العقود", "الاعتمادات", "المخططات", "عروض الأسعار"];
+const PHOTOS = "صور المشروع";
+export const DEFAULT_FILE_CATEGORIES = [PHOTOS, "العقود", "الاعتمادات", "المخططات", "عروض الأسعار"];
 type F = Tables<"project_files">;
+
+function Thumb({ path, alt, onClick }: { path: string; alt: string; onClick: () => void }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.storage.from(BUCKET).createSignedUrl(path, 3600).then(({ data }) => setUrl(data?.signedUrl ?? null));
+  }, [path]);
+  return (
+    <button type="button" onClick={onClick} className="block aspect-square w-full bg-muted" aria-label={alt}>
+      {url ? <img src={url} alt={alt} loading="lazy" className="size-full object-cover" /> : <LoaderCircle className="m-auto size-4 animate-spin" />}
+    </button>
+  );
+}
 
 export function ProjectFiles({ projectId }: { projectId: string }) {
   const canEdit = useRole() === "admin";
@@ -87,7 +100,7 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
                 {canEdit && (
                   <label className="flex cursor-pointer items-center gap-1 text-xs text-primary">
                     {busy === c ? <LoaderCircle className="size-4 animate-spin" /> : <FileUp className="size-4" />}{t("رفع ملف")}
-                    <input type="file" multiple className="hidden" onChange={(e) => { upload(c, e.target.files); e.target.value = ""; }} />
+                    <input type="file" multiple accept={c === PHOTOS ? "image/*" : undefined} className="hidden" onChange={(e) => { upload(c, e.target.files); e.target.value = ""; }} />
                   </label>
                 )}
                 {canEdit && custom && (
@@ -98,7 +111,19 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
               </span>
             </div>
             {list.length === 0 && <p className="text-xs text-muted-foreground">{t("لا توجد ملفات")}</p>}
-            {list.map((f) => (
+            {c === PHOTOS ? (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {list.map((f) => (
+                  <div key={f.id} className="group relative overflow-hidden rounded-md border border-border bg-background">
+                    <Thumb path={f.file_path} alt={f.file_name} onClick={() => open(f, false)} />
+                    <div className="flex justify-center gap-1 p-1">
+                      <Button size="icon" variant="ghost" className="size-7" aria-label={t("تحميل")} onClick={() => open(f, true)}><Download className="size-4" /></Button>
+                      {canEdit && <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(f)}><Trash2 className="size-4" /></Button>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : list.map((f) => (
               <div key={f.id} className="flex items-center gap-1 border-t border-border py-1 text-sm">
                 <span className="flex-1 truncate">{f.file_name}</span>
                 <Button size="icon" variant="ghost" className="size-7" aria-label={t("عرض")} onClick={() => open(f, false)}><Eye className="size-4" /></Button>
