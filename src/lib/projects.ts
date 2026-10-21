@@ -137,6 +137,7 @@ export const withAutoStatus = (p: Project): Project => ({ ...p, status: autoStat
 
 export const STATUSES = ["طبيعي", "متقدم", "متأخر"];
 export const STATUS_OPTIONS = ["طبيعي", "متأخر", "متقدم", "منتهي - طبيعي", "منتهي - متقدم", "منتهي - متأخر"];
+export const SECTORS = ["سكني", "تجاري", "مكتبي", "فندقي", "خاص", "خدمات", "صحي", "مطاعم", "فندقي + سكني"];
 
 /** The four dashboard groups: on track, delayed, ahead, finished. */
 export const STATUS_BUCKETS = ["طبيعي", "متأخر", "متقدم", "منتهي"];
