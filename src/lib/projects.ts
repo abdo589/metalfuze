@@ -6,6 +6,7 @@ export type Project = {
   id: string;
   code: string;
   name: string;
+  client?: string;
   sector: string;
   dept: string;
   manager: string;

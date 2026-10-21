@@ -19,6 +19,7 @@ export function ProjectDialog({
 }: { open: boolean; onOpenChange: (o: boolean) => void; project: Project | null; managers: string[] }) {
   useLanguage();
   const [f, setF] = useState<Project>(empty());
+  const [extra, setExtra] = useState<Record<"sector" | "dept" | "manager", string[]>>({ sector: [], dept: [], manager: [] });
   useEffect(() => { if (open) setF(project ?? empty()); }, [open, project]);
   const set = <K extends keyof Project>(k: K, v: Project[K]) => setF((p) => ({ ...p, [k]: v }));
   // Status suggests itself from the dates; picking an option manually keeps it until a date changes.
@@ -35,6 +36,26 @@ export function ProjectDialog({
       <Input list={list} value={(f[k] as string) ?? ""} onChange={(e) => set(k, e.target.value as never)} />
     </div>
   );
+  const ADD = "__add__";
+  const pick = (k: "sector" | "dept" | "manager", label: string, defaults: string[] = []) => {
+    const opts = [...new Set([...defaults, ...extra[k], ...projectStore.all().map((p) => p[k]), f[k]].map((s) => (s ?? "").trim()).filter(Boolean))];
+    return (
+      <div className="space-y-1.5">
+        <Label>{label}</Label>
+        <Select value={f[k] || undefined} onValueChange={(v) => {
+          if (v !== ADD) return set(k, v);
+          const n = window.prompt(t("اكتب الاسم الجديد"))?.trim();
+          if (n) { setExtra((e) => ({ ...e, [k]: [...e[k], n] })); set(k, n); }
+        }}>
+          <SelectTrigger><SelectValue placeholder={label} /></SelectTrigger>
+          <SelectContent>
+            {opts.map((s) => <SelectItem key={s} value={s}>{t(s)}</SelectItem>)}
+            <SelectItem value={ADD}>+ {t("إضافة خيار جديد")}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  };
   const num = (k: keyof Project, label: string, pct = false) => (
     <div className="space-y-1.5">
       <Label>{label}</Label>
@@ -56,14 +77,13 @@ export function ProjectDialog({
         <DialogHeader>
           <DialogTitle className="font-display text-xl">{project ? t("تعديل مشروع") : t("إضافة مشروع جديد")}</DialogTitle>
         </DialogHeader>
-        <datalist id="sectors">{SECTORS.map((s) => <option key={s} value={s} />)}</datalist>
-        <datalist id="managers">{managers.map((s) => <option key={s} value={s} />)}</datalist>
         <div className="grid gap-4 sm:grid-cols-2">
           {text("name", t("اسم المشروع"))}
           {text("code", t("رمز المشروع"))}
-          {text("sector", t("القطاع"), "sectors")}
-          {text("dept", t("الإدارة"))}
-          {text("manager", t("مدير المشروع"), "managers")}
+          {text("client", t("اسم العميل"))}
+          {pick("sector", t("القطاع"), SECTORS)}
+          {pick("dept", t("الإدارة"), ["المشاريع"])}
+          {pick("manager", t("مدير المشروع"), managers)}
           {text("owner", t("مالك المشروع"))}
           {date("start", t("تاريخ البداية"))}
           {date("end", t("تاريخ الانتهاء"))}
