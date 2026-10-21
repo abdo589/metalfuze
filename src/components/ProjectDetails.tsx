@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileDown, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
-import { deadlineAlert, daysLeft, deviationLabel, deviationOf, fmtMoney, fmtPct, type Project } from "@/lib/projects";
+import { deadlineAlert, daysLeft, deviationLabel, deviationOf, deviationPct, fmtMoney, fmtPct, type Project } from "@/lib/projects";
 
 export function statusClass(s: string) {
   if (s.includes("متأخر")) return "bg-destructive/15 text-destructive border-destructive/30";
