@@ -289,7 +289,7 @@ function Dashboard() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                {[t("الرمز"), t("المشروع"), t("القطاع"), t("المدير"), t("الإدارة"), t("مالك المشروع"), t("موقع المشروع"), t("حالة المشروع"), t("حالة الضمان"), ""].map((h, i) => (
+                {[t("المشروع"), t("مالك المشروع"), t("موقع المشروع"), t("القطاع"), t("الإدارة"), t("مدير المشروع"), t("حالة المشروع"), t("حالة الضمان"), ""].map((h, i) => (
                   <th key={i} className={`whitespace-nowrap px-3 py-3 text-right font-medium ${h === "" ? "print:hidden" : ""}`}>{h}</th>
                 ))}
               </tr>
@@ -300,13 +300,12 @@ function Dashboard() {
                 const b = statusBucket(p.status);
                 return (
                   <tr key={p.id} className="border-t transition-colors hover:bg-muted/30">
-                    <td className="px-3 py-3 text-muted-foreground">{p.code}</td>
-                    <td className="px-3 py-3 font-medium">{p.name}</td>
-                    <td className="px-3 py-3">{t(p.sector)}</td>
-                    <td className="whitespace-nowrap px-3 py-3" dir="ltr">{p.manager}</td>
-                    <td className="px-3 py-3">{t(p.dept) || "—"}</td>
+                    <td className="px-3 py-3 font-medium">{p.name}{p.code && <span className="block text-xs font-normal text-muted-foreground">{p.code}</span>}</td>
                     <td className="px-3 py-3">{p.owner || "—"}</td>
                     <td className="px-3 py-3">{p.location || "—"}</td>
+                    <td className="px-3 py-3">{t(p.sector)}</td>
+                    <td className="px-3 py-3">{t(p.dept) || "—"}</td>
+                    <td className="whitespace-nowrap px-3 py-3" dir="ltr">{p.manager}</td>
                     <td className={`whitespace-nowrap px-3 py-3 font-medium ${b === "متأخر" ? "text-destructive" : b === "متقدم" ? "text-success" : b === "منتهي" ? "text-info" : ""}`}>{t(p.status)}</td>
                     <td className="whitespace-nowrap px-3 py-3">{w ? t(w.status) : t("لا يوجد")}</td>
                     <td className="whitespace-nowrap px-3 py-3 print:hidden">

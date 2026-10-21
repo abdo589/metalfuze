@@ -35,6 +35,13 @@ import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 
 const items = [
+  { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
+  { to: "/project-reports", label: "تقارير المشاريع", icon: FileSpreadsheet },
+  { to: "/my-projects", label: "مشاريع المديرين", icon: FolderKanban },
+  { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
+  { to: "/bank", label: "رصيد البنك", icon: Landmark },
+  { to: "/report", label: "التقرير الشهري", icon: FileText },
+  { to: "/budget", label: "الميزانية", icon: PieChart },
   { to: "/hr-dashboard", label: "لوحة التحكم", icon: Bell },
   { to: "/hr-file", label: "بيانات الموظفين", icon: IdCard },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
@@ -45,19 +52,12 @@ const items = [
   { to: "/establishment", label: "المؤسسة", icon: Building2 },
   { to: "/est-payroll", label: "رواتب المؤسسة", icon: Wallet },
   { to: "/performance", label: "تقييم الأداء", icon: Star },
-  { to: "/messages", label: "الرسائل", icon: MessageSquare },
-  { to: "/mail", label: "البريد (Outlook)", icon: Mail },
   { to: "/attendance-tracking", label: "تتبع الحضور", icon: Radar },
   { to: "/settlements", label: "المخالصات", icon: FileText },
-  { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
-  { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
-  { to: "/bank", label: "رصيد البنك", icon: Landmark },
-  { to: "/report", label: "التقرير الشهري", icon: FileText },
-  { to: "/budget", label: "الميزانية", icon: PieChart },
-  { to: "/project-reports", label: "تقارير المشاريع", icon: FileSpreadsheet },
+  { to: "/messages", label: "الرسائل", icon: MessageSquare },
+  { to: "/mail", label: "البريد (Outlook)", icon: Mail },
   { to: "/assistant", label: "المستشار الذكي", icon: BrainCircuit },
   { to: "/users", label: "المستخدمون", icon: Users },
-  { to: "/my-projects", label: "مشاريع المديرين", icon: FolderKanban },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
