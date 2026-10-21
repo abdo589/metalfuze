@@ -55,21 +55,45 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
     load();
   }
 
+  async function removeCategory(c: string, list: F[]) {
+    if (!confirm(list.length ? t("حذف المجلد وكل ملفاته؟") : t("حذف المجلد؟"))) return;
+    setBusy(c);
+    try {
+      if (list.length) {
+        await supabase.storage.from(BUCKET).remove(list.map((f) => f.file_path));
+        const { error } = await supabase.from("project_files").delete().eq("project_id", projectId).eq("category", c);
+        if (error) throw error;
+      }
+      setExtra((x) => x.filter((n) => n !== c));
+      toast.success(t("تم الحذف"));
+      load();
+    } catch { toast.error(t("تعذر الحذف")); }
+    finally { setBusy(null); }
+  }
+
   return (
     <div className="space-y-3 sm:col-span-2">
       <h3 className="font-bold">{t("ملفات المشروع")}</h3>
       {cats.map((c) => {
         const list = files.filter((f) => f.category === c);
+        const custom = !DEFAULT_FILE_CATEGORIES.includes(c);
         return (
           <div key={c} className="rounded-lg border border-border bg-muted/30 p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
               <span className="text-sm font-semibold">{t(c)} <span className="text-xs text-muted-foreground">({list.length})</span></span>
-              {canEdit && (
-                <label className="flex cursor-pointer items-center gap-1 text-xs text-primary">
-                  {busy === c ? <LoaderCircle className="size-4 animate-spin" /> : <FileUp className="size-4" />}{t("رفع ملف")}
-                  <input type="file" multiple className="hidden" onChange={(e) => { upload(c, e.target.files); e.target.value = ""; }} />
-                </label>
-              )}
+              <span className="flex items-center gap-2">
+                {canEdit && (
+                  <label className="flex cursor-pointer items-center gap-1 text-xs text-primary">
+                    {busy === c ? <LoaderCircle className="size-4 animate-spin" /> : <FileUp className="size-4" />}{t("رفع ملف")}
+                    <input type="file" multiple className="hidden" onChange={(e) => { upload(c, e.target.files); e.target.value = ""; }} />
+                  </label>
+                )}
+                {canEdit && custom && (
+                  <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف المجلد")} onClick={() => removeCategory(c, list)}>
+                    <Trash2 className="size-4" />
+                  </Button>
+                )}
+              </span>
             </div>
             {list.length === 0 && <p className="text-xs text-muted-foreground">{t("لا توجد ملفات")}</p>}
             {list.map((f) => (
