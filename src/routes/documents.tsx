@@ -200,7 +200,6 @@ function DocumentsPage() {
           </div>}
         </DialogContent>
       </Dialog>
-      </div>
 
       <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
         <DialogContent>

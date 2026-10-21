@@ -37,7 +37,7 @@ function EstPayrollPage() {
   useLanguage();
   const canEdit = useCanEditHr();
   const [rows, setRows] = useState<Rec[]>([]);
-  const [month, setMonth] = useState("");
+  const [month, setMonth] = useState(thisMonth());
   const [edit, setEdit] = useState<{ id?: string; data: D } | null>(null);
 
   const load = useCallback(async () => {
@@ -48,8 +48,16 @@ function EstPayrollPage() {
 
   const emps = rows.filter((r) => r.sheet === "employees");
   const pay = rows.filter((r) => r.sheet === "payroll");
-  const months = useMemo(() => [...new Set(pay.map((r) => String(r.data["الشهر"] ?? "")).filter(Boolean))].sort().reverse(), [rows]);
-  const list = pay.filter((r) => !month || String(r.data["الشهر"] ?? "") === month);
+  // Each month on its own, from the earliest recorded month up to the current month only (no future months).
+  const months = useMemo(() => {
+    const cur = thisMonth();
+    const keys = pay.map((r) => String(r.data["الشهر"] ?? "")).filter((k) => /^\d{4}-\d{2}$/.test(k) && k <= cur);
+    let k = keys.length ? keys.sort()[0]! : cur;
+    const out: string[] = [];
+    while (k <= cur) { out.push(k); const [y, m] = k.split("-").map(Number); k = new Date(Date.UTC(y!, m!, 1)).toISOString().slice(0, 7); }
+    return out.reverse();
+  }, [rows]);
+  const list = pay.filter((r) => String(r.data["الشهر"] ?? "") === month);
   const total = list.reduce((s, r) => s + netOf(r.data), 0);
   const paid = list.filter((r) => String(r.data["حالة الصرف"] ?? "").includes("تم")).length;
 
