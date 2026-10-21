@@ -20,3 +20,4 @@
 - [x] Sidebar: payroll + attendance under employee data; removed workers check-in.
 - [x] Reviews use employees from the HR file.
 - [x] Company-only payroll page (/est-payroll) linked to establishment records.
+- [x] Project files in the project card: four ready folders + user-named folders, upload/view/download, delete a single file or a whole custom folder (verified in browser; backend rows and storage objects removed).
