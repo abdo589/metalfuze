@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deviationLabel, deviationOf } from "./projects";
+import { deviationLabel, deviationOf, deviationPct } from "./projects";
 
 describe("deviationOf", () => {
   const b = { end: "2026-06-30", actualEnd: null };
@@ -31,5 +31,21 @@ describe("deviationLabel", () => {
   });
   it("no deviation reads dash", () => {
     expect(deviationLabel({ end: null, actualEnd: null }, "2026-07-01")).toBe("—");
+  });
+});
+
+describe("deviationPct", () => {
+  const p = { start: "2026-01-01", end: "2026-06-30", actualEnd: null }; // 180 days
+  it("delay share of the agreed duration", () => {
+    expect(deviationPct(p, "2026-07-18")).toBe(10); // 18 days late of 180
+  });
+  it("finished early share", () => {
+    expect(deviationPct({ ...p, actualEnd: "2026-05-13" }, "2026-07-01")).toBe(-27); // 48 days early of 180
+  });
+  it("needs both start and end", () => {
+    expect(deviationPct({ ...p, start: null }, "2026-07-19")).toBeNull();
+  });
+  it("finished on time is 0%", () => {
+    expect(deviationPct({ ...p, actualEnd: "2026-06-30" }, "2026-07-01")).toBe(0);
   });
 });
