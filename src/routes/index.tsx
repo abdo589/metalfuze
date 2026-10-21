@@ -242,33 +242,14 @@ function Dashboard() {
             </thead>
             <tbody>
               {filtered.map((p) => {
-                const d = daysLeft(p.end);
                 return (
                   <tr key={p.id} className="border-t transition-colors hover:bg-muted/30">
                     <td className="px-3 py-3 text-muted-foreground">{p.code}</td>
-                    <td className="px-3 py-3 font-medium">
-                      {p.name}
-                      {p.issues && <p className="mt-0.5 line-clamp-1 max-w-xs text-xs text-destructive/80">{p.issues}</p>}
-                    </td>
+                    <td className="px-3 py-3 font-medium">{p.name}</td>
                     <td className="px-3 py-3">{t(p.sector)}</td>
                     <td className="whitespace-nowrap px-3 py-3" dir="ltr">{p.manager}</td>
-                    <td className="whitespace-nowrap px-3 py-3">
-                      {p.end ?? "—"}
-                      {d !== null && <p className={`text-xs ${d < 0 ? "text-destructive" : d <= 30 ? "text-warning" : "text-muted-foreground"}`}>{deadlineAlert(p.end)} ({d})</p>}
-                    </td>
-                    <td className="px-3 py-3">{p.status && <Badge variant="outline" className={statusClass(p.status)}>{t(p.status)}</Badge>}</td>
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
-                          <div className="h-full bg-primary" style={{ width: `${Math.min(100, p.progress * 100)}%` }} />
-                        </div>
-                        <span className="text-xs">{fmtPct(p.progress)}</span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract)}</td>
-                    <td className="px-3 py-3 tabular-nums">{fmtMoney(p.paid)}</td>
-                    <td className="px-3 py-3 tabular-nums">{fmtMoney(p.contract - p.paid)}</td>
                     <td className="whitespace-nowrap px-3 py-3 print:hidden">
+                      <Button size="icon" variant="ghost" aria-label={t("عرض التفاصيل")} onClick={() => setDetails(p)}><Eye /></Button>
                       {canEdit && <><Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => { setEditing(p); setOpen(true); }}><Pencil /></Button>
                       <Button size="icon" variant="ghost" aria-label={t("حذف")}
                         onClick={() => { if (confirm(`${t("حذف")} ${p.name}?`)) projectStore.remove(p.id); }}><Trash2 /></Button></>}
