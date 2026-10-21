@@ -239,6 +239,13 @@
       "when": 1792576115249,
       "tag": "0033_message_attachments",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1792578125252,
+      "tag": "0034_fleet_violations",
+      "breakpoints": true
     }
   ]
 }
