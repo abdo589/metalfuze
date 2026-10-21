@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Eye, Landmark, Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, Landmark, LoaderCircle, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { extractBond } from "@/lib/doc-extract.functions";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,25 @@ export function FinancialGuarantees({ projectId, delivered }: { projectId: strin
   const [edit, setEdit] = useState<(ReturnType<typeof blank> & { id?: string }) | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [reading, setReading] = useState(false);
+  const readBond = useServerFn(extractBond);
+
+  async function uploadAndRead(f: File) {
+    if (f.size > 10 * 1024 * 1024) { toast.error(t("الملف أكبر من 10 ميجا")); return; }
+    setReading(true);
+    try {
+      const base64 = await new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1] ?? ""); r.onerror = rej; r.readAsDataURL(f); });
+      const out = await readBond({ data: { base64, mediaType: f.type || "application/pdf", name: f.name, kinds: BOND_KINDS } });
+      const b = blank(projectId);
+      if (out.ok) {
+        const x = out.fields;
+        setEdit({ ...b, kind: BOND_KINDS.includes(x.kind) ? x.kind : b.kind, bond_no: x.bond_no, amount: x.amount, creditor: x.creditor, debtor: x.debtor, purpose: x.purpose, issue_date: x.issue_date || null, return_condition: x.return_condition });
+        toast.success(t("تم استخراج البيانات — راجعها ثم احفظ"));
+      } else { setEdit(b); toast.error(t("تعذر قراءة الملف، أكمل البيانات يدويًا")); }
+      setFile(f);
+    } catch { toast.error(t("تعذر قراءة الملف، أكمل البيانات يدويًا")); }
+    finally { setReading(false); }
+  }
 
   const load = () => supabase.from("financial_guarantees").select("*").eq("project_id", projectId).order("created_at").then(({ data }) => setRows(data ?? []));
   useEffect(() => { load(); }, [projectId]);
@@ -85,7 +106,14 @@ export function FinancialGuarantees({ projectId, delivered }: { projectId: strin
     <div className="space-y-2 rounded-lg border border-border p-3 sm:col-span-2">
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-2 font-display font-bold"><Landmark className="size-4" /> {t("الضمانات المالية")} ({rows.length})</h3>
-        {canEdit && <Button size="sm" variant="outline" onClick={() => setEdit(blank(projectId))}><Plus /> {t("إضافة سند")}</Button>}
+        {canEdit && <div className="flex gap-1">
+          <Button size="sm" variant="outline" disabled={reading} asChild>
+            <label className="cursor-pointer">{reading ? <LoaderCircle className="animate-spin" /> : <Upload />} {reading ? t("جارٍ قراءة الملف...") : t("رفع سند واستخراج البيانات")}
+              <input type="file" hidden accept="image/*,application/pdf" disabled={reading} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) uploadAndRead(f); }} />
+            </label>
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setEdit(blank(projectId))}><Plus /> {t("إضافة سند")}</Button>
+        </div>}
       </div>
       {delivered && open.length > 0 && (
         <p className="rounded-md bg-warning/15 p-2 text-sm font-medium text-warning">{t("تم التسليم النهائي — طالبوا بإلغاء السند")} ({open.length})</p>
