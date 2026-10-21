@@ -42,7 +42,7 @@ export function ProjectDialog({
     return (
       <div className="space-y-1.5">
         <Label>{label}</Label>
-        <Select value={f[k] || undefined} onValueChange={(v) => {
+        <Select value={f[k] ?? ""} onValueChange={(v) => {
           if (v !== ADD) return set(k, v);
           const n = window.prompt(t("اكتب الاسم الجديد"))?.trim();
           if (n) { setExtra((e) => ({ ...e, [k]: [...e[k], n] })); set(k, n); }
