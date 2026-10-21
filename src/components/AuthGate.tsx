@@ -9,7 +9,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { HR_PATHS, MANAGER_PATHS, ACCOUNTANT_PATHS, EXECUTIVE_PATHS, MAIL_PATHS, useRole } from "@/lib/permissions";
+import { HR_PATHS, HR_ADMIN_ONLY, MANAGER_PATHS, ACCOUNTANT_PATHS, EXECUTIVE_PATHS, MAIL_PATHS, useRole } from "@/lib/permissions";
 import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 /** HR-only accounts may open only the HR pages; anything else sends them to payroll. */
@@ -18,7 +18,8 @@ function RoleGuard({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const allowed = role === "hr" ? HR_PATHS : role === "manager" ? MANAGER_PATHS : role === "accountant" ? ACCOUNTANT_PATHS : role === "executive" ? EXECUTIVE_PATHS : role === "mail" ? MAIL_PATHS : null;
-  const blocked = !!allowed && !pathname.startsWith("/.lovable/oauth") && !allowed.some((p) => pathname.startsWith(p));
+  const viewerBlocked = role === "viewer" && HR_ADMIN_ONLY.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const blocked = viewerBlocked || (!!allowed && !pathname.startsWith("/.lovable/oauth") && !allowed.some((p) => pathname.startsWith(p)));
   const home = role === "mail" ? "/mail" : role === "executive" ? "/executive" : role === "accountant" ? "/accounting" : role === "manager" ? "/my-projects" : "/payroll";
   useEffect(() => { if (blocked) navigate({ to: home, replace: true }); }, [blocked, home, navigate]);
   if (role === undefined || blocked) return <div className="min-h-screen" />;
