@@ -40,6 +40,32 @@ export const monthLabel = (key: string) => {
   return new Date(y!, (m ?? 1) - 1, 1).toLocaleDateString(locale(), { month: "long", year: "numeric" });
 };
 
+const addMonths = (key: string, delta: number) => {
+  const [y, m] = key.split("-").map(Number);
+  return monthKey(new Date(y!, (m ?? 1) - 1 + delta, 1));
+};
+
+/**
+ * Months offered in the payroll picker, generated from the data:
+ * it reaches back to the earliest joined date, salary record or paid month,
+ * and always covers at least the last 12 months up to the current month.
+ */
+export function availableMonths(employees: Employee[], today = new Date()): string[] {
+  const cur = monthKey(today);
+  let start = addMonths(cur, -11);
+  for (const e of employees) {
+    const candidates = [
+      e.joined ? String(e.joined).slice(0, 7) : "",
+      ...Object.keys(e.monthly ?? {}),
+      ...(e.paidMonths ?? []),
+    ].filter((k) => /^\d{4}-\d{2}$/.test(k));
+    for (const k of candidates) if (k < start) start = k;
+  }
+  const list: string[] = [];
+  for (let k = start; k <= cur; k = addMonths(k, 1)) list.push(k);
+  return list;
+}
+
 type Row = {
   id: string; name: string; role: string; dept: string; project: string; base: number; allowances: number;
   deductions: number; joined: string | null; active: boolean; paid_months: string[]; device_user_id: string | null;
