@@ -12,7 +12,7 @@ import { ProjectDialog } from "@/components/ProjectDialog";
 import { ProjectDetails } from "@/components/ProjectDetails";
 import { PdfButton } from "@/components/PdfButton";
 import {
-  daysLeft, deadlineAlert, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
+  daysLeft, fmtMoney, fmtPct, importExcel, projectStore, useProjects, type Project,
 } from "@/lib/projects";
 import { exportExcel } from "@/lib/export";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
@@ -37,13 +37,6 @@ const tip = {
   contentStyle: { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--foreground)" },
   itemStyle: { color: "var(--foreground)" },
 };
-
-function statusClass(s: string) {
-  if (s.includes("متأخر")) return "bg-destructive/15 text-destructive border-destructive/30";
-  if (s.includes("متقدم")) return "bg-success/15 text-success border-success/30";
-  if (s) return "bg-info/15 text-info border-info/30";
-  return "bg-muted text-muted-foreground";
-}
 
 function groupBy(list: Project[], key: (p: Project) => string, val: (p: Project) => number = () => 1) {
   const m = new Map<string, number>();
@@ -263,6 +256,7 @@ function Dashboard() {
       </section>
 
       <ProjectDialog open={open} onOpenChange={setOpen} project={editing} managers={managers} />
+      <ProjectDetails project={details} onClose={() => setDetails(null)} />
     </div>
   );
 }
