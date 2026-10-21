@@ -33,11 +33,6 @@ export const Route = createFileRoute("/payroll")({
   component: Payroll,
 });
 
-function shiftMonth(key: string, delta: number) {
-  const [y, m] = key.split("-").map(Number);
-  return monthKey(new Date(y!, (m ?? 1) - 1 + delta, 1));
-}
-
 function Payroll() {
   const canEdit = useCanEditHr();
   useLanguage();
