@@ -20,7 +20,7 @@ function RoleGuard({ children }: { children: ReactNode }) {
   const allowed = role === "hr" ? HR_PATHS : role === "manager" ? MANAGER_PATHS : role === "accountant" ? ACCOUNTANT_PATHS : role === "executive" ? EXECUTIVE_PATHS : role === "mail" ? MAIL_PATHS : null;
   const viewerBlocked = role === "viewer" && HR_ADMIN_ONLY.some((p) => pathname === p || pathname.startsWith(p + "/"));
   const blocked = viewerBlocked || (!!allowed && !pathname.startsWith("/.lovable/oauth") && !allowed.some((p) => pathname.startsWith(p)));
-  const home = role === "mail" ? "/mail" : role === "executive" ? "/executive" : role === "accountant" ? "/accounting" : role === "manager" ? "/my-projects" : "/payroll";
+  const home = role === "mail" ? "/mail" : role === "executive" ? "/executive" : role === "accountant" ? "/accounting" : role === "manager" ? "/my-projects" : role === "viewer" ? "/" : "/payroll";
   useEffect(() => { if (blocked) navigate({ to: home, replace: true }); }, [blocked, home, navigate]);
   if (role === undefined || blocked) return <div className="min-h-screen" />;
   return <>{children}</>;
