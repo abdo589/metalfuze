@@ -408,6 +408,57 @@ export type Database = {
         }
         Relationships: []
       }
+      fleet_cars: {
+        Row: {
+          car_type: string
+          created_at: string
+          employee_name: string
+          employee_no: string
+          handover_date: string | null
+          id: string
+          insurance_company: string
+          insurance_expiry: string | null
+          model_year: string
+          notes: string
+          plate: string
+          registration_expiry: string | null
+          return_date: string | null
+          status: string
+        }
+        Insert: {
+          car_type?: string
+          created_at?: string
+          employee_name?: string
+          employee_no?: string
+          handover_date?: string | null
+          id?: string
+          insurance_company?: string
+          insurance_expiry?: string | null
+          model_year?: string
+          notes?: string
+          plate: string
+          registration_expiry?: string | null
+          return_date?: string | null
+          status?: string
+        }
+        Update: {
+          car_type?: string
+          created_at?: string
+          employee_name?: string
+          employee_no?: string
+          handover_date?: string | null
+          id?: string
+          insurance_company?: string
+          insurance_expiry?: string | null
+          model_year?: string
+          notes?: string
+          plate?: string
+          registration_expiry?: string | null
+          return_date?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       hr_records: {
         Row: {
           data: Json
@@ -1092,6 +1143,54 @@ export type Database = {
           status?: string
           updated_at?: string
           wage?: number
+        }
+        Relationships: []
+      }
+      traffic_violations: {
+        Row: {
+          amount: number
+          created_at: string
+          employee_name: string
+          employee_no: string
+          id: string
+          location: string
+          notes: string
+          plate: string
+          status: string
+          violation_date: string | null
+          violation_no: string
+          violation_time: string
+          violation_type: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          employee_name?: string
+          employee_no?: string
+          id?: string
+          location?: string
+          notes?: string
+          plate?: string
+          status?: string
+          violation_date?: string | null
+          violation_no?: string
+          violation_time?: string
+          violation_type?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          employee_name?: string
+          employee_no?: string
+          id?: string
+          location?: string
+          notes?: string
+          plate?: string
+          status?: string
+          violation_date?: string | null
+          violation_no?: string
+          violation_time?: string
+          violation_type?: string
         }
         Relationships: []
       }

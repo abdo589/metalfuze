@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 export type Role = "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | null;
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
-export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail"];
+export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail"];
 /** HR pages (everything except employee data) that only admins (Eilaf, Abdelrhman) and HR may open; hidden from viewer accounts. */
-export const HR_ADMIN_ONLY = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/residencies", "/leaves", "/documents", "/establishment", "/est-payroll", "/settlements", "/performance"];
+export const HR_ADMIN_ONLY = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/residencies", "/leaves", "/documents", "/fleet", "/establishment", "/est-payroll", "/settlements", "/performance"];
 /** Self-registered project managers (and accounts without a role) only get their own workspace. */
 /** Accountant (Aiftkhar) sees only the private accounting space. */
 export const ACCOUNTANT_PATHS = ["/accounting", "/messages", "/mail"];
