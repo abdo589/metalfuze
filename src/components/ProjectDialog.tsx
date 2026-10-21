@@ -21,6 +21,13 @@ export function ProjectDialog({
   const [f, setF] = useState<Project>(empty());
   useEffect(() => { if (open) setF(project ?? empty()); }, [open, project]);
   const set = <K extends keyof Project>(k: K, v: Project[K]) => setF((p) => ({ ...p, [k]: v }));
+  // Status suggests itself from the dates; picking an option manually keeps it until a date changes.
+  useEffect(() => {
+    setF((p) => {
+      const auto = autoStatus(p);
+      return auto === p.status ? p : { ...p, status: auto };
+    });
+  }, [f.start, f.end, f.actualEnd]);
 
   const text = (k: keyof Project, label: string, list?: string) => (
     <div className="space-y-1.5">
