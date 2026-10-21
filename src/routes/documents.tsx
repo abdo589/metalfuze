@@ -63,6 +63,7 @@ function DocumentsPage() {
     .filter((r) => (!q || `${r.doc_type} ${r.doc_number} ${r.notes}`.includes(q)) && (!branch || r.branch === branch) && (!st || r.s.key === st))
     .sort((a, b) => (a.days ?? 99999) - (b.days ?? 99999)), [rows, q, branch, st]);
   const all = rows.map((r) => statusOf(r.expiry_date ? daysLeft(r.expiry_date) : null).key);
+  const [view, setView] = useState<(typeof list)[number] | null>(null);
 
   const extract = useServerFn(extractDocument);
   const [busy, setBusy] = useState(false);
@@ -159,9 +160,9 @@ function DocumentsPage() {
       <div className="overflow-x-auto rounded-lg border bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-start">
-            <tr>{["م", "نوع الوثيقة", "رقم الوثيقة", "الفرع", "تاريخ الإصدار", "تاريخ الانتهاء", "الأيام المتبقية", "الحالة", "ملاحظات", "الملف"].map((h) =>
+            <tr>{["م", "نوع الوثيقة", "الحالة"].map((h) =>
               <th key={h} className="p-2 text-start font-semibold">{t(h)}</th>)}
-              {canEdit && <th className="p-2 print:hidden" />}
+              <th className="p-2 print:hidden" />
             </tr>
           </thead>
           <tbody>
@@ -169,26 +170,36 @@ function DocumentsPage() {
               <tr key={r.id} className="border-t">
                 <td className="p-2">{i + 1}</td>
                 <td className="p-2 font-medium">{t(r.doc_type)}</td>
-                <td className="p-2 tabular-nums" dir="ltr">{r.doc_number || "—"}</td>
-                <td className="p-2">{t(r.branch)}</td>
-                <td className="p-2 tabular-nums">{r.issue_date ?? "—"}</td>
-                <td className="p-2 tabular-nums">{r.expiry_date ?? "—"}</td>
-                <td className="p-2 tabular-nums">{r.days === null ? "—" : r.days}</td>
                 <td className="p-2"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.s.cls}`}>{t(r.s.label)}</span></td>
-                <td className="p-2 text-muted-foreground">{r.notes || "—"}</td>
-                <td className="p-2">{r.file_path ? <div className="flex gap-1 print:hidden">
-                  <Button size="icon" variant="ghost" aria-label={t("عرض")} title={t("عرض")} onClick={() => openFile(r, false)}><Eye /></Button>
-                  <Button size="icon" variant="ghost" aria-label={t("تحميل")} title={t("تحميل")} onClick={() => openFile(r, true)}><Download /></Button>
-                </div> : <span className="text-muted-foreground">—</span>}</td>
-                {canEdit && <td className="p-2 print:hidden"><div className="flex gap-1">
-                  <Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => setEdit({ ...r, issue_date: r.issue_date ?? "", expiry_date: r.expiry_date ?? "" })}><Pencil /></Button>
-                  <Button size="icon" variant="ghost" className="text-destructive" aria-label={t("حذف")} onClick={() => remove(r.id)}><Trash2 /></Button>
-                </div></td>}
+                <td className="p-2 print:hidden"><div className="flex justify-end gap-1">
+                  <Button size="icon" variant="ghost" aria-label={t("عرض التفاصيل")} title={t("عرض التفاصيل")} onClick={() => setView(r)}><Eye /></Button>
+                  {canEdit && <>
+                    <Button size="icon" variant="ghost" aria-label={t("تعديل")} onClick={() => setEdit({ ...r, issue_date: r.issue_date ?? "", expiry_date: r.expiry_date ?? "" })}><Pencil /></Button>
+                    <Button size="icon" variant="ghost" className="text-destructive" aria-label={t("حذف")} onClick={() => remove(r.id)}><Trash2 /></Button>
+                  </>}
+                </div></td>
               </tr>
             ))}
-            {!list.length && <tr><td colSpan={11} className="p-6 text-center text-muted-foreground">{t("لا توجد وثائق")}</td></tr>}
+            {!list.length && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">{t("لا توجد وثائق")}</td></tr>}
           </tbody>
         </table>
+      </div>
+
+      <Dialog open={!!view} onOpenChange={(o) => !o && setView(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{view ? t(view.doc_type) : ""}</DialogTitle></DialogHeader>
+          {view && <div className="grid gap-2 text-sm">
+            {([["رقم الوثيقة", view.doc_number || "—"], ["الفرع", t(view.branch) || "—"], ["تاريخ الإصدار", view.issue_date ?? "—"],
+              ["تاريخ الانتهاء", view.expiry_date ?? "—"], ["الأيام المتبقية", view.days === null ? "—" : String(view.days)], ["ملاحظات", view.notes || "—"]] as const).map(([k, v]) =>
+              <div key={k} className="flex justify-between gap-4 border-b py-1"><span className="text-muted-foreground">{t(k)}</span><span className="font-medium tabular-nums">{v}</span></div>)}
+            <div className="flex justify-between gap-4 py-1"><span className="text-muted-foreground">{t("الحالة")}</span><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${view.s.cls}`}>{t(view.s.label)}</span></div>
+            {view.file_path ? <div className="flex gap-2">
+              <Button variant="outline" onClick={() => openFile(view, false)}><Eye /> {t("عرض")}</Button>
+              <Button variant="outline" onClick={() => openFile(view, true)}><Download /> {t("تحميل")}</Button>
+            </div> : <p className="text-muted-foreground">{t("لا يوجد ملف")}</p>}
+          </div>}
+        </DialogContent>
+      </Dialog>
       </div>
 
       <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
