@@ -17,6 +17,7 @@ import {
   Users, FolderKanban, MessageSquare, Calculator,
   Radar,
   Mail, Star, FolderOpen, Building2,
+  Car,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";

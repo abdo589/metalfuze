@@ -19,6 +19,7 @@ import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as EstPayrollRouteImport } from './routes/est-payroll'
 import { Route as EstablishmentRouteImport } from './routes/establishment'
 import { Route as ExecutiveRouteImport } from './routes/executive'
+import { Route as FleetRouteImport } from './routes/fleet'
 import { Route as HrDashboardRouteImport } from './routes/hr-dashboard'
 import { Route as HrFileRouteImport } from './routes/hr-file'
 import { Route as LeavesRouteImport } from './routes/leaves'
@@ -101,6 +102,11 @@ const EstablishmentRoute = EstablishmentRouteImport.update({
 const ExecutiveRoute = ExecutiveRouteImport.update({
   id: '/executive',
   path: '/executive',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FleetRoute = FleetRouteImport.update({
+  id: '/fleet',
+  path: '/fleet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HrDashboardRoute = HrDashboardRouteImport.update({
@@ -281,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/est-payroll': typeof EstPayrollRoute
   '/establishment': typeof EstablishmentRoute
   '/executive': typeof ExecutiveRoute
+  '/fleet': typeof FleetRoute
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/est-payroll': typeof EstPayrollRoute
   '/establishment': typeof EstablishmentRoute
   '/executive': typeof ExecutiveRoute
+  '/fleet': typeof FleetRoute
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
@@ -372,6 +380,7 @@ export interface FileRoutesById {
   '/est-payroll': typeof EstPayrollRoute
   '/establishment': typeof EstablishmentRoute
   '/executive': typeof ExecutiveRoute
+  '/fleet': typeof FleetRoute
   '/hr-dashboard': typeof HrDashboardRoute
   '/hr-file': typeof HrFileRoute
   '/leaves': typeof LeavesRoute
@@ -419,6 +428,7 @@ export interface FileRouteTypes {
     | '/est-payroll'
     | '/establishment'
     | '/executive'
+    | '/fleet'
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
@@ -464,6 +474,7 @@ export interface FileRouteTypes {
     | '/est-payroll'
     | '/establishment'
     | '/executive'
+    | '/fleet'
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
@@ -509,6 +520,7 @@ export interface FileRouteTypes {
     | '/est-payroll'
     | '/establishment'
     | '/executive'
+    | '/fleet'
     | '/hr-dashboard'
     | '/hr-file'
     | '/leaves'
@@ -555,6 +567,7 @@ export interface RootRouteChildren {
   EstPayrollRoute: typeof EstPayrollRoute
   EstablishmentRoute: typeof EstablishmentRoute
   ExecutiveRoute: typeof ExecutiveRoute
+  FleetRoute: typeof FleetRoute
   HrDashboardRoute: typeof HrDashboardRoute
   HrFileRoute: typeof HrFileRoute
   LeavesRoute: typeof LeavesRoute
@@ -660,6 +673,13 @@ declare module '@tanstack/react-router' {
       path: '/executive'
       fullPath: '/executive'
       preLoaderRoute: typeof ExecutiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fleet': {
+      id: '/fleet'
+      path: '/fleet'
+      fullPath: '/fleet'
+      preLoaderRoute: typeof FleetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hr-dashboard': {
@@ -907,6 +927,7 @@ const rootRouteChildren: RootRouteChildren = {
   EstPayrollRoute: EstPayrollRoute,
   EstablishmentRoute: EstablishmentRoute,
   ExecutiveRoute: ExecutiveRoute,
+  FleetRoute: FleetRoute,
   HrDashboardRoute: HrDashboardRoute,
   HrFileRoute: HrFileRoute,
   LeavesRoute: LeavesRoute,
