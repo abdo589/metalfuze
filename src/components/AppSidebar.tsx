@@ -40,6 +40,7 @@ const items = [
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
   { to: "/leaves", label: "الإجازات", icon: CalendarOff },
   { to: "/documents", label: "الوثائق", icon: FolderOpen },
+  { to: "/fleet", label: "سجل السيارات والمخالفات", icon: Car },
   { to: "/establishment", label: "المؤسسة", icon: Building2 },
   { to: "/est-payroll", label: "رواتب المؤسسة", icon: Wallet },
   { to: "/performance", label: "تقييم الأداء", icon: Star },
