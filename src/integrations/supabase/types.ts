@@ -945,6 +945,39 @@ export type Database = {
           },
         ]
       }
+      project_files: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          file_name: string
+          file_path: string
+          id: string
+          project_id: string
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          project_id: string
+          title?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          project_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       residencies: {
         Row: {
           contract_expiry: string | null
