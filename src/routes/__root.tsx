@@ -21,6 +21,7 @@ import { initializeSidebar, sidebarScript } from "../lib/sidebar";
 import { initializeLanguage, useLanguage } from "@/lib/i18n";
 import { AppSidebar } from "@/components/AppSidebar";
 import { IdleSignOut } from "@/components/IdleSignOut";
+import { MessageAlerts } from "@/components/MessageAlerts";
 import { ExecSnapshotSync } from "@/lib/exec-snapshot";
 import { AutoTranslate } from "@/components/AutoTranslate";
 
@@ -160,6 +161,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AutoTranslate />
       <IdleSignOut />
+      <MessageAlerts />
       <ExecSnapshotSync />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AuthGate>

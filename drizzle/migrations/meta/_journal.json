@@ -232,6 +232,13 @@
       "when": 1792573648793,
       "tag": "0032_employee_monthly_salary",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1792576115249,
+      "tag": "0033_message_attachments",
+      "breakpoints": true
     }
   ]
 }
