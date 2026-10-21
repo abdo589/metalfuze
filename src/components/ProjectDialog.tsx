@@ -70,8 +70,15 @@ export function ProjectDialog({
           {date("end", t("تاريخ الانتهاء"))}
           {date("actualEnd", t("تاريخ الانتهاء الفعلي"))}
           <div className="space-y-1.5">
-            <Label>{t("حالة المشروع")} ({t("تلقائي")})</Label>
-            <Input readOnly value={t(autoStatus(f))} className="bg-muted" />
+            <Label>{t("حالة المشروع")}</Label>
+            <Select value={f.status} onValueChange={(v) => set("status", v)}>
+              <SelectTrigger><SelectValue placeholder={t("حالة المشروع")} /></SelectTrigger>
+              <SelectContent>
+                {[...new Set([...STATUS_OPTIONS, f.status].filter(Boolean))].map((s) => (
+                  <SelectItem key={s} value={s}>{t(s)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {text("hasContract", t("هل يوجد عقد شركة"))}
           {num("progress", t("نسبة الإنجاز %"), true)}
