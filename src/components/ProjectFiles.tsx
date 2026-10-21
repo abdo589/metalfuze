@@ -14,18 +14,20 @@ type F = Tables<"project_files">;
 
 export function ProjectFiles({ projectId }: { projectId: string }) {
   const canEdit = useRole() === "admin";
-  const [files, setFiles] = useState<F[]>([]);
+  const [all, setAll] = useState<F[]>([]);
+  // Empty folders are kept as a marker row (file_path "") so they persist until deleted.
+  const files = all.filter((f) => f.file_path);
   const [extra, setExtra] = useState<string[]>([]);
   const [newCat, setNewCat] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const { data } = await supabase.from("project_files").select("*").eq("project_id", projectId).order("created_at");
-    setFiles(data ?? []);
+    setAll(data ?? []);
   }, [projectId]);
   useEffect(() => { load(); }, [load]);
 
-  const cats = [...new Set([...DEFAULT_FILE_CATEGORIES, ...files.map((f) => f.category), ...extra])];
+  const cats = [...new Set([...DEFAULT_FILE_CATEGORIES, ...all.map((f) => f.category), ...extra])];
 
   async function upload(category: string, list: FileList | null) {
     if (!list?.length) return;
@@ -59,8 +61,8 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
     if (!confirm(list.length ? t("حذف المجلد وكل ملفاته؟") : t("حذف المجلد؟"))) return;
     setBusy(c);
     try {
-      if (list.length) {
-        await supabase.storage.from(BUCKET).remove(list.map((f) => f.file_path));
+      if (list.length) await supabase.storage.from(BUCKET).remove(list.map((f) => f.file_path));
+      {
         const { error } = await supabase.from("project_files").delete().eq("project_id", projectId).eq("category", c);
         if (error) throw error;
       }
@@ -110,7 +112,7 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
       {canEdit && (
         <div className="flex gap-2">
           <Input placeholder={t("اسم ملف جديد")} value={newCat} onChange={(e) => setNewCat(e.target.value)} />
-          <Button variant="outline" onClick={() => { const n = newCat.trim(); if (n) { setExtra((x) => [...x, n]); setNewCat(""); } }}><Plus />{t("إضافة")}</Button>
+          <Button variant="outline" onClick={() => { const n = newCat.trim(); if (n) { setExtra((x) => [...x, n]); setNewCat(""); supabase.from("project_files").insert({ project_id: projectId, category: n, title: "", file_path: "", file_name: "" }).then(({ error }) => { if (error) toast.error(t("تعذر الحفظ، حاول مرة أخرى")); else load(); }); } }}><Plus />{t("إضافة")}</Button>
         </div>
       )}
     </div>
