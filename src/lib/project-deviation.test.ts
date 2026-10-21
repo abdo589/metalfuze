@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deviationLabel, deviationOf } from "./projects";
+import { deviationLabel, deviationOf, deviationPct } from "./projects";
 
 describe("deviationOf", () => {
   const b = { end: "2026-06-30", actualEnd: null };

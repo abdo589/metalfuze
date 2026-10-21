@@ -198,7 +198,7 @@ export const translations: Record<string, string> = {
 };
 // Project deviation labels
 Object.assign(translations, {
-  "الانحراف بالأيام": "Deviation (days)", "تقديم": "Early", "انتهى في الميعاد": "Finished on time", "حتى الآن": "so far",
+  "الانحراف بالأيام": "Deviation (days)", "نسبة الانحراف": "Deviation %", "تقديم": "Early", "انتهى في الميعاد": "Finished on time", "حتى الآن": "so far",
 });
 
 /** UI labels only: never translate or mutate user-entered names, notes or credentials. */

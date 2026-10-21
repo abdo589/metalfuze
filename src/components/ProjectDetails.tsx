@@ -20,6 +20,13 @@ function statusClassRaw(s: string) {
   return "#1f6b70";
 }
 
+function devTxt(p: Project) {
+  const dev = deviationOf(p);
+  if (!dev) return "—";
+  const pct = deviationPct(p);
+  return `${deviationLabel(p)}${pct !== null ? ` (${pct}%)` : ""}`;
+}
+
 async function downloadProjectPdf(p: Project) {
   const { exportElementPdf } = await import("@/lib/pdf");
   const logo = (await import("@/assets/metal-fuze-logo.png.asset.json")).default.url;
