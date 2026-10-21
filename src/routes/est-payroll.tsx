@@ -71,6 +71,7 @@ function EstPayrollPage() {
   async function save() {
     if (!edit) return;
     if (!edit.data["رقم الموظف"]) { toast.error(t("اختر الموظف")); return; }
+    if (String(edit.data["الشهر"] ?? "") > thisMonth()) { toast.error(t("لا يمكن إضافة راتب لشهر لم يبدأ")); return; }
     const data: D = { ...edit.data };
     for (const k of ["الراتب الأساسي", "البدلات", "الخصومات", "الإضافي"]) data[k] = N(data[k]);
     data["صافي الراتب"] = netOf(data);
@@ -98,7 +99,7 @@ function EstPayrollPage() {
         </div>
         <div className="flex gap-2 print:hidden">
           <select className="h-9 rounded-md border bg-background px-2 text-sm" value={month} onChange={(e) => setMonth(e.target.value)}>
-            <option value="">{t("كل الشهور")}</option>
+            
             {months.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
           <PdfButton />
@@ -149,7 +150,7 @@ function EstPayrollPage() {
                 {emps.map((e) => <option key={e.id} value={String(e.data["رقم الموظف"])}>{String(e.data["رقم الموظف"])} — {String(e.data["اسم الموظف"] ?? "")}</option>)}
               </select>
             </label>
-            <label className="grid gap-1 text-sm">{t("الشهر")}<Input type="month" value={String(edit.data["الشهر"] ?? "")} onChange={(e) => set("الشهر", e.target.value)} /></label>
+            <label className="grid gap-1 text-sm">{t("الشهر")}<Input type="month" max={thisMonth()} value={String(edit.data["الشهر"] ?? "")} onChange={(e) => set("الشهر", e.target.value)} /></label>
             <label className="grid gap-1 text-sm">{t("حالة الصرف")}
               <select className="h-9 rounded-md border bg-background px-2" value={String(edit.data["حالة الصرف"] ?? "")} onChange={(e) => set("حالة الصرف", e.target.value)}>
                 {[...new Set([String(edit.data["حالة الصرف"] ?? ""), ...STATUSES].filter(Boolean))].map((s) => <option key={s} value={s}>{t(s)}</option>)}
