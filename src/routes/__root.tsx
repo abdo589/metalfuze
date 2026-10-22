@@ -24,6 +24,7 @@ import { IdleSignOut } from "@/components/IdleSignOut";
 import { MessageAlerts } from "@/components/MessageAlerts";
 import { ExecSnapshotSync } from "@/lib/exec-snapshot";
 import { AutoTranslate } from "@/components/AutoTranslate";
+import { AssistantFab } from "@/components/AssistantFab";
 
 function NotFoundComponent() {
   return (
@@ -175,6 +176,7 @@ function RootComponent() {
           </main>
         </div>
         </div>
+        <AssistantFab />
       </AuthGate>
       <footer className="border-t border-border py-3 text-center text-xs text-muted-foreground print:hidden">
         © Metal Fuze · <Link to="/privacy" className="underline hover:text-foreground">سياسة الخصوصية</Link>

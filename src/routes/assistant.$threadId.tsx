@@ -1,18 +1,10 @@
-import { t, useLanguage, locale } from "@/lib/i18n";
+import { t, useLanguage } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, BrainCircuit, MessageSquarePlus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Conversation, ConversationContent, ConversationEmptyState, ConversationScrollButton } from "@/components/ai-elements/conversation";
-import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
-import { PromptInput, PromptInputFooter, PromptInputSubmit, PromptInputTextarea } from "@/components/ai-elements/prompt-input";
-import { Shimmer } from "@/components/ai-elements/shimmer";
-import { daysLeft, projectStore } from "@/lib/projects";
+import { AssistantChat } from "@/components/AssistantChat";
 import { threadStore, useThreads } from "@/lib/threads";
 
 export const Route = createFileRoute("/assistant/$threadId")({
@@ -28,15 +20,6 @@ export const Route = createFileRoute("/assistant/$threadId")({
   }),
   component: AssistantPage,
 });
-
-const SUGGESTIONS = [
-  "ما المشاريع الأكثر خطورة الآن ولماذا؟",
-  "من قرب انتهاء إقاماته أو وثائقه؟",
-  "من حضر اليوم ومن تأخر؟",
-  "كم صافي رواتب هذا الشهر؟",
-  "أين توجد فجوات في التحصيل المالي؟",
-  "ما أولويات الإدارة لهذا الأسبوع؟",
-];
 
 function AssistantPage() {
   useLanguage();
@@ -85,80 +68,8 @@ function AssistantPage() {
             <Button variant="outline" asChild><Link to="/"><ArrowRight /> {t("اللوحة")}</Link></Button>
           </div>
         </header>
-        {ready && <ChatWindow key={threadId} threadId={threadId} />}
+        {ready && <AssistantChat key={threadId} threadId={threadId} />}
       </main>
-    </div>
-  );
-}
-
-function ChatWindow({ threadId }: { threadId: string }) {
-  useLanguage();
-  const initial = useMemo(() => threadStore.get(threadId)?.messages ?? [], [threadId]);
-  const transport = useMemo(() => new DefaultChatTransport({
-    api: "/api/chat",
-    headers: async (): Promise<Record<string, string>> => {
-      const { data } = await supabase.auth.getSession();
-      return data.session ? { Authorization: `Bearer ${data.session.access_token}` } : {};
-    },
-    body: () => ({
-      threadId,
-      language: locale() === "en-GB" ? "en" : "ar",
-      today: new Date().toISOString().slice(0, 10),
-      projects: projectStore.all().map(({ id: _id, ...p }) => ({ ...p, daysLeft: daysLeft(p.end) })),
-    }),
-  }), [threadId]);
-  const { messages, sendMessage, status, stop } = useChat({
-    id: threadId,
-    messages: initial,
-    transport,
-    onError: (e) => {
-      const m = e.message || "";
-      if (m.includes("429")) toast.error(t("طلبات كثيرة، حاول بعد قليل"));
-      else if (m.includes("402")) toast.error(t("نفد رصيد الذكاء الاصطناعي، أضف رصيداً من إعدادات مساحة العمل"));
-      else toast.error(m.length < 200 && m ? m : t("تعذر الحصول على إجابة، تحقق من الاتصال"));
-    },
-  });
-  useEffect(() => {
-    if (status === "ready" || status === "error") threadStore.setMessages(threadId, messages);
-  }, [status, messages, threadId]);
-
-  const busy = status === "submitted" || status === "streaming";
-  const send = (text: string) => { if (text.trim() && !busy) sendMessage({ text: text.trim() }); };
-
-  return (
-    <div className="surface flex min-h-0 flex-1 flex-col rounded-2xl">
-      <Conversation className="min-h-0 flex-1">
-        <ConversationContent>
-          {messages.length === 0 ? (
-            <ConversationEmptyState icon={<BrainCircuit className="size-10" />} title={t("اسأل أي حاجة في النظام")}
-              description={t("أجيبك من بيانات النظام الحالية")}>
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                {SUGGESTIONS.map((s) => (
-                  <Button key={s} variant="outline" className="h-auto whitespace-normal py-2 text-start" onClick={() => send(t(s))}>{t(s)}</Button>
-                ))}
-              </div>
-            </ConversationEmptyState>
-          ) : messages.map((m) => (
-            <Message key={m.id} from={m.role}>
-              <MessageContent className={m.role === "user" ? "group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground" : ""}>
-                {m.parts.map((p, i) => p.type === "text"
-                  ? <MessageResponse key={i}>{p.text}</MessageResponse>
-                  : null)}
-              </MessageContent>
-            </Message>
-          ))}
-          {status === "submitted" && <Shimmer className="text-sm">{t("جارٍ تحليل بيانات النظام...")}</Shimmer>}
-        </ConversationContent>
-        <ConversationScrollButton />
-      </Conversation>
-      <div className="p-3">
-        <PromptInput onSubmit={(msg) => send(msg.text ?? "")}>
-          <PromptInputTextarea autoFocus placeholder={t("مثال: ما المشاريع المتأخرة وما الحل؟")} />
-          <PromptInputFooter className="justify-end">
-            <PromptInputSubmit status={status} onStop={stop} />
-          </PromptInputFooter>
-        </PromptInput>
-      </div>
     </div>
   );
 }
