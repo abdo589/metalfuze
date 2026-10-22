@@ -135,7 +135,7 @@ function SalesPage() {
     if (!files?.length) return;
     setBusy(true);
     const { data: u } = await supabase.auth.getUser();
-    const cur = (((edit?.request ?? {}) as Req).docs as string[] | undefined) ?? [];
+    const cur = (((edit?.request ?? {}) as Req)["docs"] as string[] | undefined) ?? [];
     const added: string[] = [];
     for (const f of Array.from(files)) {
       const path = `${u.user?.id}/${Date.now()}_${f.name.replace(/[^\w.\-\u0600-\u06FF]/g, "_")}`;
@@ -150,7 +150,7 @@ function SalesPage() {
   }
   async function removeFile(path: string) {
     await supabase.storage.from("sales-files").remove([path]);
-    setR("docs", ((((edit?.request ?? {}) as Req).docs as string[]) ?? []).filter((x) => x !== path));
+    setR("docs", ((((edit?.request ?? {}) as Req)["docs"] as string[]) ?? []).filter((x) => x !== path));
   }
   const docsList = (paths: string[], del: boolean) => <ul className="space-y-1">{paths.map((p) => <li key={p} className="flex items-center gap-2 text-sm">
     <button type="button" className="text-primary underline" onClick={() => openFile(p)}>{fileName(p)}</button>
@@ -222,11 +222,11 @@ function SalesPage() {
               {sec.title === "بيانات العميل" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم الشركة أو العميل")}<span className="text-destructive"> *</span></Label><Input value={edit.client ?? ""} onChange={(e) => set("client", e.target.value)} /></div>}
               {sec.title === "بيانات المشروع" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم المشروع")}<span className="text-destructive"> *</span></Label><Input value={edit.project ?? ""} onChange={(e) => set("project", e.target.value)} /></div>}
               {sec.fields.map(field)}
-              {sec.title === "بيانات طلب التسعير والمستندات" && ((edit.request ?? {}) as Req).has_docs === "نعم" && <div className="space-y-1.5 sm:col-span-2">
+              {sec.title === "بيانات طلب التسعير والمستندات" && ((edit.request ?? {}) as Req)["has_docs"] === "نعم" && <div className="space-y-1.5 sm:col-span-2">
                 <Label>{t("مستندات المشروع")}</Label>
                 <Input type="file" multiple disabled={busy} onChange={(e) => { upload(e.target.files); e.target.value = ""; }} />
                 {busy && <p className="text-xs text-muted-foreground">{t("جارٍ الرفع...")}</p>}
-                {docsList((((edit.request ?? {}) as Req).docs as string[]) ?? [], true)}
+                {docsList((((edit.request ?? {}) as Req)["docs"] as string[]) ?? [], true)}
               </div>}
             </div>)}
             <h3 className="mt-2 border-b border-border pb-1 font-display font-bold sm:col-span-2">{t("العمولة")}</h3>
@@ -258,7 +258,7 @@ function SalesPage() {
           {view && <div className="space-y-4 text-sm">
             <div><b>{t("اسم الشركة أو العميل")}:</b> {view.client}</div><div><b>{t("اسم المشروع")}:</b> {view.project}</div>
             {REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>
-              {sec.title === "بيانات طلب التسعير والمستندات" && (((view.request ?? {}) as Req).docs as string[] | undefined)?.length ? <div><span className="text-muted-foreground">{t("مستندات المشروع")}:</span>{docsList(((view.request as Req).docs as string[]), false)}</div> : null}
+              {sec.title === "بيانات طلب التسعير والمستندات" && (((view.request ?? {}) as Req)["docs"] as string[] | undefined)?.length ? <div><span className="text-muted-foreground">{t("مستندات المشروع")}:</span>{docsList(((view.request as Req)["docs"] as string[]), false)}</div> : null}
               {sec.fields.map((f) => { const v = ((view.request ?? {}) as Req)[f.k]; return <div key={f.k}><span className="text-muted-foreground">{t(f.l)}:</span> {Array.isArray(v) ? v.map((x) => t(x)).join("، ") : v ? (f.opts ? t(v) : v) : "—"}</div>; })}</div>)}
           </div>}
         </DialogContent>
