@@ -65,7 +65,7 @@ function SalesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, period]);
 
-  async function save() {
+  async function save(): Promise<void> {
     if (!edit) return;
     const { id, created_at: _c, owner_id: _o, ...rest } = edit as D;
     const payload = { ...rest, updated_at: new Date().toISOString() };
