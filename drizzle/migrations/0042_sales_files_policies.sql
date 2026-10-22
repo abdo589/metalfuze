@@ -1,0 +1,3 @@
+CREATE POLICY "sales files read" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'sales-files' AND (public.has_role(auth.uid(),'sales') OR public.has_role(auth.uid(),'admin') OR public.has_role(auth.uid(),'hr') OR public.has_role(auth.uid(),'viewer')));
+CREATE POLICY "sales files insert" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'sales-files' AND public.has_role(auth.uid(),'sales') AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY "sales files delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'sales-files' AND public.has_role(auth.uid(),'sales') AND (storage.foldername(name))[1] = auth.uid()::text);

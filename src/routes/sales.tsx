@@ -129,6 +129,32 @@ function SalesPage() {
       {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
   };
   const [view, setView] = useState<D | null>(null);
+  const [busy, setBusy] = useState(false);
+  const fileName = (p: string) => p.split("/").pop()!.replace(/^\d+_/, "");
+  async function upload(files: FileList | null) {
+    if (!files?.length) return;
+    setBusy(true);
+    const { data: u } = await supabase.auth.getUser();
+    const cur = (((edit?.request ?? {}) as Req)["docs"] as string[] | undefined) ?? [];
+    const added: string[] = [];
+    for (const f of Array.from(files)) {
+      const path = `${u.user?.id}/${Date.now()}_${f.name.replace(/[^\w.\-\u0600-\u06FF]/g, "_")}`;
+      const { error } = await supabase.storage.from("sales-files").upload(path, f);
+      if (error) toast.error(`${t("تعذر رفع الملف")}: ${f.name}`); else added.push(path);
+    }
+    setR("docs", [...cur, ...added]); setBusy(false);
+  }
+  async function openFile(path: string) {
+    const { data } = await supabase.storage.from("sales-files").createSignedUrl(path, 600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  }
+  async function removeFile(path: string) {
+    await supabase.storage.from("sales-files").remove([path]);
+    setR("docs", ((((edit?.request ?? {}) as Req)["docs"] as string[]) ?? []).filter((x) => x !== path));
+  }
+  const docsList = (paths: string[], del: boolean) => <ul className="space-y-1">{paths.map((p) => <li key={p} className="flex items-center gap-2 text-sm">
+    <button type="button" className="text-primary underline" onClick={() => openFile(p)}>{fileName(p)}</button>
+    {del && <Button type="button" size="icon" variant="ghost" className="size-6 text-destructive" aria-label={t("حذف")} onClick={() => removeFile(p)}><Trash2 className="size-3.5" /></Button>}</li>)}</ul>;
   const pick = (k: "stage" | "payout_status" | "client_type", label: string, opts: string[]) => (
     <div className="space-y-1.5"><Label>{label}</Label>
       <Select value={String(edit?.[k] ?? "")} onValueChange={(v) => set(k, v)}>
@@ -196,6 +222,12 @@ function SalesPage() {
               {sec.title === "بيانات العميل" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم الشركة أو العميل")}<span className="text-destructive"> *</span></Label><Input value={edit.client ?? ""} onChange={(e) => set("client", e.target.value)} /></div>}
               {sec.title === "بيانات المشروع" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم المشروع")}<span className="text-destructive"> *</span></Label><Input value={edit.project ?? ""} onChange={(e) => set("project", e.target.value)} /></div>}
               {sec.fields.map(field)}
+              {sec.title === "بيانات طلب التسعير والمستندات" && ((edit.request ?? {}) as Req)["has_docs"] === "نعم" && <div className="space-y-1.5 sm:col-span-2">
+                <Label>{t("مستندات المشروع")}</Label>
+                <Input type="file" multiple disabled={busy} onChange={(e) => { upload(e.target.files); e.target.value = ""; }} />
+                {busy && <p className="text-xs text-muted-foreground">{t("جارٍ الرفع...")}</p>}
+                {docsList((((edit.request ?? {}) as Req)["docs"] as string[]) ?? [], true)}
+              </div>}
             </div>)}
             <h3 className="mt-2 border-b border-border pb-1 font-display font-bold sm:col-span-2">{t("العمولة")}</h3>
             {pick("client_type", t("عميل جديد ولا سابق"), ["جديد", "سابق"])}
@@ -226,6 +258,7 @@ function SalesPage() {
           {view && <div className="space-y-4 text-sm">
             <div><b>{t("اسم الشركة أو العميل")}:</b> {view.client}</div><div><b>{t("اسم المشروع")}:</b> {view.project}</div>
             {REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>
+              {sec.title === "بيانات طلب التسعير والمستندات" && (((view.request ?? {}) as Req)["docs"] as string[] | undefined)?.length ? <div><span className="text-muted-foreground">{t("مستندات المشروع")}:</span>{docsList(((view.request as Req)["docs"] as string[]), false)}</div> : null}
               {sec.fields.map((f) => { const v = ((view.request ?? {}) as Req)[f.k]; return <div key={f.k}><span className="text-muted-foreground">{t(f.l)}:</span> {Array.isArray(v) ? v.map((x) => t(x)).join("، ") : v ? (f.opts ? t(v) : v) : "—"}</div>; })}</div>)}
           </div>}
         </DialogContent>
