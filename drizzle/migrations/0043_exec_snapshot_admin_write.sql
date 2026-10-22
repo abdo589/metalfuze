@@ -1,0 +1,2 @@
+CREATE POLICY "admins insert summary" ON public.exec_snapshot FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY "admins update summary" ON public.exec_snapshot FOR UPDATE TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
