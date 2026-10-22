@@ -29,3 +29,10 @@ describe("statusBucket", () => {
       expect(STATUS_BUCKETS).toContain(statusBucket(s)));
   });
 });
+
+import { autoStatus as _auto } from "./projects";
+import { it as _it, expect as _expect } from "vitest";
+_it("keeps manual 'متقدم' for a running on-schedule project", () => {
+  _expect(_auto({ start: "2026-01-01", end: "2026-12-31", actualEnd: null, status: "متقدم" } as never, "2026-06-01")).toBe("متقدم");
+  _expect(_auto({ start: "2026-01-01", end: "2026-03-01", actualEnd: null, status: "متقدم" } as never, "2026-06-01")).toBe("متأخر");
+});
