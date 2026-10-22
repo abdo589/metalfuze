@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -118,6 +118,17 @@ function SalesPage() {
       <Input type="text" inputMode="decimal" dir="ltr" placeholder="0" value={String(edit?.[k] ?? "")}
         onChange={(e) => set(k, Number(e.target.value.replace(/[^\d.]/g, "")) as never)} /></div>
   );
+  const setR = (k: string, v: string | string[]) => setEdit((e) => ({ ...e, request: { ...((e?.request ?? {}) as Req), [k]: v } }));
+  const field = (f: F) => {
+    const r = (edit?.request ?? {}) as Req; const v = r[f.k];
+    const lab = <Label>{t(f.l)}{f.req && <span className="text-destructive"> *</span>}</Label>;
+    if (f.multi) return <div key={f.k} className="space-y-1.5 sm:col-span-2">{lab}<div className="flex flex-wrap gap-4">{f.opts!.map((o) => {
+      const arr = Array.isArray(v) ? v : []; return <label key={o} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={arr.includes(o)} onChange={(e) => setR(f.k, e.target.checked ? [...arr, o] : arr.filter((x) => x !== o))} />{t(o)}</label>; })}</div></div>;
+    if (f.opts) return <div key={f.k} className="space-y-1.5">{lab}<Select value={String(v ?? "")} onValueChange={(x) => setR(f.k, x)}><SelectTrigger><SelectValue placeholder={t("اختر")} /></SelectTrigger><SelectContent>{f.opts.map((o) => <SelectItem key={o} value={o}>{t(o)}</SelectItem>)}</SelectContent></Select></div>;
+    return <div key={f.k} className={`space-y-1.5 ${f.long || f.hint ? "sm:col-span-2" : ""}`}>{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
+      {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
+  };
+  const [view, setView] = useState<D | null>(null);
   const pick = (k: "stage" | "payout_status" | "client_type", label: string, opts: string[]) => (
     <div className="space-y-1.5"><Label>{label}</Label>
       <Select value={String(edit?.[k] ?? "")} onValueChange={(v) => set(k, v)}>
@@ -131,8 +142,7 @@ function SalesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-bold">{t("المبيعات والعمولات")}</h1>
         <div className="flex gap-2">
-          <Button variant="outline" asChild><a href={FORM_URL} target="_blank" rel="noreferrer"><ExternalLink />{t("نموذج طلب تسعيرة (Asana)")}</a></Button>
-          {canEdit && <Button onClick={() => setEdit(blank())}><Plus />{t("إضافة عميل")}</Button>}
+          {canEdit && <Button onClick={() => setEdit(blank())}><Plus />{t("طلب تسعيرة مشروع جديد")}</Button>}
         </div>
       </div>
       <p className="text-sm text-muted-foreground">{t("العمولة 2% من قيمة العقد النهائية قبل الضريبة، مقسومة حسب نسبة المشاركة.")}</p>
@@ -168,7 +178,7 @@ function SalesPage() {
                 <td className="p-2" dir="ltr">{fmt(Number(d.quote_value))}</td><td className="p-2" dir="ltr">{fmt(Number(d.contract_value))}</td>
                 <td className="p-2" dir="ltr">{fmt(Number(d.collected))}</td><td className="p-2 font-semibold" dir="ltr">{fmt(commissionDue(d))}</td>
                 <td className="p-2">{t(d.payout_status)}</td>
-                <td className="p-2 whitespace-nowrap">{canEdit && <>
+                <td className="p-2 whitespace-nowrap"><Button size="icon" variant="ghost" className="size-7" aria-label={t("التفاصيل")} onClick={() => setView(d)}><Eye className="size-4" /></Button>{canEdit && <>
                   <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => setEdit(d)}><Pencil className="size-4" /></Button>
                   <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(d)}><Trash2 className="size-4" /></Button></>}</td>
               </tr>
@@ -181,8 +191,13 @@ function SalesPage() {
         <DialogContent dir={locale() === "en-GB" ? "ltr" : "rtl"} className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader><DialogTitle>{edit?.id ? t("تعديل") : t("إضافة عميل")}</DialogTitle></DialogHeader>
           {edit && <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>{t("العميل")}</Label><Input value={edit.client ?? ""} onChange={(e) => set("client", e.target.value)} /></div>
-            <div className="space-y-1.5"><Label>{t("المشروع")}</Label><Input value={edit.project ?? ""} onChange={(e) => set("project", e.target.value)} /></div>
+            {REQUEST_FORM.map((sec) => <div key={sec.title} className="contents">
+              <h3 className="mt-2 border-b border-border pb-1 font-display font-bold sm:col-span-2">{t(sec.title)}</h3>
+              {sec.title === "بيانات العميل" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم الشركة أو العميل")}<span className="text-destructive"> *</span></Label><Input value={edit.client ?? ""} onChange={(e) => set("client", e.target.value)} /></div>}
+              {sec.title === "بيانات المشروع" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم المشروع")}<span className="text-destructive"> *</span></Label><Input value={edit.project ?? ""} onChange={(e) => set("project", e.target.value)} /></div>}
+              {sec.fields.map(field)}
+            </div>)}
+            <h3 className="mt-2 border-b border-border pb-1 font-display font-bold sm:col-span-2">{t("العمولة")}</h3>
             {pick("client_type", t("عميل جديد ولا سابق"), ["جديد", "سابق"])}
             {pick("stage", t("المرحلة"), STAGES)}
             <div className="space-y-1.5"><Label>{t("هل شارك موظف مبيعات آخر؟")}</Label>
@@ -201,8 +216,18 @@ function SalesPage() {
           </div>}
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setEdit(null)}>{t("إلغاء")}</Button>
-            <Button disabled={!edit?.client?.trim()} onClick={save}>{t("حفظ")}</Button>
+            <Button disabled={!edit || missing(edit)} onClick={save}>{t("حفظ")}</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!view} onOpenChange={(o) => !o && setView(null)}>
+        <DialogContent dir={locale() === "en-GB" ? "ltr" : "rtl"} className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader><DialogTitle>{t("طلب تسعيرة مشروع جديد")}</DialogTitle></DialogHeader>
+          {view && <div className="space-y-4 text-sm">
+            <div><b>{t("اسم الشركة أو العميل")}:</b> {view.client}</div><div><b>{t("اسم المشروع")}:</b> {view.project}</div>
+            {REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>
+              {sec.fields.map((f) => { const v = ((view.request ?? {}) as Req)[f.k]; return <div key={f.k}><span className="text-muted-foreground">{t(f.l)}:</span> {Array.isArray(v) ? v.map((x) => t(x)).join("، ") : v ? (f.opts ? t(v) : v) : "—"}</div>; })}</div>)}
+          </div>}
         </DialogContent>
       </Dialog>
     </main>
