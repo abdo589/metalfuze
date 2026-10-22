@@ -66,7 +66,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const role = useRole();
   const unread = useUnreadMessages();
   const visible = role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
-    : role === "sales" ? [{ to: "/sales", label: "المبيعات والعمولات", icon: Calculator }]
+    : role === "sales" ? [{ to: "/sales", label: "المبيعات والعمولات", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
     : role === "mail" ? [{ to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "executive" ? [{ to: "/executive", label: "الملخص التنفيذي", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
