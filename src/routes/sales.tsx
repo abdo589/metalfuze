@@ -93,6 +93,23 @@ function SalesPage() {
     setRows(data ?? []);
   }, []);
   useEffect(() => { load(); }, [load]);
+  const [me, setMe] = useState<{ id: string; email: string } | null>(null);
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => data.user && setMe({ id: data.user.id, email: data.user.email ?? "" })); }, []);
+  const myTurn = (d: D) => !!me && (d.workflow_step === "sales_entry" ? d.owner_id === me.id && canEdit : WF.find((s) => s.k === d.workflow_step)?.email === me.email);
+  const [wfNote, setWfNote] = useState(""); const [wfPrice, setWfPrice] = useState(""); const [wfFile, setWfFile] = useState<File | null>(null); const [wfBusy, setWfBusy] = useState(false);
+  async function advance(d: D, action: "approve" | "reject") {
+    setWfBusy(true);
+    let path: string | null = null, name: string | null = null;
+    if (action === "approve" && wfFile && me) {
+      path = `${me.id}/${Date.now()}_${wfFile.name.replace(/[^\w.\-\u0600-\u06FF]/g, "_")}`; name = wfFile.name;
+      const { error } = await supabase.storage.from("sales-files").upload(path, wfFile);
+      if (error) { toast.error(t("تعذر رفع الملف")); setWfBusy(false); return; }
+    }
+    const { error } = await supabase.rpc("sales_advance", { p_id: d.id, p_action: action, p_note: wfNote, p_price: wfPrice ? Number(wfPrice) : undefined, p_file_path: path ?? undefined, p_file_name: name ?? undefined });
+    setWfBusy(false);
+    if (error) { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); return; }
+    toast.success(t("تم الإرسال للمرحلة التالية")); setWfNote(""); setWfPrice(""); setWfFile(null); setView(null); load();
+  }
 
   const inPeriod = (d: D) => {
     const c = new Date(d.created_at);
@@ -232,14 +249,16 @@ function SalesPage() {
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50"><tr>
-            {["تاريخ التسجيل", "العميل", "المشروع", "نوع العميل", "مشاركة", "المرحلة", "عرض السعر", "قيمة العقد", "المحصّل", "العمولة المستحقة", "حالة الصرف", ""].map((h) => <th key={h} className="p-2 text-start">{t(h)}</th>)}
+            {["تاريخ التسجيل", "العميل", "المشروع", "مرحلة الاعتماد", "نوع العميل", "مشاركة", "المرحلة", "عرض السعر", "قيمة العقد", "المحصّل", "العمولة المستحقة", "حالة الصرف", ""].map((h) => <th key={h} className="p-2 text-start">{t(h)}</th>)}
           </tr></thead>
           <tbody>
-            {rows.length === 0 && <tr><td colSpan={12} className="p-4 text-center text-muted-foreground">{t("لا توجد بيانات")}</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={13} className="p-4 text-center text-muted-foreground">{t("لا توجد بيانات")}</td></tr>}
             {rows.map((d) => (
               <tr key={d.id} className="border-t border-border">
                 <td className="p-2" dir="ltr">{new Date(d.created_at).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" })}</td>
-                <td className="p-2">{d.client}</td><td className="p-2">{d.project}</td><td className="p-2">{t(d.client_type)}</td>
+                <td className="p-2">{d.client}</td><td className="p-2">{d.project}</td>
+                <td className="p-2 whitespace-nowrap"><span className={`rounded-full px-2 py-0.5 text-xs ${myTurn(d) ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{t(wfLabel(d.workflow_step))}</span>{myTurn(d) && <button type="button" className="ms-1 text-xs text-primary underline" onClick={() => setView(d)}>{t("بانتظارك")}</button>}</td>
+                <td className="p-2">{t(d.client_type)}</td>
                 <td className="p-2">{d.shared ? `${d.partner_name} (${d.my_share}/${100 - Number(d.my_share)})` : "—"}</td>
                 <td className="p-2">{t(d.stage)}</td>
                 <td className="p-2" dir="ltr">{fmt(Number(d.quote_value))}</td><td className="p-2" dir="ltr">{fmt(Number(d.contract_value))}</td>
@@ -297,6 +316,24 @@ function SalesPage() {
         <DialogContent dir={locale() === "en-GB" ? "ltr" : "rtl"} className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader><DialogTitle>{t("طلب تسعيرة مشروع جديد")}</DialogTitle></DialogHeader>
           {view && <div className="space-y-4 text-sm">
+            <div className="rounded-lg border border-border p-3 space-y-3">
+              <h3 className="font-display font-bold">{t("مراحل الاعتماد")}</h3>
+              <ol className="flex flex-wrap gap-1.5">{WF.map((s, i) => { const cur = WF.findIndex((x) => x.k === view.workflow_step); return <li key={s.k} className={`rounded-full px-2 py-0.5 text-xs ${i === cur ? "bg-primary text-primary-foreground" : i < cur ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"}`}>{i + 1}. {t(s.l)}</li>; })}</ol>
+              {view.pricing_value != null && <div><span className="text-muted-foreground">{t("التسعير")}:</span> <span dir="ltr">{fmt(Number(view.pricing_value))}</span></div>}
+              {view.pricing_file_path && <div><span className="text-muted-foreground">{t("ملف التسعير")}:</span> <button type="button" className="text-primary underline" onClick={() => openFile(view.pricing_file_path!)}>{view.pricing_file_name}</button></div>}
+              {view.quotation_file_path && <div><span className="text-muted-foreground">{t("عرض السعر (Quotation)")}:</span> <button type="button" className="text-primary underline" onClick={() => openFile(view.quotation_file_path!)}>{view.quotation_file_name}</button></div>}
+              {myTurn(view) && <div className="space-y-2 border-t border-border pt-3">
+                {view.workflow_step === "haitham_pricing" && <div className="space-y-1.5"><Label>{t("قيمة التسعير")} *</Label><Input dir="ltr" inputMode="decimal" value={wfPrice} onChange={(e) => setWfPrice(e.target.value.replace(/[^\d.]/g, ""))} /></div>}
+                {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" onChange={(e) => setWfFile(e.target.files?.[0] ?? null)} /></div>}
+                <div className="space-y-1.5"><Label>{t("ملاحظات")}</Label><Textarea value={wfNote} onChange={(e) => setWfNote(e.target.value)} /></div>
+                <div className="flex gap-2">
+                  <Button disabled={wfBusy || (view.workflow_step === "haitham_pricing" && (!wfPrice || !wfFile)) || (view.workflow_step === "eilaf_quotation" && !wfFile)} onClick={() => advance(view, "approve")}>{t(view.workflow_step === "sales_entry" ? "إرسال للمراجعة" : "موافقة وإرسال")}</Button>
+                  {view.workflow_step !== "sales_entry" && <Button variant="outline" className="text-destructive" disabled={wfBusy} onClick={() => advance(view, "reject")}>{t("رفض وإرجاع")}</Button>}
+                </div>
+              </div>}
+              {((view.workflow_log ?? []) as LogE[]).length > 0 && <ul className="space-y-1 border-t border-border pt-2 text-xs">{((view.workflow_log ?? []) as LogE[]).map((l, i) => <li key={i}>
+                <span dir="ltr">{new Date(l.at).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" })}</span> — {l.by}: {t(l.action === "reject" ? "رفض" : "موافقة")} ({t(wfLabel(l.from))} ← {t(wfLabel(l.to))}){l.note && <> — {l.note}</>}</li>)}</ul>}
+            </div>
             <div><b>{t("اسم الشركة أو العميل")}:</b> {view.client}</div><div><b>{t("اسم المشروع")}:</b> {view.project}</div>
             {REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>
               {sec.title === "بيانات طلب التسعير والمستندات" && (((view.request ?? {}) as Req)["docs"] as string[] | undefined)?.length ? <div><span className="text-muted-foreground">{t("مستندات المشروع")}:</span>{docsList(((view.request as Req)["docs"] as string[]), false)}</div> : null}
