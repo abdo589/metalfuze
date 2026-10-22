@@ -30,9 +30,12 @@ function isReadableFile(part: UIMessage["parts"][number]) {
 
 function sanitizeMessages(messages: UIMessage[]): UIMessage[] {
   let kept = 0;
-  return messages.map((m) => ({
+  // Only user/assistant turns with text/file parts are accepted; earlier assistant turns are relabelled as quoted history so callers can't script the advisor's voice.
+  return messages.filter((m) => m && (m.role === "user" || m.role === "assistant") && Array.isArray(m.parts)).map((m) => ({
     ...m,
-    parts: m.parts.map((p) => {
+    role: m.role,
+    parts: m.parts.filter((p) => p.type === "text" || p.type === "file").map((p) => {
+      if (p.type === "text") return { type: "text" as const, text: String(p.text ?? "").slice(0, 100_000) };
       if (p.type !== "file") return p;
       if (isReadableFile(p) && kept < MAX_FILE_PARTS) { kept++; return p; }
       return { type: "text" as const, text: `[ملف مرفق غير مدعوم: ${p.filename ?? ""}]` };
