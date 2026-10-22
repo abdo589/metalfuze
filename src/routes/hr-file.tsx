@@ -16,6 +16,7 @@ import { DocsOverview } from "@/components/DocsOverview";
 import { NationalitySelect } from "@/components/NationalitySelect";
 import { contractOptions, resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
 import { useLanguage } from "@/lib/i18n";
+import { findDuplicate } from "@/lib/bloom";
 
 export const Route = createFileRoute("/hr-file")({
   head: () => ({
@@ -87,6 +88,15 @@ function HrFilePage() {
       if (!t) continue;
       const orig = sel.data[k];
       data[k] = typeof orig === "number" && !isNaN(Number(t)) ? Number(t) : t;
+    }
+    // Duplicate warning (payroll repeats each month by design, so it is skipped).
+    if (sel.sheet !== "payroll") {
+      const others = bySheet(sel.sheet).filter((r) => r.id !== sel.id);
+      const dup = [
+        findDuplicate(others.map((r) => r.data[ID]), data[ID]) ? `${ID}: ${data[ID]}` : "",
+        findDuplicate(others.map((r) => r.data[NAME]), data[NAME]) ? `${NAME}: ${data[NAME]}` : "",
+      ].filter(Boolean);
+      if (dup.length && !confirm(`يوجد سجل مسجل بنفس البيانات\n${dup.join("\n")}\nهل تريد الحفظ على أي حال؟`)) return;
     }
     const res = sel.id
       ? await supabase.from("hr_records").update({ data, updated_at: new Date().toISOString() }).eq("id", sel.id)
