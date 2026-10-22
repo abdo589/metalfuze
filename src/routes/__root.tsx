@@ -24,6 +24,7 @@ import { IdleSignOut } from "@/components/IdleSignOut";
 import { MessageAlerts } from "@/components/MessageAlerts";
 import { ExecSnapshotSync } from "@/lib/exec-snapshot";
 import { AutoTranslate } from "@/components/AutoTranslate";
+import { AssistantFab } from "@/components/AssistantFab";
 
 function NotFoundComponent() {
   return (
