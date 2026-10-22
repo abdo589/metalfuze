@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { autoStatus, plannedFromDates, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, warrantyInfo, type Project } from "@/lib/projects";
+import { findDuplicate } from "@/lib/bloom";
 
 const empty = (): Project => ({
   id: newId(), code: "", name: "", sector: "", dept: "المشاريع", manager: "", owner: "Metal Fuze",
@@ -171,7 +172,15 @@ export function ProjectDialog({
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t("إلغاء")}</Button>
-          <Button disabled={!f.name.trim() || warrantyBad} onClick={() => { projectStore.upsert(f); onOpenChange(false); }}>
+          <Button disabled={!f.name.trim() || warrantyBad} onClick={() => {
+            const others = projectStore.all().filter((p) => p.id !== f.id);
+            const dup = [
+              findDuplicate(others.map((p) => p.code), f.code) ? `${t("رمز المشروع")}: ${f.code}` : "",
+              findDuplicate(others.map((p) => p.name), f.name) ? `${t("اسم المشروع")}: ${f.name}` : "",
+            ].filter(Boolean);
+            if (dup.length && !confirm(`${t("يوجد مشروع مسجل بنفس البيانات")}\n${dup.join("\n")}\n${t("هل تريد الحفظ على أي حال؟")}`)) return;
+            projectStore.upsert(f); onOpenChange(false);
+          }}>
             {t("حفظ")}</Button>
         </DialogFooter>
       </DialogContent>
