@@ -324,7 +324,7 @@ function Dashboard() {
       </section>
 
       <ProjectDialog open={open} onOpenChange={setOpen} project={editing} managers={managers} />
-      <ProjectDetails project={details} onClose={() => setDetails(null)} />
+      <ProjectDetails project={details ? (projects.find((x) => x.id === details.id) ?? details) : null} onClose={() => setDetails(null)} />
     </div>
   );
 }
