@@ -140,7 +140,9 @@ export function autoStatus(p: Pick<Project, "start" | "end" | "actualEnd" | "sta
     const r = p.actualEnd < p.end ? "متقدم" : p.actualEnd > p.end ? "متأخر" : "طبيعي";
     return `منتهي - ${r}`;
   }
-  return today > p.end ? "متأخر" : "طبيعي";
+  if (today > p.end) return "متأخر";
+  // A running project on schedule keeps a manually chosen "ahead" status.
+  return p.status === "متقدم" ? "متقدم" : "طبيعي";
 }
 export const withAutoStatus = (p: Project): Project => ({ ...p, status: autoStatus(p) });
 
