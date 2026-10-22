@@ -105,7 +105,7 @@ function SalesPage() {
       const { error } = await supabase.storage.from("sales-files").upload(path, wfFile);
       if (error) { toast.error(t("تعذر رفع الملف")); setWfBusy(false); return; }
     }
-    const { error } = await supabase.rpc("sales_advance", { p_id: d.id, p_action: action, p_note: wfNote, p_price: wfPrice ? Number(wfPrice) : undefined, p_file_path: path ?? undefined, p_file_name: name ?? undefined });
+    const { error } = await supabase.rpc("sales_advance", { p_id: d.id, p_action: action, p_note: wfNote, ...(wfPrice ? { p_price: Number(wfPrice) } : {}), ...(path && name ? { p_file_path: path, p_file_name: name } : {}) });
     setWfBusy(false);
     if (error) { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); return; }
     toast.success(t("تم الإرسال للمرحلة التالية")); setWfNote(""); setWfPrice(""); setWfFile(null); setView(null); load();
