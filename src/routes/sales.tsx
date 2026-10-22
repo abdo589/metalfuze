@@ -25,11 +25,46 @@ export const Route = createFileRoute("/sales")({
   component: SalesPage,
 });
 
-const FORM_URL = "https://form.asana.com/?k=siS1k0Llj6fcssPfgOni4w&d=1216553096721183";
 const STAGES = ["تسعير", "تم تقديم العرض", "فاز", "خسر"];
 const PAYOUT = ["لم تُستحق", "مستحقة", "مصروفة"];
 type D = Tables<"sales_deals">;
-const blank = (): Partial<D> => ({ client: "", project: "", client_type: "جديد", shared: false, partner_name: "", my_share: 100, quote_value: 0, contract_value: 0, collected: 0, commission_rate: 2, payout_status: "لم تُستحق", stage: "تسعير", notes: "" });
+type Req = Record<string, string | string[]>;
+type F = { k: string; l: string; req?: boolean; opts?: string[]; multi?: boolean; hint?: string; long?: boolean };
+// Questions of the "طلب تسعيرة مشروع جديد" pricing-request form, built into the site.
+const REQUEST_FORM: { title: string; fields: F[] }[] = [
+  { title: "بيانات موظف المبيعات", fields: [
+    { k: "sales_name", l: "اسم موظف المبيعات", req: true },
+    { k: "sales_email", l: "البريد الإلكتروني لموظف المبيعات", req: true },
+    { k: "work_type", l: "نوع الأعمال", req: true, opts: ["أعمال العظم", "أعمال التشطيب", "أعمال الإيبوكسي", "أعمال الخشبيات", "أعمال اللوحات", "أعمال متعددة التخصصات"] },
+  ] },
+  { title: "بيانات العميل", fields: [
+    { k: "contact_name", l: "اسم مسؤول التواصل", req: true },
+    { k: "contact_title", l: "المسمى الوظيفي لمسؤول التواصل", req: true, opts: ["مالك", "مدير عام", "مدير مشروع", "مهندس مشروع", "مهندس موقع", "مدير مشتريات", "مهندس مشتريات", "أخرى"] },
+    { k: "contact_phone", l: "رقم جوال مسؤول التواصل", req: true },
+    { k: "contact_email", l: "البريد الإلكتروني لمسؤول التواصل", req: true },
+    { k: "client_capacity", l: "صفة جهة العميل", req: true, opts: ["مالك المشروع", "مقاول رئيسي", "مقاول من الباطن", "استشاري", "أخرى"] },
+  ] },
+  { title: "بيانات المشروع", fields: [
+    { k: "in_riyadh", l: "هل المشروع داخل مدينة الرياض؟", opts: ["نعم", "لا"] },
+    { k: "location_url", l: "رابط موقع المشروع" },
+    { k: "scope", l: "وصف مختصر لنطاق العمل المطلوب", req: true, long: true },
+    { k: "project_state", l: "حالة المشروع الحالية", req: true, multi: true, opts: ["لم يبدأ", "تحت التنفيذ", "قائم ويحتاج تجديدًا"] },
+    { k: "start_time", l: "موعد بدء التنفيذ المتوقع", req: true, opts: ["فوري", "خلال شهر", "خلال 1-3 أشهر", "أكثر من 3 أشهر", "غير محدد"] },
+    { k: "has_consultant", l: "هل يوجد استشاري للمشروع؟", opts: ["نعم", "لا", "غير معروف"] },
+  ] },
+  { title: "بيانات طلب التسعير والمستندات", fields: [
+    { k: "pricing_type", l: "نوع التسعيرة", req: true, opts: ["تسعيرة مبدئية", "تسعيرة تفصيلية", "مناقصة"] },
+    { k: "has_docs", l: "هل توجد مستندات للمشروع؟", opts: ["نعم", "لا"] },
+    { k: "budget_mentioned", l: "هل ذكر العميل ميزانية أو سعرًا متوقعًا للمشروع؟", req: true, opts: ["نعم", "لا"] },
+    { k: "budget", l: "الميزانية أو النطاق السعري المتوقع من العميل (ريال سعودي)", hint: "يُعبأ فقط إذا ذكر العميل مبلغًا محددًا أو نطاقًا تقريبيًا، ولا يُكتب أي رقم غير مؤكد." },
+  ] },
+];
+const blank = (): Partial<D> => ({ client: "", project: "", client_type: "جديد", shared: false, partner_name: "", my_share: 100, quote_value: 0, contract_value: 0, collected: 0, commission_rate: 2, payout_status: "لم تُستحق", stage: "تسعير", notes: "", request: {} });
+const missing = (e: Partial<D>) => {
+  const r = (e.request ?? {}) as Req;
+  if (!e.client?.trim() || !e.project?.trim()) return true;
+  return REQUEST_FORM.some((s) => s.fields.some((f) => f.req && (Array.isArray(r[f.k]) ? !(r[f.k] as string[]).length : !String(r[f.k] ?? "").trim())));
+};
 const fmt = (n: number) => Math.round(n).toLocaleString(locale());
 
 function SalesPage() {
