@@ -16,7 +16,7 @@ export const MANAGER_PATHS = ["/my-projects", "/messages", "/mail"];
 /** Mail-only accounts open nothing but their Outlook mailbox. */
 export const MAIL_PATHS = ["/mail"];
 /** Sales (Hala) only opens her own sales & commission space. */
-export const SALES_PATHS = ["/sales"];
+export const SALES_PATHS = ["/sales", "/messages"];
 
 /** Current user's strongest role (admin > hr > viewer > manager). Accounts without a role are treated as manager. undefined while loading. */
 export function useRole() {
