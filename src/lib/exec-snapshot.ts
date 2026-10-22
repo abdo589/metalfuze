@@ -3,40 +3,62 @@ import { supabase } from "@/integrations/supabase/client";
 import { projectStore, useProjects, type Project } from "./projects";
 import { txnStore, useTransactions, type Txn } from "./transactions";
 
-/** The CEO account's browser publishes their current projects/payments so the executive summary (Hisham) stays live. */
+/** Admins (Eilaf, Abdelrhman) and the CEO share projects/payments through exec_snapshot so every account sees every update live. */
 export function ExecSnapshotSync() {
-  const [isCeo, setIsCeo] = useState(false);
+  const [mode, setMode] = useState<"ceo" | "admin" | null>(null);
   useEffect(() => {
-    const check = () => supabase.auth.getUser().then(({ data }) => setIsCeo(data.user?.email === "ceo@metalfuze.local"));
+    const check = async () => {
+      const { data } = await supabase.auth.getUser();
+      const u = data.user;
+      if (!u) return setMode(null);
+      if (u.email === "ceo@metalfuze.local") return setMode("ceo");
+      const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", u.id);
+      setMode((r ?? []).some((x) => String(x.role) === "admin") ? "admin" : null);
+    };
     check();
     const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
     return () => sub.subscription.unsubscribe();
   }, []);
   const [ready, setReady] = useState(false);
-  // On any CEO device, first load the saved records from the cloud so every device shares the same data.
   useEffect(() => {
-    if (!isCeo) { setReady(false); return; }
-    supabase.from("exec_snapshot").select("key,data").then(({ data }) => {
-      const p = data?.find((r) => r.key === "projects")?.data as Project[] | undefined;
+    if (!mode) { setReady(false); return; }
+    let first = true;
+    const pull = async () => {
+      const { data } = await supabase.from("exec_snapshot").select("key,data");
+      const p = (data?.find((r) => r.key === "projects")?.data as Project[] | undefined) ?? [];
       const t = data?.find((r) => r.key === "transactions")?.data as Txn[] | undefined;
-      if (p?.length) projectStore.replaceAll(p);
-      if (t) txnStore.replaceAll(t);
+      let nextP = p;
+      if (first && mode === "admin") {
+        // Keep this admin's own local edits; add anything only the cloud has.
+        const local = projectStore.all();
+        const ids = new Set(local.map((x) => x.id));
+        nextP = [...local, ...p.filter((x) => !ids.has(x.id))];
+      }
+      if (nextP.length && JSON.stringify(nextP) !== JSON.stringify(projectStore.all())) projectStore.replaceAll(nextP);
+      if (t && !(first && mode === "admin") && JSON.stringify(t) !== JSON.stringify(txnStore.all())) txnStore.replaceAll(t);
+      first = false;
       setReady(true);
-    });
-  }, [isCeo]);
+    };
+    pull();
+    const ch = supabase.channel(`sync-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "exec_snapshot" }, () => { pull(); }).subscribe();
+    const iv = setInterval(pull, 60000);
+    return () => { clearInterval(iv); supabase.removeChannel(ch); };
+  }, [mode]);
   const projects = useProjects();
   const txns = useTransactions();
   useEffect(() => {
-    if (!isCeo || !ready) return;
-    const h = setTimeout(() => {
+    if (!mode || !ready) return;
+    const h = setTimeout(async () => {
+      const { data } = await supabase.from("exec_snapshot").select("key,data");
       const now = new Date().toISOString();
-      supabase.from("exec_snapshot").upsert([
-        { key: "projects", data: projects as never, updated_at: now },
-        { key: "transactions", data: txns as never, updated_at: now },
-      ]).then(() => {});
+      const rows: { key: string; data: never; updated_at: string }[] = [];
+      if (JSON.stringify(data?.find((r) => r.key === "projects")?.data ?? null) !== JSON.stringify(projects)) rows.push({ key: "projects", data: projects as never, updated_at: now });
+      if (JSON.stringify(data?.find((r) => r.key === "transactions")?.data ?? null) !== JSON.stringify(txns)) rows.push({ key: "transactions", data: txns as never, updated_at: now });
+      if (rows.length) await supabase.from("exec_snapshot").upsert(rows);
     }, 1500);
     return () => clearTimeout(h);
-  }, [isCeo, ready, projects, txns]);
+  }, [mode, ready, projects, txns]);
   return null;
 }
 
