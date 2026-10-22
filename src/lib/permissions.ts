@@ -18,6 +18,17 @@ export const MAIL_PATHS = ["/mail"];
 /** Sales (Hala) only opens her own sales & commission space. */
 export const SALES_PATHS = ["/sales", "/messages"];
 
+/** Who may open the AI advisor (/assistant) — mirrors RoleGuard's allowed lists, so the floating button never links to a blocked page. */
+export function assistantAllowed(role: Role | undefined) {
+  if (!role) return false;
+  const lists: Partial<Record<Role, string[]>> = {
+    hr: HR_PATHS, manager: MANAGER_PATHS, accountant: ACCOUNTANT_PATHS,
+    executive: EXECUTIVE_PATHS, mail: MAIL_PATHS, sales: SALES_PATHS,
+  };
+  const list = lists[role];
+  return list ? list.includes("/assistant") : true; // admin and viewer accounts keep the advisor
+}
+
 /** Current user's strongest role (admin > hr > viewer > manager). Accounts without a role are treated as manager. undefined while loading. */
 export function useRole() {
   const [role, setRole] = useState<Role | undefined>(undefined);
