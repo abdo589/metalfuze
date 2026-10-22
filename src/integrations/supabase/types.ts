@@ -1134,6 +1134,66 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_deals: {
+        Row: {
+          client: string
+          client_type: string
+          collected: number
+          commission_rate: number
+          contract_value: number
+          created_at: string
+          id: string
+          my_share: number
+          notes: string
+          owner_id: string
+          partner_name: string
+          payout_status: string
+          project: string
+          quote_value: number
+          shared: boolean
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          client?: string
+          client_type?: string
+          collected?: number
+          commission_rate?: number
+          contract_value?: number
+          created_at?: string
+          id?: string
+          my_share?: number
+          notes?: string
+          owner_id?: string
+          partner_name?: string
+          payout_status?: string
+          project?: string
+          quote_value?: number
+          shared?: boolean
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          client?: string
+          client_type?: string
+          collected?: number
+          commission_rate?: number
+          contract_value?: number
+          created_at?: string
+          id?: string
+          my_share?: number
+          notes?: string
+          owner_id?: string
+          partner_name?: string
+          payout_status?: string
+          project?: string
+          quote_value?: number
+          shared?: boolean
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       settlements: {
         Row: {
           created_at: string
@@ -1383,6 +1443,7 @@ export type Database = {
         | "accountant"
         | "executive"
         | "mail"
+        | "sales"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1518,6 +1579,7 @@ export const Constants = {
         "accountant",
         "executive",
         "mail",
+        "sales",
       ],
     },
   },
