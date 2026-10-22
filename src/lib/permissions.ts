@@ -21,7 +21,7 @@ export const SALES_PATHS = ["/sales", "/messages"];
 /** Who may open the AI advisor (/assistant) — mirrors RoleGuard's allowed lists, so the floating button never links to a blocked page. */
 export function assistantAllowed(role: Role | undefined) {
   if (!role) return false;
-  const lists: Partial<Record<Role, string[]>> = {
+  const lists: Partial<Record<Exclude<Role, null>, string[]>> = {
     hr: HR_PATHS, manager: MANAGER_PATHS, accountant: ACCOUNTANT_PATHS,
     executive: EXECUTIVE_PATHS, mail: MAIL_PATHS, sales: SALES_PATHS,
   };
