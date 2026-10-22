@@ -25,6 +25,7 @@ import { MessageAlerts } from "@/components/MessageAlerts";
 import { ExecSnapshotSync } from "@/lib/exec-snapshot";
 import { AutoTranslate } from "@/components/AutoTranslate";
 import { AssistantFab } from "@/components/AssistantFab";
+import { installReadCache } from "@/lib/read-cache";
 
 function NotFoundComponent() {
   return (
@@ -146,7 +147,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => { initializeLanguage(); initializeSidebar(); }, []);
+  useEffect(() => { installReadCache(); initializeLanguage(); initializeSidebar(); }, []);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Personal phone check-in links are opened by employees without accounts.
