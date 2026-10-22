@@ -70,7 +70,7 @@ function SalesPage() {
     const { id, created_at: _c, owner_id: _o, ...rest } = edit as D;
     const payload = { ...rest, updated_at: new Date().toISOString() };
     const { error } = id ? await supabase.from("sales_deals").update(payload).eq("id", id) : await supabase.from("sales_deals").insert(payload);
-    if (error) return toast.error(t("تعذر الحفظ، حاول مرة أخرى"));
+    if (error) { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); return; }
     toast.success(t("تم الحفظ")); setEdit(null); load();
   }
   async function remove(d: D) {
