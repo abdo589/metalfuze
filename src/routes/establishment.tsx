@@ -14,6 +14,8 @@ import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import sheets from "@/lib/hr-sheets.json";
 import { contractOptions, resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
 import { NationalitySelect } from "@/components/NationalitySelect";
+import { ProjectFiles } from "@/components/ProjectFiles";
+import { FolderOpen } from "lucide-react";
 
 export const Route = createFileRoute("/establishment")({
   head: () => ({
@@ -59,6 +61,7 @@ function EstablishmentPage() {
   const [rows, setRows] = useState<Rec[]>([]);
   const [tab, setTab] = useState<Key>("employees");
   const [q, setQ] = useState("");
+  const [filesFor, setFilesFor] = useState<Rec | null>(null);
   const [edit, setEdit] = useState<{ id?: string; data: Record<string, string | number> } | null>(null);
 
   const load = useCallback(async () => {
@@ -100,7 +103,8 @@ function EstablishmentPage() {
     }
       if (c === "اسم الموظف") {
         const st = statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang);
-        if (st) return <span>{fmt(r.data[c]) || "—"} <span className="ms-1 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{st}</span></span>;
+        const btn = tab === "employees" ? <button type="button" className="ms-1 inline-flex items-center gap-0.5 rounded border border-primary/40 px-1.5 py-0.5 text-[10px] text-primary hover:bg-primary/10 print:hidden" onClick={() => setFilesFor(r)}><FolderOpen className="size-3" />{t("ملف")}</button> : null;
+        return <span>{fmt(r.data[c]) || "—"}{st && <span className="ms-1 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{st}</span>}{btn}</span>;
       }
     return fmt(r.data[c]) || "—";
   }
@@ -200,6 +204,12 @@ function EstablishmentPage() {
             ))}
             <Button className="sm:col-span-2" onClick={save}>{t("حفظ")}</Button>
           </div>}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!filesFor} onOpenChange={(o) => !o && setFilesFor(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader><DialogTitle>{t("ملف")} — {filesFor ? fmt(filesFor.data["اسم الموظف"]) : ""}</DialogTitle></DialogHeader>
+          {filesFor && <ProjectFiles projectId={`est-emp-${filesFor.id}`} editable={canEdit} defaults={["الهوية والإقامة", "العقد", "الشهادات", "مستندات أخرى"]} title="ملفات الموظف" />}
         </DialogContent>
       </Dialog>
     </main>
