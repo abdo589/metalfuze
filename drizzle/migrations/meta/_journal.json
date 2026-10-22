@@ -288,6 +288,13 @@
       "when": 1792676708881,
       "tag": "0040_sales_deals",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1792677259946,
+      "tag": "0041_sales_deals_request",
+      "breakpoints": true
     }
   ]
 }

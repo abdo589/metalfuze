@@ -1,0 +1,1 @@
+ALTER TABLE public.sales_deals ADD COLUMN IF NOT EXISTS request jsonb NOT NULL DEFAULT '{}'::jsonb;

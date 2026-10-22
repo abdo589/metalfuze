@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -25,11 +25,46 @@ export const Route = createFileRoute("/sales")({
   component: SalesPage,
 });
 
-const FORM_URL = "https://form.asana.com/?k=siS1k0Llj6fcssPfgOni4w&d=1216553096721183";
 const STAGES = ["تسعير", "تم تقديم العرض", "فاز", "خسر"];
 const PAYOUT = ["لم تُستحق", "مستحقة", "مصروفة"];
 type D = Tables<"sales_deals">;
-const blank = (): Partial<D> => ({ client: "", project: "", client_type: "جديد", shared: false, partner_name: "", my_share: 100, quote_value: 0, contract_value: 0, collected: 0, commission_rate: 2, payout_status: "لم تُستحق", stage: "تسعير", notes: "" });
+type Req = Record<string, string | string[]>;
+type F = { k: string; l: string; req?: boolean; opts?: string[]; multi?: boolean; hint?: string; long?: boolean };
+// Questions of the "طلب تسعيرة مشروع جديد" pricing-request form, built into the site.
+const REQUEST_FORM: { title: string; fields: F[] }[] = [
+  { title: "بيانات موظف المبيعات", fields: [
+    { k: "sales_name", l: "اسم موظف المبيعات", req: true },
+    { k: "sales_email", l: "البريد الإلكتروني لموظف المبيعات", req: true },
+    { k: "work_type", l: "نوع الأعمال", req: true, opts: ["أعمال العظم", "أعمال التشطيب", "أعمال الإيبوكسي", "أعمال الخشبيات", "أعمال اللوحات", "أعمال متعددة التخصصات"] },
+  ] },
+  { title: "بيانات العميل", fields: [
+    { k: "contact_name", l: "اسم مسؤول التواصل", req: true },
+    { k: "contact_title", l: "المسمى الوظيفي لمسؤول التواصل", req: true, opts: ["مالك", "مدير عام", "مدير مشروع", "مهندس مشروع", "مهندس موقع", "مدير مشتريات", "مهندس مشتريات", "أخرى"] },
+    { k: "contact_phone", l: "رقم جوال مسؤول التواصل", req: true },
+    { k: "contact_email", l: "البريد الإلكتروني لمسؤول التواصل", req: true },
+    { k: "client_capacity", l: "صفة جهة العميل", req: true, opts: ["مالك المشروع", "مقاول رئيسي", "مقاول من الباطن", "استشاري", "أخرى"] },
+  ] },
+  { title: "بيانات المشروع", fields: [
+    { k: "in_riyadh", l: "هل المشروع داخل مدينة الرياض؟", opts: ["نعم", "لا"] },
+    { k: "location_url", l: "رابط موقع المشروع" },
+    { k: "scope", l: "وصف مختصر لنطاق العمل المطلوب", req: true, long: true },
+    { k: "project_state", l: "حالة المشروع الحالية", req: true, multi: true, opts: ["لم يبدأ", "تحت التنفيذ", "قائم ويحتاج تجديدًا"] },
+    { k: "start_time", l: "موعد بدء التنفيذ المتوقع", req: true, opts: ["فوري", "خلال شهر", "خلال 1-3 أشهر", "أكثر من 3 أشهر", "غير محدد"] },
+    { k: "has_consultant", l: "هل يوجد استشاري للمشروع؟", opts: ["نعم", "لا", "غير معروف"] },
+  ] },
+  { title: "بيانات طلب التسعير والمستندات", fields: [
+    { k: "pricing_type", l: "نوع التسعيرة", req: true, opts: ["تسعيرة مبدئية", "تسعيرة تفصيلية", "مناقصة"] },
+    { k: "has_docs", l: "هل توجد مستندات للمشروع؟", opts: ["نعم", "لا"] },
+    { k: "budget_mentioned", l: "هل ذكر العميل ميزانية أو سعرًا متوقعًا للمشروع؟", req: true, opts: ["نعم", "لا"] },
+    { k: "budget", l: "الميزانية أو النطاق السعري المتوقع من العميل (ريال سعودي)", hint: "يُعبأ فقط إذا ذكر العميل مبلغًا محددًا أو نطاقًا تقريبيًا، ولا يُكتب أي رقم غير مؤكد." },
+  ] },
+];
+const blank = (): Partial<D> => ({ client: "", project: "", client_type: "جديد", shared: false, partner_name: "", my_share: 100, quote_value: 0, contract_value: 0, collected: 0, commission_rate: 2, payout_status: "لم تُستحق", stage: "تسعير", notes: "", request: {} });
+const missing = (e: Partial<D>) => {
+  const r = (e.request ?? {}) as Req;
+  if (!e.client?.trim() || !e.project?.trim()) return true;
+  return REQUEST_FORM.some((s) => s.fields.some((f) => f.req && (Array.isArray(r[f.k]) ? !(r[f.k] as string[]).length : !String(r[f.k] ?? "").trim())));
+};
 const fmt = (n: number) => Math.round(n).toLocaleString(locale());
 
 function SalesPage() {
@@ -83,6 +118,17 @@ function SalesPage() {
       <Input type="text" inputMode="decimal" dir="ltr" placeholder="0" value={String(edit?.[k] ?? "")}
         onChange={(e) => set(k, Number(e.target.value.replace(/[^\d.]/g, "")) as never)} /></div>
   );
+  const setR = (k: string, v: string | string[]) => setEdit((e) => ({ ...e, request: { ...((e?.request ?? {}) as Req), [k]: v } }));
+  const field = (f: F) => {
+    const r = (edit?.request ?? {}) as Req; const v = r[f.k];
+    const lab = <Label>{t(f.l)}{f.req && <span className="text-destructive"> *</span>}</Label>;
+    if (f.multi) return <div key={f.k} className="space-y-1.5 sm:col-span-2">{lab}<div className="flex flex-wrap gap-4">{f.opts!.map((o) => {
+      const arr = Array.isArray(v) ? v : []; return <label key={o} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={arr.includes(o)} onChange={(e) => setR(f.k, e.target.checked ? [...arr, o] : arr.filter((x) => x !== o))} />{t(o)}</label>; })}</div></div>;
+    if (f.opts) return <div key={f.k} className="space-y-1.5">{lab}<Select value={String(v ?? "")} onValueChange={(x) => setR(f.k, x)}><SelectTrigger><SelectValue placeholder={t("اختر")} /></SelectTrigger><SelectContent>{f.opts.map((o) => <SelectItem key={o} value={o}>{t(o)}</SelectItem>)}</SelectContent></Select></div>;
+    return <div key={f.k} className={`space-y-1.5 ${f.long || f.hint ? "sm:col-span-2" : ""}`}>{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
+      {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
+  };
+  const [view, setView] = useState<D | null>(null);
   const pick = (k: "stage" | "payout_status" | "client_type", label: string, opts: string[]) => (
     <div className="space-y-1.5"><Label>{label}</Label>
       <Select value={String(edit?.[k] ?? "")} onValueChange={(v) => set(k, v)}>
@@ -96,8 +142,7 @@ function SalesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-bold">{t("المبيعات والعمولات")}</h1>
         <div className="flex gap-2">
-          <Button variant="outline" asChild><a href={FORM_URL} target="_blank" rel="noreferrer"><ExternalLink />{t("نموذج طلب تسعيرة (Asana)")}</a></Button>
-          {canEdit && <Button onClick={() => setEdit(blank())}><Plus />{t("إضافة عميل")}</Button>}
+          {canEdit && <Button onClick={() => setEdit(blank())}><Plus />{t("طلب تسعيرة مشروع جديد")}</Button>}
         </div>
       </div>
       <p className="text-sm text-muted-foreground">{t("العمولة 2% من قيمة العقد النهائية قبل الضريبة، مقسومة حسب نسبة المشاركة.")}</p>
@@ -133,7 +178,7 @@ function SalesPage() {
                 <td className="p-2" dir="ltr">{fmt(Number(d.quote_value))}</td><td className="p-2" dir="ltr">{fmt(Number(d.contract_value))}</td>
                 <td className="p-2" dir="ltr">{fmt(Number(d.collected))}</td><td className="p-2 font-semibold" dir="ltr">{fmt(commissionDue(d))}</td>
                 <td className="p-2">{t(d.payout_status)}</td>
-                <td className="p-2 whitespace-nowrap">{canEdit && <>
+                <td className="p-2 whitespace-nowrap"><Button size="icon" variant="ghost" className="size-7" aria-label={t("التفاصيل")} onClick={() => setView(d)}><Eye className="size-4" /></Button>{canEdit && <>
                   <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => setEdit(d)}><Pencil className="size-4" /></Button>
                   <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(d)}><Trash2 className="size-4" /></Button></>}</td>
               </tr>
@@ -146,8 +191,13 @@ function SalesPage() {
         <DialogContent dir={locale() === "en-GB" ? "ltr" : "rtl"} className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader><DialogTitle>{edit?.id ? t("تعديل") : t("إضافة عميل")}</DialogTitle></DialogHeader>
           {edit && <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>{t("العميل")}</Label><Input value={edit.client ?? ""} onChange={(e) => set("client", e.target.value)} /></div>
-            <div className="space-y-1.5"><Label>{t("المشروع")}</Label><Input value={edit.project ?? ""} onChange={(e) => set("project", e.target.value)} /></div>
+            {REQUEST_FORM.map((sec) => <div key={sec.title} className="contents">
+              <h3 className="mt-2 border-b border-border pb-1 font-display font-bold sm:col-span-2">{t(sec.title)}</h3>
+              {sec.title === "بيانات العميل" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم الشركة أو العميل")}<span className="text-destructive"> *</span></Label><Input value={edit.client ?? ""} onChange={(e) => set("client", e.target.value)} /></div>}
+              {sec.title === "بيانات المشروع" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم المشروع")}<span className="text-destructive"> *</span></Label><Input value={edit.project ?? ""} onChange={(e) => set("project", e.target.value)} /></div>}
+              {sec.fields.map(field)}
+            </div>)}
+            <h3 className="mt-2 border-b border-border pb-1 font-display font-bold sm:col-span-2">{t("العمولة")}</h3>
             {pick("client_type", t("عميل جديد ولا سابق"), ["جديد", "سابق"])}
             {pick("stage", t("المرحلة"), STAGES)}
             <div className="space-y-1.5"><Label>{t("هل شارك موظف مبيعات آخر؟")}</Label>
@@ -166,8 +216,18 @@ function SalesPage() {
           </div>}
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setEdit(null)}>{t("إلغاء")}</Button>
-            <Button disabled={!edit?.client?.trim()} onClick={save}>{t("حفظ")}</Button>
+            <Button disabled={!edit || missing(edit)} onClick={save}>{t("حفظ")}</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!view} onOpenChange={(o) => !o && setView(null)}>
+        <DialogContent dir={locale() === "en-GB" ? "ltr" : "rtl"} className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader><DialogTitle>{t("طلب تسعيرة مشروع جديد")}</DialogTitle></DialogHeader>
+          {view && <div className="space-y-4 text-sm">
+            <div><b>{t("اسم الشركة أو العميل")}:</b> {view.client}</div><div><b>{t("اسم المشروع")}:</b> {view.project}</div>
+            {REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>
+              {sec.fields.map((f) => { const v = ((view.request ?? {}) as Req)[f.k]; return <div key={f.k}><span className="text-muted-foreground">{t(f.l)}:</span> {Array.isArray(v) ? v.map((x) => t(x)).join("، ") : v ? (f.opts ? t(v) : v) : "—"}</div>; })}</div>)}
+          </div>}
         </DialogContent>
       </Dialog>
     </main>

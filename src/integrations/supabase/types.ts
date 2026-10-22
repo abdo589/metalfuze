@@ -1150,6 +1150,7 @@ export type Database = {
           payout_status: string
           project: string
           quote_value: number
+          request: Json
           shared: boolean
           stage: string
           updated_at: string
@@ -1169,6 +1170,7 @@ export type Database = {
           payout_status?: string
           project?: string
           quote_value?: number
+          request?: Json
           shared?: boolean
           stage?: string
           updated_at?: string
@@ -1188,6 +1190,7 @@ export type Database = {
           payout_status?: string
           project?: string
           quote_value?: number
+          request?: Json
           shared?: boolean
           stage?: string
           updated_at?: string
