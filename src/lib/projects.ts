@@ -144,7 +144,17 @@ export function autoStatus(p: Pick<Project, "start" | "end" | "actualEnd" | "sta
   // A running project on schedule keeps a manually chosen "ahead" status.
   return p.status === "متقدم" ? "متقدم" : "طبيعي";
 }
-export const withAutoStatus = (p: Project): Project => ({ ...p, status: autoStatus(p) });
+/** Planned completion share (0..1) from the dates: elapsed days ÷ agreed duration. null without both dates. */
+export function plannedFromDates(p: Pick<Project, "start" | "end">, today = new Date().toISOString().slice(0, 10)): number | null {
+  if (!p.start || !p.end) return null;
+  const total = Date.parse(p.end) - Date.parse(p.start);
+  if (total <= 0) return null;
+  return Math.min(1, Math.max(0, (Date.parse(today) - Date.parse(p.start)) / total));
+}
+export const withAutoStatus = (p: Project): Project => {
+  const planned = plannedFromDates(p);
+  return { ...p, status: autoStatus(p), planned: planned ?? p.planned, progress: p.actualEnd ? 1 : p.progress };
+};
 
 export const STATUSES = ["طبيعي", "متقدم", "متأخر"];
 export const STATUS_OPTIONS = ["طبيعي", "متأخر", "متقدم", "منتهي - طبيعي", "منتهي - متقدم", "منتهي - متأخر"];

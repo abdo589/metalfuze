@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { autoStatus, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, warrantyInfo, type Project } from "@/lib/projects";
+import { autoStatus, plannedFromDates, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, warrantyInfo, type Project } from "@/lib/projects";
 
 const empty = (): Project => ({
   id: newId(), code: "", name: "", sector: "", dept: "المشاريع", manager: "", owner: "Metal Fuze",
@@ -119,7 +119,8 @@ export function ProjectDialog({
           </div>
           {text("hasContract", t("هل يوجد عقد شركة"))}
           {num("progress", t("نسبة الإنجاز %"), true)}
-          {num("planned", t("نسبة الإنجاز المخطط %"), true)}
+          {plannedFromDates(f) === null ? num("planned", t("نسبة الإنجاز المخطط %"), true)
+            : <div className="space-y-1.5"><Label>{t("نسبة الإنجاز المخطط %")} ({t("تلقائي من التاريخ")})</Label><Input disabled dir="ltr" value={`${Math.round(plannedFromDates(f)! * 100)}%`} /></div>}
           {num("contract", t("قيمة العقد"))}
           {num("paid", t("المدفوع"))}
           <div className="space-y-3 rounded-lg border border-border p-3 sm:col-span-2">
