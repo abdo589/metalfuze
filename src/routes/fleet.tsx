@@ -42,6 +42,7 @@ const emptyVio = (): Omit<Vio, "id"> & { id?: string } => ({ violation_no: "", v
 const nn = (v: string | null) => (v ? v : null);
 const sel = "h-9 w-full rounded-md border bg-background px-2 text-sm";
 
+const F = ({ label, children }: { label: string; children: React.ReactNode }) => <label className="space-y-1 text-sm"><span className="text-muted-foreground">{t(label)}</span>{children}</label>;
 function FleetPage() {
   useLanguage();
   const canEdit = useCanEdit();
@@ -152,7 +153,6 @@ function FleetPage() {
       {emps.map((e) => <option key={e.no + e.name} value={e.no + "|" + e.name}>{e.name}{e.no ? ` (${e.no})` : ""}</option>)}
     </select>
   );
-  const F = ({ label, children }: { label: string; children: React.ReactNode }) => <label className="space-y-1 text-sm"><span className="text-muted-foreground">{t(label)}</span>{children}</label>;
 
   return (
     <main className="mx-auto max-w-7xl space-y-5 p-4 md:p-6">
