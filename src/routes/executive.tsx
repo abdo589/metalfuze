@@ -5,6 +5,10 @@ import { summarize, useExecSnapshot } from "@/lib/exec-snapshot";
 import { monthKey, netSalary, usePayroll } from "@/lib/payroll";
 import { useAdjustments } from "@/lib/advances";
 import { ExecCharts } from "@/components/ExecCharts";
+import { ProjectDetails } from "@/components/ProjectDetails";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/executive")({
   head: () => ({
@@ -37,6 +41,8 @@ function Bar({ value }: { value: number }) {
 
 function Executive() {
   const { projects, txns, updated, loading } = useExecSnapshot();
+  const [detailsId, setDetailsId] = useState<string | null>(null);
+  const details = projects.find((p) => p.id === detailsId) ?? null;
   const s = summarize(projects, txns);
   const month = monthKey();
   const emps = usePayroll().filter((e) => e.active);
@@ -114,7 +120,7 @@ function Executive() {
         <div className="divide-y rounded-xl border bg-card">
           {remainingList.map((p) => (
             <div key={p.id} className="grid grid-cols-1 gap-2 p-3 text-sm md:grid-cols-[1.4fr_1fr_1fr_1fr] md:items-center">
-              <span className="font-medium">{p.name}</span>
+              <span className="flex items-center gap-1 font-medium"><Button size="icon" variant="ghost" aria-label="عرض التفاصيل" onClick={() => setDetailsId(p.id)}><Eye /></Button>{p.name}</span>
               <div className="space-y-1"><div className="text-xs text-muted-foreground">متبقي من العمل {fmtPct(1 - (p.progress || 0))}</div><Bar value={p.progress || 0} /></div>
               <span className={p.days === null ? "text-muted-foreground" : p.days < 0 ? "text-destructive" : p.days <= 30 ? "text-primary" : ""}>
                 {p.days === null ? "بدون تاريخ انتهاء" : p.days < 0 ? `متأخر ${-p.days} يوم` : `متبقي ${p.days} يوم`}
@@ -143,13 +149,14 @@ function Executive() {
           <div className="divide-y rounded-xl border bg-card">
             {watch.map((p) => (
               <div key={p.id} className="flex items-center justify-between gap-3 p-3 text-sm">
-                <span className="font-medium">{p.name}</span>
+                <span className="flex items-center gap-1 font-medium"><Button size="icon" variant="ghost" aria-label="عرض التفاصيل" onClick={() => setDetailsId(p.id)}><Eye /></Button>{p.name}</span>
                 <span className="text-muted-foreground">{fmtPct(p.progress)} منجز من {fmtPct(p.planned)}{p.end ? ` · ينتهي ${p.end}` : ""}</span>
               </div>
             ))}
           </div>
         </section>
       )}
+      <ProjectDetails project={details} onClose={() => setDetailsId(null)} />
     </div>
   );
 }
