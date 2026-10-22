@@ -9,7 +9,8 @@ const text = (s: string, status = 200) => new Response(s, { status, headers: { "
 // Requests must also come from an allowed office IP (ATTENDANCE_ALLOWED_IPS, comma-separated).
 function ipAllowed(request: Request): boolean {
   const allowed = (process.env["ATTENDANCE_ALLOWED_IPS"] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-  const ip = request.headers.get("cf-connecting-ip") ?? request.headers.get("x-real-ip") ?? "";
+  // Only the edge-set client IP is trusted; client-sendable headers like x-real-ip are ignored.
+  const ip = request.headers.get("cf-connecting-ip") ?? "";
   return allowed.length > 0 && !!ip && allowed.includes(ip);
 }
 

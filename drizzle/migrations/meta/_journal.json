@@ -316,6 +316,13 @@
       "when": 1792680761545,
       "tag": "0044_sales_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1792684672619,
+      "tag": "0045_verified_email_checks",
+      "breakpoints": true
     }
   ]
 }

@@ -1469,6 +1469,7 @@ export type Database = {
         Returns: string
       }
       sales_step_email: { Args: { _step: string }; Returns: string }
+      verified_email: { Args: never; Returns: string }
     }
     Enums: {
       app_role:
