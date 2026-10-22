@@ -281,6 +281,13 @@
       "when": 1792676692511,
       "tag": "0039_add_sales_role",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1792676708881,
+      "tag": "0040_sales_deals",
+      "breakpoints": true
     }
   ]
 }
