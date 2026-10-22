@@ -26,16 +26,23 @@ export function ExecSnapshotSync() {
     const pull = async () => {
       const { data } = await supabase.from("exec_snapshot").select("key,data");
       const p = (data?.find((r) => r.key === "projects")?.data as Project[] | undefined) ?? [];
-      const t = data?.find((r) => r.key === "transactions")?.data as Txn[] | undefined;
+      let t = data?.find((r) => r.key === "transactions")?.data as Txn[] | undefined;
       let nextP = p;
       if (first && mode === "admin") {
-        // Keep this admin's own local edits; add anything only the cloud has.
-        const local = projectStore.all();
-        const ids = new Set(local.map((x) => x.id));
-        nextP = [...local, ...p.filter((x) => !ids.has(x.id))];
+        // The shared cloud copy always wins; only add items that exist solely on this device
+        // (never the built-in sample data on a fresh device, never older local copies of shared items).
+        const hasLocalProjects = localStorage.getItem("metalfuze.projects.v1") !== null;
+        if (hasLocalProjects) {
+          const ids = new Set(p.map((x) => x.id));
+          nextP = [...p, ...projectStore.all().filter((x) => !ids.has(x.id))];
+        }
+        if (t) {
+          const tids = new Set(t.map((x) => x.id));
+          t = [...t, ...txnStore.all().filter((x) => !tids.has(x.id))];
+        }
       }
       if (nextP.length && JSON.stringify(nextP) !== JSON.stringify(projectStore.all())) projectStore.replaceAll(nextP);
-      if (t && !(first && mode === "admin") && JSON.stringify(t) !== JSON.stringify(txnStore.all())) txnStore.replaceAll(t);
+      if (t && JSON.stringify(t) !== JSON.stringify(txnStore.all())) txnStore.replaceAll(t);
       first = false;
       setReady(true);
     };
