@@ -27,6 +27,18 @@ export const Route = createFileRoute("/sales")({
 
 const STAGES = ["تسعير", "تم تقديم العرض", "فاز", "خسر"];
 const PAYOUT = ["لم تُستحق", "مستحقة", "مصروفة"];
+// Approval chain: sales → Eilaf review → Haitham pricing → Eilaf quotation → Haitham approval → CEO → back to Hala & Eilaf.
+const WF: { k: string; l: string; email?: string }[] = [
+  { k: "sales_entry", l: "بيانات التسعير من المبيعات" },
+  { k: "eilaf_review", l: "مراجعة وموافقة Eilaf", email: "eilaf@metalfuze.local" },
+  { k: "haitham_pricing", l: "التسعير — Haitham", email: "haitham@metalfuze.local" },
+  { k: "eilaf_quotation", l: "عرض السعر — Eilaf", email: "eilaf@metalfuze.local" },
+  { k: "haitham_approval", l: "التعميد — Haitham", email: "haitham@metalfuze.local" },
+  { k: "ceo_approval", l: "موافقة وتعميد CEO", email: "ceo@metalfuze.local" },
+  { k: "done", l: "مكتمل — المبيعات و Eilaf" },
+];
+const wfLabel = (k: string) => WF.find((s) => s.k === k)?.l ?? k;
+type LogE = { at: string; by: string; from: string; to: string; action: string; note: string };
 type D = Tables<"sales_deals">;
 type Req = Record<string, string | string[]>;
 type F = { k: string; l: string; req?: boolean; opts?: string[]; multi?: boolean; hint?: string; long?: boolean };
