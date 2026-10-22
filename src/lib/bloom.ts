@@ -15,13 +15,13 @@ export class BloomFilter {
       h1 = Math.imul(h1 ^ c, 16777619) >>> 0;
       h2 = ((h2 << 5) + h2 + c) >>> 0;
     }
-    return Array.from({ length: this.hashes }, (_, i) => (h1 + i * (h2 | 1)) % this.size);
+    return Array.from({ length: this.hashes }, (_, i) => (h1 + i * ((h2 | 1) >>> 0)) % this.size);
   }
   add(value: string) {
-    for (const p of this.positions(value)) this.bits[p >> 3] |= 1 << (p & 7);
+    for (const p of this.positions(value)) this.bits[p >> 3]! |= 1 << (p & 7);
   }
   mightContain(value: string) {
-    return this.positions(value).every((p) => (this.bits[p >> 3] & (1 << (p & 7))) !== 0);
+    return this.positions(value).every((p) => ((this.bits[p >> 3] ?? 0) & (1 << (p & 7))) !== 0);
   }
 }
 
