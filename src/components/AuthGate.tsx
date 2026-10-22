@@ -88,7 +88,7 @@ function Login() {
       else if (!data.session) setNotice(t("تم إنشاء الحساب — تحقق من بريدك الإلكتروني لتفعيله"));
       return;
     }
-    const id = username.trim().toLowerCase();
+    const id = username.trim().toLowerCase().replace(/\s+/g, ".");
     const mail = id.includes("@") ? id : toEmail(id);
     const { error } = await supabase.auth.signInWithPassword({ email: mail, password });
     setBusy(false);
