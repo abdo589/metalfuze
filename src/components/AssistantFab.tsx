@@ -53,10 +53,12 @@ export function AssistantFab() {
           </div>
         </div>
       )}
-      <Button onClick={openPanel} size="lg" className="fixed bottom-5 end-5 z-40 rounded-full shadow-lg print:hidden"
-        aria-label={t("المستشار الذكي")} title={t("المستشار الذكي")}>
-        <BrainCircuit /> <span className="hidden sm:inline">{t("المستشار الذكي")}</span>
-      </Button>
+      {!open && (
+        <Button onClick={openPanel} size="icon" className="fixed bottom-5 end-5 z-40 size-12 rounded-full shadow-lg print:hidden"
+          aria-label={t("المستشار الذكي")} title={t("المستشار الذكي")}>
+          <BrainCircuit />
+        </Button>
+      )}
     </>
   );
 }
