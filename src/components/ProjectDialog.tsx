@@ -119,7 +119,8 @@ export function ProjectDialog({
           </div>
           {text("hasContract", t("هل يوجد عقد شركة"))}
           {num("progress", t("نسبة الإنجاز %"), true)}
-          {num("planned", t("نسبة الإنجاز المخطط %"), true)}
+          {plannedFromDates(f) === null ? num("planned", t("نسبة الإنجاز المخطط %"), true)
+            : <div className="space-y-1.5"><Label>{t("نسبة الإنجاز المخطط %")} ({t("تلقائي من التاريخ")})</Label><Input disabled dir="ltr" value={`${Math.round(plannedFromDates(f)! * 100)}%`} /></div>}
           {num("contract", t("قيمة العقد"))}
           {num("paid", t("المدفوع"))}
           <div className="space-y-3 rounded-lg border border-border p-3 sm:col-span-2">
