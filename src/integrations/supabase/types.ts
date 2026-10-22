@@ -1148,12 +1148,19 @@ export type Database = {
           owner_id: string
           partner_name: string
           payout_status: string
+          pricing_file_name: string | null
+          pricing_file_path: string | null
+          pricing_value: number | null
           project: string
+          quotation_file_name: string | null
+          quotation_file_path: string | null
           quote_value: number
           request: Json
           shared: boolean
           stage: string
           updated_at: string
+          workflow_log: Json
+          workflow_step: string
         }
         Insert: {
           client?: string
@@ -1168,12 +1175,19 @@ export type Database = {
           owner_id?: string
           partner_name?: string
           payout_status?: string
+          pricing_file_name?: string | null
+          pricing_file_path?: string | null
+          pricing_value?: number | null
           project?: string
+          quotation_file_name?: string | null
+          quotation_file_path?: string | null
           quote_value?: number
           request?: Json
           shared?: boolean
           stage?: string
           updated_at?: string
+          workflow_log?: Json
+          workflow_step?: string
         }
         Update: {
           client?: string
@@ -1188,12 +1202,19 @@ export type Database = {
           owner_id?: string
           partner_name?: string
           payout_status?: string
+          pricing_file_name?: string | null
+          pricing_file_path?: string | null
+          pricing_value?: number | null
           project?: string
+          quotation_file_name?: string | null
+          quotation_file_path?: string | null
           quote_value?: number
           request?: Json
           shared?: boolean
           stage?: string
           updated_at?: string
+          workflow_log?: Json
+          workflow_step?: string
         }
         Relationships: []
       }
@@ -1436,6 +1457,18 @@ export type Database = {
         Args: { _calendar: boolean; _end: string; _start: string }
         Returns: number
       }
+      sales_advance: {
+        Args: {
+          p_action: string
+          p_file_name?: string
+          p_file_path?: string
+          p_id: string
+          p_note: string
+          p_price?: number
+        }
+        Returns: string
+      }
+      sales_step_email: { Args: { _step: string }; Returns: string }
     }
     Enums: {
       app_role:
