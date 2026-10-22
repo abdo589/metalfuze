@@ -100,6 +100,20 @@ function SalesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, period]);
 
+  const perEmp = useMemo(() => {
+    const m = new Map<string, { n: number; won: number; contracts: number; collected: number; due: number; paid: number }>();
+    for (const d of rows.filter(inPeriod)) {
+      const name = String(((d.request ?? {}) as Req)["sales_name"] ?? "").trim() || "Hala Alkhamisy";
+      const e = m.get(name) ?? { n: 0, won: 0, contracts: 0, collected: 0, due: 0, paid: 0 };
+      e.n++; if (d.stage === "فاز") e.won++;
+      e.contracts += Number(d.contract_value); e.collected += Number(d.collected);
+      const c = commissionDue(d); e.due += c; if (d.payout_status === "مصروفة") e.paid += c;
+      m.set(name, e);
+    }
+    return [...m.entries()];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, period]);
+
   async function save(): Promise<void> {
     if (!edit) return;
     const { id, created_at: _c, owner_id: _o, ...rest } = edit as D;
@@ -187,6 +201,21 @@ function SalesPage() {
           </div>
         ))}
       </div>
+
+      <section className="space-y-3">
+        <h2 className="font-display text-lg font-bold">{t("لوحة كل موظف مبيعات")}</h2>
+        {perEmp.length === 0 ? <p className="text-sm text-muted-foreground">{t("لا توجد بيانات")}</p> :
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{perEmp.map(([name, e]) => (
+          <div key={name} className="rounded-lg border border-border bg-card p-4">
+            <div className="mb-3 font-display font-bold">{name}</div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              {[["الطلبات", e.n], ["فاز", e.won], ["إجمالي العقود", e.contracts], ["المحصّل", e.collected], ["العمولة المستحقة", e.due], ["العمولة المصروفة", e.paid]].map(([l, v]) => (
+                <div key={l as string}><div className="text-muted-foreground">{t(l as string)}</div><div className="font-semibold" dir="ltr">{fmt(v as number)}</div></div>))}
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary" style={{ width: `${e.contracts ? Math.min(100, (e.collected / e.contracts) * 100) : 0}%` }} /></div>
+            <div className="mt-1 text-xs text-muted-foreground">{t("نسبة التحصيل")} {e.contracts ? Math.round((e.collected / e.contracts) * 100) : 0}%</div>
+          </div>))}</div>}
+      </section>
 
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
