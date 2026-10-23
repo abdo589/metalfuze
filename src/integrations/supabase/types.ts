@@ -899,6 +899,45 @@ export type Database = {
           },
         ]
       }
+      login_events: {
+        Row: {
+          city: string
+          country: string
+          created_at: string
+          device: string
+          event: string
+          id: string
+          ip: string
+          region: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          city?: string
+          country?: string
+          created_at?: string
+          device?: string
+          event: string
+          id?: string
+          ip?: string
+          region?: string
+          user_id: string
+          user_name?: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string
+          device?: string
+          event?: string
+          id?: string
+          ip?: string
+          region?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       mgr_projects: {
         Row: {
           client: string
