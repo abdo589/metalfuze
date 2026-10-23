@@ -74,21 +74,21 @@ function CustodyPage() {
     supabase.from("custody_moves").insert({ asset_id, action, employee_name: a.employee_name ?? "", employee_no: a.employee_no ?? "", note, move_date });
 
   async function save() {
-    if (!edit?.name.trim()) return toast.error(t("اسم الجهاز مطلوب"));
+    if (!edit?.name.trim()) { toast.error(t("اسم الجهاز مطلوب")); return; }
     const { id, ...row } = edit;
     const payload = { ...row, handover_date: row.handover_date || null };
     const r = id ? await supabase.from("custody_assets").update(payload).eq("id", id) : await supabase.from("custody_assets").insert(payload).select("id").single();
-    if (r.error) return toast.error(t("تعذر الحفظ"));
+    if (r.error) { toast.error(t("تعذر الحفظ")); return; }
     if (!id && r.data) await log((r.data as { id: string }).id, "إضافة جهاز", {});
     toast.success(t("تم الحفظ")); setEdit(null); void load();
   }
   async function handover() {
     if (!hand) return;
     const e = emps.find((x) => x.no + "|" + x.name === hand.emp);
-    if (!hand.asset_id || !e) return toast.error(t("اختر الجهاز والموظف"));
+    if (!hand.asset_id || !e) { toast.error(t("اختر الجهاز والموظف")); return; }
     const patch = { status: "مسلم", employee_no: e.no, employee_name: e.name, dept: e.dept, handover_date: hand.date, confirmed: true };
     const { error } = await supabase.from("custody_assets").update(patch).eq("id", hand.asset_id);
-    if (error) return toast.error(t("تعذر الحفظ"));
+    if (error) { toast.error(t("تعذر الحفظ")); return; }
     await log(hand.asset_id, "تسليم", patch, hand.note, hand.date);
     toast.success(t("تم تسليم العهدة")); setHand(null); void load();
   }
