@@ -12,7 +12,7 @@ type Act = { id: string; user_id: string; actor_name: string; table_name: string
 const TABLE: Record<string, string> = {
   acct_sheets: "المحاسبة", company_documents: "الوثائق", department_managers: "مدراء الأقسام", direct_messages: "الرسائل",
   employees: "الموظفين", est_records: "المؤسسة", exec_snapshot: "المشاريع والمدفوعات", financial_guarantees: "الضمانات المالية",
-  fleet_cars: "السيارات", hr_records: "ملفات HR", late_excuses: "أعذار التأخير", leave_balance_adjustments: "أرصدة الإجازات",
+  fleet_cars: "السيارات", custody_assets: "عهد الأجهزة", custody_moves: "حركات العهد", hr_records: "ملفات HR", late_excuses: "أعذار التأخير", leave_balance_adjustments: "أرصدة الإجازات",
   leave_requests: "الإجازات", leave_settings: "إعدادات الإجازات", leave_types: "أنواع الإجازات", mgr_projects: "مشاريع المدراء",
   mgr_reports: "تقارير المدراء", performance_reviews: "تقييم الأداء", project_files: "ملفات المشاريع", residencies: "الإقامات",
   sales_deals: "المبيعات", settlements: "المخالصات", traffic_violations: "المخالفات", work_sites: "مواقع العمل",
