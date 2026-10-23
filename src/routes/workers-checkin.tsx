@@ -46,8 +46,8 @@ function WorkersCheckin() {
             <option value="">{t("اختر العامل…")}</option>
             {employees.map((e) => <option key={e.id} value={e.id}>{e.name} — {e.role}</option>)}
           </select>
-          {emp && <p className="text-center text-sm text-muted-foreground">{t("موقع العمل")}: <b>{site?.name ?? t("لم يتم تحديد موقع العمل")}</b></p>}
-          <SelfieCheckin disabled={!emp || !site} onSubmit={async (d) => {
+          {emp && <p className="text-center text-sm text-muted-foreground">{t("موقع العمل")}: <b>{site?.name ?? t("أي مكان")}</b></p>}
+          <SelfieCheckin disabled={!emp} onSubmit={async (d) => {
             const r = await submit({ data: { employeeId: id, ...d } });
             if (!r.ok) throw new Error(checkinError(r.error));
             toast.success(`${emp!.name}: ${d.action === "in" ? t("تم تسجيل الحضور") : t("تم تسجيل الانصراف")} ${new Date(r.time).toLocaleTimeString(locale(), { hour: "2-digit", minute: "2-digit" })}`);
