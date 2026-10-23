@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_audit: {
+        Row: {
+          action: string
+          actor_id: string
+          actor_name: string
+          created_at: string
+          details: string
+          id: string
+          target_id: string | null
+          target_name: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          actor_name?: string
+          created_at?: string
+          details?: string
+          id?: string
+          target_id?: string | null
+          target_name?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          actor_name?: string
+          created_at?: string
+          details?: string
+          id?: string
+          target_id?: string | null
+          target_name?: string
+        }
+        Relationships: []
+      }
+      account_flags: {
+        Row: {
+          force_logout_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          force_logout_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          force_logout_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       acct_sheets: {
         Row: {
           id: string
