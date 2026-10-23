@@ -3,20 +3,27 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const DOMAIN = "metalfuze.local";
 
+/** Account settings belong to the developer (Eng Abdelrhman) only. */
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
-  const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
-  if (!data) throw new Error("صلاحية العرض فقط — لا يمكنك التعديل");
+  const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "developer" });
+  if (!data) throw new Error("إعدادات الحسابات متاحة للمبرمج فقط");
 }
 
-export type AppUser = { id: string; username: string; name: string; createdAt: string; lastSignIn: string | null };
+export const ASSIGNABLE_ROLES = ["admin", "hr", "viewer", "manager", "accountant", "executive", "mail", "sales", "developer"] as const;
+export type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
+
+export type AppUser = { id: string; username: string; name: string; createdAt: string; lastSignIn: string | null; roles: string[] };
 
 export const listUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async (): Promise<AppUser[]> => {
+  .handler(async ({ context }): Promise<AppUser[]> => {
+    await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
     if (error) throw new Error("تعذر تحميل المستخدمين");
+    const { data: roleRows } = await supabaseAdmin.from("user_roles").select("user_id, role");
     return data.users.map((u) => ({
+      roles: (roleRows ?? []).filter((r) => r.user_id === u.id).map((r) => String(r.role)),
       id: u.id,
       username: (u.email ?? "").split("@")[0] ?? "",
       name: (u.user_metadata?.["display_name"] as string) || (u.email ?? ""),
@@ -73,5 +80,24 @@ export const deleteUser = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.id);
     if (error) return { ok: false as const, error: "تعذر حذف الحساب" };
+    return { ok: true as const };
+  });
+
+export const setUserRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; role: string }) => {
+    const role = String(d.role) as AssignableRole;
+    if (!ASSIGNABLE_ROLES.includes(role)) throw new Error("صلاحية غير معروفة");
+    return { id: String(d.id), role };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    if (data.id === context.userId && data.role !== "developer") return { ok: false as const, error: "لا يمكنك إزالة صلاحية المبرمج من حسابك" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // One main permission per account; the developer keeps admin alongside so existing data access stays.
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.id);
+    const rows = data.role === "developer" ? ["developer", "admin"] : [data.role];
+    const { error } = await supabaseAdmin.from("user_roles").insert(rows.map((role) => ({ user_id: data.id, role: role as AssignableRole })));
+    if (error) return { ok: false as const, error: "تعذر حفظ الصلاحية" };
     return { ok: true as const };
   });
