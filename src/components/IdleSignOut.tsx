@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { t } from "@/lib/i18n";
 import { idleExpired, readLastActivity, touchActivity, warnSoon } from "@/lib/idle-signout";
+import { signOutTracked } from "@/lib/login-tracking";
 
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll", "touchstart", "focus"] as const;
 const HEARTBEAT_MS = 15 * 1000; // how often "I'm here" is written down
@@ -33,7 +34,7 @@ export function IdleSignOut() {
       if (idleExpired(last, now)) {
         warned = false;
         touchActivity(now); // tell the other open windows this one is already handled
-        await supabase.auth.signOut();
+        await signOutTracked();
         toast.info(t("تم تسجيل الخروج لعدم النشاط"));
         return;
       }

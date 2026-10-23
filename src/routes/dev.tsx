@@ -2,7 +2,8 @@ import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useState } from "react";
-import { Bug, KeyRound, RefreshCw, Trash2, UserPlus, Users, Wrench } from "lucide-react";
+import { Bug, Globe, KeyRound, RefreshCw, Trash2, UserPlus, Users, Wrench } from "lucide-react";
+import { LoginEvents } from "@/components/LoginEvents";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,9 +47,11 @@ function DevPage() {
         <TabsList>
           <TabsTrigger value="bugs"><Bug /> {t("الأعطال")}</TabsTrigger>
           <TabsTrigger value="accounts"><Users /> {t("إعدادات الحسابات")}</TabsTrigger>
+          <TabsTrigger value="logins"><Globe /> {t("الدخول والخروج")}</TabsTrigger>
         </TabsList>
         <TabsContent value="bugs"><Bugs /></TabsContent>
         <TabsContent value="accounts"><Accounts /></TabsContent>
+        <TabsContent value="logins"><LoginEvents /></TabsContent>
       </Tabs>
     </div>
   );

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { HR_PATHS, HR_ADMIN_ONLY, MANAGER_PATHS, ACCOUNTANT_PATHS, EXECUTIVE_PATHS, MAIL_PATHS, SALES_PATHS, DEV_PATHS, useRole } from "@/lib/permissions";
 import { oauthReturnPath } from "@/lib/oauth-return-path";
+import { signOutTracked, trackLogin } from "@/lib/login-tracking";
 
 /** HR-only accounts may open only the HR pages; anything else sends them to payroll. */
 function RoleGuard({ children }: { children: ReactNode }) {
@@ -43,6 +44,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return () => data.subscription.unsubscribe();
   }, []);
 
+  const uid = session?.user.id;
+  useEffect(() => { if (uid) setTimeout(() => void trackLogin(uid), 0); }, [uid]);
+
   if (session === undefined) return <div className="min-h-screen" />;
   if (!session) return <Login />;
 
@@ -51,7 +55,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     <>
       <div className="flex items-center justify-end gap-2 px-4 pt-3 text-sm text-muted-foreground print:hidden sm:px-6">
         <span>{t("مرحباً،")}<b className="text-foreground">{name}</b></span>
-        <Button size="sm" variant="ghost" onClick={() => supabase.auth.signOut()}><LogOut /> {t("خروج")}</Button>
+        <Button size="sm" variant="ghost" onClick={() => void signOutTracked()}><LogOut /> {t("خروج")}</Button>
       </div>
       <RoleGuard>{children}</RoleGuard>
     </>
