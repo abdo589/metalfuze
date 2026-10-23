@@ -50,6 +50,8 @@ export function checkinError(code: string) {
     location: t("تعذر تحديد الموقع"),
     invalid: t("هذا الرابط غير صالح أو تم إيقافه"),
     employee: t("الموظف غير نشط"),
+    already_in: t("تم تسجيل الحضور اليوم بالفعل — مرة واحدة في اليوم"),
+    already_out: t("تم تسجيل الانصراف اليوم بالفعل — مرة واحدة في اليوم"),
     forbidden: t("صلاحية العرض فقط — لا يمكنك التعديل"),
   } as Record<string, string>)[code] ?? t("تعذر الحفظ، حاول مرة أخرى");
 }
