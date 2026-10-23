@@ -208,6 +208,45 @@ export type Database = {
           },
         ]
       }
+      bug_reports: {
+        Row: {
+          created_at: string
+          description: string
+          dev_note: string
+          id: string
+          kind: string
+          page: string
+          reporter_id: string | null
+          reporter_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          dev_note?: string
+          id?: string
+          kind?: string
+          page?: string
+          reporter_id?: string | null
+          reporter_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          dev_note?: string
+          id?: string
+          kind?: string
+          page?: string
+          reporter_id?: string | null
+          reporter_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_documents: {
         Row: {
           branch: string

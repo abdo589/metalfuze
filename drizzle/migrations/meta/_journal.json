@@ -330,6 +330,13 @@
       "when": 1792755058241,
       "tag": "0046_developer_role",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1792755073526,
+      "tag": "0047_bug_reports",
+      "breakpoints": true
     }
   ]
 }
