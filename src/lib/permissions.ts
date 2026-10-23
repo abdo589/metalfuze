@@ -3,8 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Role = "developer" | "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | "sales" | null;
 
-/** The developer (Eng Abdelrhman) only sees the faults inbox and account settings. */
-export const DEV_PATHS = ["/dev"];
+/** The developer (Eng Abdelrhman) only sees the faults inbox, account settings and his Outlook mailbox. */
+export const DEV_PATHS = ["/dev", "/mail"];
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
 export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail", "/sales"];
