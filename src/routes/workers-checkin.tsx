@@ -6,7 +6,10 @@ import { SelfieCheckin } from "@/components/SelfieCheckin";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useCanEditHr } from "@/lib/permissions";
 import { usePayroll } from "@/lib/payroll";
-import { supervisorCheckin } from "@/lib/checkin.functions";
+import { supervisorCheckin, emailCheckinLink } from "@/lib/checkin.functions";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Mail } from "lucide-react";
 import { checkinError } from "@/lib/checkin-client";
 import { useSites } from "@/components/RemoteAttendance";
 
@@ -30,7 +33,10 @@ function WorkersCheckin() {
   const employees = usePayroll().filter((e) => e.active);
   const { sites } = useSites();
   const submit = useServerFn(supervisorCheckin);
+  const sendLink = useServerFn(emailCheckinLink);
   const [id, setId] = useState("");
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
   const emp = employees.find((e) => e.id === id);
   const site = sites.find((s) => s.id === emp?.siteId);
 
@@ -42,11 +48,28 @@ function WorkersCheckin() {
       </header>
       {!canEdit ? <p className="rounded-xl bg-muted p-4 text-center text-sm">{checkinError("forbidden")}</p> : (
         <>
-          <select value={id} onChange={(e) => setId(e.target.value)} className="h-12 w-full rounded-md border border-input bg-background px-3">
+          <select value={id} onChange={(e) => { setId(e.target.value); setEmail(employees.find((x) => x.id === e.target.value)?.email ?? ""); }} className="h-12 w-full rounded-md border border-input bg-background px-3">
             <option value="">{t("اختر العامل…")}</option>
             {employees.map((e) => <option key={e.id} value={e.id}>{e.name} — {e.role}</option>)}
           </select>
           {emp && <p className="text-center text-sm text-muted-foreground">{t("موقع العمل")}: <b>{site?.name ?? t("أي مكان")}</b></p>}
+          {emp && (
+            <div className="space-y-2 rounded-xl border border-border p-3">
+              <label className="text-sm font-medium">{t("إيميل العامل")}</label>
+              <div className="flex gap-2">
+                <Input type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" />
+                <Button disabled={sending || !email.includes("@")} onClick={async () => {
+                  setSending(true);
+                  try {
+                    const r = await sendLink({ data: { employeeId: id, email } });
+                    if (r.ok) toast.success(t("تم إرسال رابط التسجيل على الإيميل"));
+                    else toast.error(r.error === "domain" ? t("الإيميلات لم تُفعّل بعد — بانتظار تأكيد الدومين") : r.error === "forbidden" ? checkinError("forbidden") : t("تعذر إرسال الإيميل"));
+                  } catch { toast.error(t("تعذر إرسال الإيميل")); } finally { setSending(false); }
+                }}><Mail className="h-4 w-4" /> {t("إرسال")}</Button>
+              </div>
+              <p className="text-xs text-muted-foreground">{t("يوصله رابط يسجّل منه حضوره وانصرافه بالسيلفي من جواله")}</p>
+            </div>
+          )}
           <SelfieCheckin disabled={!emp} onSubmit={async (d) => {
             const r = await submit({ data: { employeeId: id, ...d } });
             if (!r.ok) throw new Error(checkinError(r.error));

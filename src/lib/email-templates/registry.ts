@@ -1,3 +1,4 @@
+import { template as checkinLink } from './checkin-link'
 import { template as checkinSelfie } from './checkin-selfie'
 import type { ComponentType } from 'react'
 
@@ -20,6 +21,7 @@ export interface TemplateEntry {
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'checkin-selfie': checkinSelfie,
+  'checkin-link': checkinLink,
   // Add templates here as they are created, e.g.:
   // 'welcome': welcomeTemplate,
 }
