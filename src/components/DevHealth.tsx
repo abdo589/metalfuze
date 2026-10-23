@@ -4,11 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { t, locale } from "@/lib/i18n";
+import { useServerFn } from "@tanstack/react-start";
+import { listUsers } from "@/lib/users.functions";
 
 /** Quick health cards for the developer. */
-export function DevHealth({ bannedCount }: { bannedCount: number | null }) {
+export function DevHealth() {
+  const list = useServerFn(listUsers);
+  const [bannedCount, setBanned] = useState<number | null>(null);
   const [s, setS] = useState<Record<string, string | number> | null>(null);
   const load = useCallback(async () => {
+    list().then((u) => setBanned(u.filter((x) => x.banned).length)).catch(() => {});
     const day = new Date(); day.setHours(0, 0, 0, 0);
     const week = new Date(Date.now() - 7 * 864e5).toISOString();
     const [open, auto, dev, sus, active] = await Promise.all([
@@ -25,7 +30,7 @@ export function DevHealth({ bannedCount }: { bannedCount: number | null }) {
       active: new Set((active.data ?? []).map((r) => r.user_id)).size,
       device: last == null ? t("لم يتصل أبدًا") : hrs! < 1 ? t("متصل") : `${t("غير متصل منذ")} ${hrs} ${t("ساعة")}`,
     });
-  }, []);
+  }, [list]);
   useEffect(() => { void load(); }, [load]);
   const cards: [string, string | number | undefined][] = [
     ["الأعطال المفتوحة", s?.["open"]], ["أخطاء تلقائية اليوم", s?.["auto"]], ["جهاز البصمة", s?.["device"]],

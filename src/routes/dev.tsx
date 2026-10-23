@@ -57,7 +57,7 @@ function DevPage() {
         <TabsContent value="bugs"><Bugs /></TabsContent>
         <TabsContent value="accounts"><Accounts /></TabsContent>
         <TabsContent value="logins"><LoginEvents /></TabsContent>
-        <TabsContent value="health"><DevHealth bannedCount={null} /></TabsContent>
+        <TabsContent value="health"><DevHealth /></TabsContent>
         <TabsContent value="audit"><AccountAudit /></TabsContent>
         <TabsContent value="per-user"><EmployeeLogins /></TabsContent>
       </Tabs>
