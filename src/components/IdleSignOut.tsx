@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { t } from "@/lib/i18n";
 import { idleExpired, readLastActivity, touchActivity, warnSoon } from "@/lib/idle-signout";
 import { signOutTracked } from "@/lib/login-tracking";
+import { shouldForceOut } from "@/lib/force-logout";
 
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll", "touchstart", "focus"] as const;
 const HEARTBEAT_MS = 15 * 1000; // how often "I'm here" is written down
@@ -17,6 +18,7 @@ export function IdleSignOut() {
   useEffect(() => {
     let warned = false;
     let lastWrite = 0;
+    let lastFlagCheck = 0;
 
     const mark = () => {
       warned = false; // any activity cancels the coming sign-out
@@ -30,6 +32,16 @@ export function IdleSignOut() {
       const { data } = await supabase.auth.getSession();
       if (!data.session) return; // nobody signed in — nothing to end
       const now = Date.now();
+      if (now - lastFlagCheck > 55_000) {
+        lastFlagCheck = now;
+        const u = data.session.user;
+        const { data: flag } = await supabase.from("account_flags").select("force_logout_at").eq("user_id", u.id).maybeSingle();
+        if (shouldForceOut(u.last_sign_in_at, flag?.force_logout_at)) {
+          await signOutTracked();
+          toast.info(t("تم تسجيل خروجك بواسطة المبرمج"));
+          return;
+        }
+      }
       const last = readLastActivity(now);
       if (idleExpired(last, now)) {
         warned = false;
