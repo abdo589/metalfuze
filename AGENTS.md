@@ -26,3 +26,4 @@
 - Router preloads pages on link hover/touch (defaultPreload "intent") and Query data stays fresh 60s — keeps page switches near-instant; set a shorter staleTime per query when data must be live.
 - Database reads in the browser go through src/lib/read-cache.ts (installed in root): short-TTL, per-session keyed, cleared per table on writes — speeds repeat reads without stale data after saves.
 - Developer role (app_role developer) only opens /dev: bug_reports inbox (user reports + auto-captured browser errors via src/components/BugReport.tsx) and account management; users.functions.ts server fns require developer — keeps account control with one person.
+- Sign-in/sign-out audit: AuthGate/IdleSignOut log via src/lib/login-tracking.ts to a server fn that reads IP/location from request headers (not the browser) into login_events; only the developer reads it on /dev — always sign out through signOutTracked so logouts are recorded.
