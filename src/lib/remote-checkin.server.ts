@@ -38,6 +38,9 @@ export async function recordRemotePunch(input: CheckinInput): Promise<CheckinRes
     .eq("device_user_id", userId).eq("status", status).order("punched_at", { ascending: false }).limit(1).maybeSingle();
   const now = new Date();
   if (isRepeat(last?.punched_at, now.getTime())) return { ok: true, time: last!.punched_at, distance: check.distance, site: site.name };
+  // One arrival and one leaving per day (Riyadh date).
+  const day = (iso: string) => new Date(new Date(iso).getTime() + 3 * 3600_000).toISOString().slice(0, 10);
+  if (last && day(last.punched_at) === day(now.toISOString())) return { ok: false, error: input.action === "in" ? "already_in" : "already_out" };
 
   const path = `${emp.id}/${now.toISOString().replace(/[:.]/g, "-")}-${input.action}.${photo.ext}`;
   const up = await db.storage.from("attendance-selfies").upload(path, photo.bytes, { contentType: photo.type });
