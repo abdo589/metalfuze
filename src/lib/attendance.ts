@@ -58,7 +58,10 @@ export function summarize(e: Employee, punches: Punch[], month: string, excuses?
   const ids = [e.id, ...(e.deviceUserId ? [e.deviceUserId] : [])];
   const days = buildDays(punches, ids, excuses).filter((d) => d.date.startsWith(month));
   const linked = !!e.deviceUserId || !!e.siteId || days.length > 0;
-  const wd = workDays(month);
+  // Absence is counted day by day: only from the employee's start (joining date, else first punch) — never back-filled.
+  const allDays = buildDays(punches, ids, excuses);
+  const start = [e.joined || "", allDays[0]?.date || ""].filter(Boolean).sort().pop() || "";
+  const wd = workDays(month).filter((d) => !start || d >= start);
   const present = new Set(days.map((d) => d.date));
   return {
     days,
