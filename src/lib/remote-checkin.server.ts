@@ -29,8 +29,8 @@ export async function recordRemotePunch(input: CheckinInput): Promise<CheckinRes
     : { data: null };
   const site = siteRow ?? { name: "", lat: input.lat, lng: input.lng, radius_m: 0 };
 
-  const check = siteRow ? checkSite(input, site) : { ok: true as const, distance: 0 };
-  if (!check.ok) return { ok: false, error: `far:${check.distance}:${site.name}` };
+  // Punches are accepted from anywhere; distance from the work site is only recorded for tracking.
+  const check = siteRow ? { distance: checkSite(input, site).distance } : { distance: 0 };
 
   const userId = emp.device_user_id || emp.id;
   const status = input.action === "in" ? 0 : 1;
