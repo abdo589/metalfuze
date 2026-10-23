@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
+import { OtherSelect } from "@/components/OtherSelect";
 
 export const Route = createFileRoute("/custody")({
   head: () => ({
@@ -213,7 +214,7 @@ function CustodyPage() {
             <F label="اسم الجهاز"><Input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></F>
             <F label="الشركة المصنعة"><Input value={edit.brand} onChange={(e) => setEdit({ ...edit, brand: e.target.value })} /></F>
             <F label="الموديل"><Input value={edit.model} onChange={(e) => setEdit({ ...edit, model: e.target.value })} /></F>
-            <F label="النوع"><select className={sel} value={edit.category} onChange={(e) => setEdit({ ...edit, category: e.target.value })}>{CATS.map((c) => <option key={c} value={c}>{t(c)}</option>)}</select></F>
+            <F label="النوع"><OtherSelect list="custody_category" base={CATS} value={edit.category} onChange={(v) => setEdit({ ...edit, category: v })} /></F>
             <F label="الرقم التسلسلي"><Input dir="ltr" value={edit.serial_no} onChange={(e) => setEdit({ ...edit, serial_no: e.target.value })} /></F>
             <F label="رقم الأصل"><Input dir="ltr" value={edit.asset_no} onChange={(e) => setEdit({ ...edit, asset_no: e.target.value })} /></F>
             <F label="المواصفات (مثل 14 بوصة)"><Input value={edit.specs} onChange={(e) => setEdit({ ...edit, specs: e.target.value })} /></F>

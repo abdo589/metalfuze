@@ -332,7 +332,7 @@ Object.assign(translations, {
   "الوقت": "Time", "الموقع": "Location", "ريال": "SAR", "مسلمة للموظف": "Assigned to Employee", "متاحة": "Available", "صيانة": "Maintenance",
   "خارج الخدمة": "Out of Service", "جديدة": "New", "تم إشعار الموظف": "Employee Notified", "بانتظار السداد": "Awaiting Payment", "تم السداد": "Paid",
   "تجاوز السرعة": "Speeding", "قطع إشارة": "Running a Red Light", "مواقف خاطئة": "Illegal Parking", "عدم ربط الحزام": "Seatbelt Not Fastened",
-  "استخدام الجوال": "Using a Mobile Phone", "أخرى": "Other",
+  "استخدام الجوال": "Using a Mobile Phone", "أخرى": "Other", "اختر": "Select", "إضافة": "Add", "اكتب اسمًا جديدًا": "Type a new name",
   "تم تسجيل المخالفة ولم يتم إشعار الموظف": "Violation recorded, employee not yet notified",
   "تم إرسال إشعار للموظف عبر البريد": "A notice was sent to the employee by email",
   "تم إشعار الموظف ولم يتم السداد بعد": "Employee notified, payment still pending",
