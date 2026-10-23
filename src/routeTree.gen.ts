@@ -15,6 +15,7 @@ import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as AttendanceTrackingRouteImport } from './routes/attendance-tracking'
 import { Route as BankRouteImport } from './routes/bank'
 import { Route as BudgetRouteImport } from './routes/budget'
+import { Route as CustodyRouteImport } from './routes/custody'
 import { Route as DevRouteImport } from './routes/dev'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as EstPayrollRouteImport } from './routes/est-payroll'
@@ -84,6 +85,11 @@ const BankRoute = BankRouteImport.update({
 const BudgetRoute = BudgetRouteImport.update({
   id: '/budget',
   path: '/budget',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustodyRoute = CustodyRouteImport.update({
+  id: '/custody',
+  path: '/custody',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevRoute = DevRouteImport.update({
@@ -295,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/attendance-tracking': typeof AttendanceTrackingRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
+  '/custody': typeof CustodyRoute
   '/dev': typeof DevRoute
   '/documents': typeof DocumentsRoute
   '/est-payroll': typeof EstPayrollRoute
@@ -343,6 +350,7 @@ export interface FileRoutesByTo {
   '/attendance-tracking': typeof AttendanceTrackingRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
+  '/custody': typeof CustodyRoute
   '/dev': typeof DevRoute
   '/documents': typeof DocumentsRoute
   '/est-payroll': typeof EstPayrollRoute
@@ -392,6 +400,7 @@ export interface FileRoutesById {
   '/attendance-tracking': typeof AttendanceTrackingRoute
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
+  '/custody': typeof CustodyRoute
   '/dev': typeof DevRoute
   '/documents': typeof DocumentsRoute
   '/est-payroll': typeof EstPayrollRoute
@@ -442,6 +451,7 @@ export interface FileRouteTypes {
     | '/attendance-tracking'
     | '/bank'
     | '/budget'
+    | '/custody'
     | '/dev'
     | '/documents'
     | '/est-payroll'
@@ -490,6 +500,7 @@ export interface FileRouteTypes {
     | '/attendance-tracking'
     | '/bank'
     | '/budget'
+    | '/custody'
     | '/dev'
     | '/documents'
     | '/est-payroll'
@@ -538,6 +549,7 @@ export interface FileRouteTypes {
     | '/attendance-tracking'
     | '/bank'
     | '/budget'
+    | '/custody'
     | '/dev'
     | '/documents'
     | '/est-payroll'
@@ -587,6 +599,7 @@ export interface RootRouteChildren {
   AttendanceTrackingRoute: typeof AttendanceTrackingRoute
   BankRoute: typeof BankRoute
   BudgetRoute: typeof BudgetRoute
+  CustodyRoute: typeof CustodyRoute
   DevRoute: typeof DevRoute
   DocumentsRoute: typeof DocumentsRoute
   EstPayrollRoute: typeof EstPayrollRoute
@@ -671,6 +684,13 @@ declare module '@tanstack/react-router' {
       path: '/budget'
       fullPath: '/budget'
       preLoaderRoute: typeof BudgetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/custody': {
+      id: '/custody'
+      path: '/custody'
+      fullPath: '/custody'
+      preLoaderRoute: typeof CustodyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev': {
@@ -963,6 +983,7 @@ const rootRouteChildren: RootRouteChildren = {
   AttendanceTrackingRoute: AttendanceTrackingRoute,
   BankRoute: BankRoute,
   BudgetRoute: BudgetRoute,
+  CustodyRoute: CustodyRoute,
   DevRoute: DevRoute,
   DocumentsRoute: DocumentsRoute,
   EstPayrollRoute: EstPayrollRoute,
