@@ -18,6 +18,7 @@ import {
   Radar,
   Mail, Star, FolderOpen, Building2,
   Car, Wrench,
+  Laptop,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -49,6 +50,7 @@ const items = [
   { to: "/leaves", label: "الإجازات", icon: CalendarOff },
   { to: "/documents", label: "الوثائق", icon: FolderOpen },
   { to: "/fleet", label: "سجل السيارات والمخالفات", icon: Car },
+  { to: "/custody", label: "عهد الأجهزة", icon: Laptop },
   { to: "/establishment", label: "المؤسسة", icon: Building2 },
   { to: "/est-payroll", label: "رواتب المؤسسة", icon: Wallet },
   { to: "/performance", label: "تقييم الأداء", icon: Star },
