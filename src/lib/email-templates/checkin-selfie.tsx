@@ -25,7 +25,7 @@ const Email = ({ name, action = 'in', time, photoUrl, site }: Props) => {
 
 export const template = {
   component: Email,
-  subject: (d) => (d.action === 'out' ? 'تم تسجيل الانصراف' : 'تم تسجيل الحضور') + ' — Metal Fuze',
+  subject: (d) => (d['action'] === 'out' ? 'تم تسجيل الانصراف' : 'تم تسجيل الحضور') + ' — Metal Fuze',
   displayName: 'تأكيد الحضور مع السيلفي',
   previewData: { name: 'عبدالرحمن', action: 'in', time: '09:05', photoUrl: 'https://example.com' },
 } satisfies TemplateEntry
