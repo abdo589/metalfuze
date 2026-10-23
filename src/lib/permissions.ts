@@ -7,9 +7,9 @@ export type Role = "developer" | "admin" | "hr" | "viewer" | "manager" | "accoun
 export const DEV_PATHS = ["/dev", "/mail"];
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
-export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail", "/sales"];
+export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail", "/sales"];
 /** HR pages (everything except employee data) that only admins (Eilaf, Abdelrhman) and HR may open; hidden from viewer accounts. */
-export const HR_ADMIN_ONLY = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/residencies", "/leaves", "/documents", "/fleet", "/establishment", "/est-payroll", "/settlements", "/performance"];
+export const HR_ADMIN_ONLY = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance"];
 /** Self-registered project managers (and accounts without a role) only get their own workspace. */
 /** Accountant (Aiftkhar) sees only the private accounting space. */
 export const ACCOUNTANT_PATHS = ["/accounting", "/messages", "/mail"];

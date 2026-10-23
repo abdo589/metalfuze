@@ -49,6 +49,7 @@ const items = [
   { to: "/leaves", label: "الإجازات", icon: CalendarOff },
   { to: "/documents", label: "الوثائق", icon: FolderOpen },
   { to: "/fleet", label: "سجل السيارات والمخالفات", icon: Car },
+  { to: "/custody", label: "عهد الأجهزة", icon: Laptop },
   { to: "/establishment", label: "المؤسسة", icon: Building2 },
   { to: "/est-payroll", label: "رواتب المؤسسة", icon: Wallet },
   { to: "/performance", label: "تقييم الأداء", icon: Star },
