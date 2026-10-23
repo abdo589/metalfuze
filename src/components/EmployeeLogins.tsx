@@ -35,7 +35,7 @@ export function EmployeeLogins() {
     const out: Session[] = [];
     for (const r of (rows ?? []).filter((x) => x.user_id === uid)) {
       if (r.event === "login") out.push({ login: r });
-      else if (out.length && out[out.length - 1].login && !out[out.length - 1].logout) out[out.length - 1].logout = r;
+      else { const last = out[out.length - 1]; if (last?.login && !last.logout) last.logout = r; else out.push({ logout: r }); continue; }
       else out.push({ logout: r });
     }
     return out.reverse();
