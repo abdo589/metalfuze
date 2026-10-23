@@ -468,6 +468,30 @@ export type Database = {
           },
         ]
       }
+      custom_options: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          list_name: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          list_name: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          list_name?: string
+          value?: string
+        }
+        Relationships: []
+      }
       department_managers: {
         Row: {
           dept: string
