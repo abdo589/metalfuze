@@ -23,8 +23,26 @@ export const logLoginEvent = createServerFn({ method: "POST" })
     }
     const claims = context.claims as { email?: string; user_metadata?: { display_name?: string } };
     const user_name = claims.user_metadata?.display_name || (claims.email ?? "").split("@")[0] || "";
+    let risk = { suspicious: false, reason: "" };
+    if (data.event === "login") {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: prev } = await supabaseAdmin.from("login_events").select("country,device")
+          .eq("user_id", context.userId).eq("event", "login").order("created_at", { ascending: false }).limit(50);
+        const { assessLogin, deviceLabel } = await import("@/lib/login-risk");
+        risk = assessLogin(prev ?? [], { country, device: data.device });
+        if (risk.suspicious) {
+          const { data: devs } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "developer");
+          const when = new Date().toLocaleString("ar-SA", { timeZone: "Asia/Riyadh" });
+          const body = `⚠️ دخول مريب (${risk.reason})\nالحساب: ${user_name}\nالمنطقة: ${[city, region, country].filter(Boolean).join("، ") || "—"}\nIP: ${ip || "—"}\nالجهاز: ${deviceLabel(data.device)}\nالوقت: ${when}`;
+          const rows = (devs ?? []).filter((d) => d.user_id !== context.userId)
+            .map((d) => ({ sender_id: context.userId, recipient_id: d.user_id, body }));
+          if (rows.length) await supabaseAdmin.from("direct_messages").insert(rows);
+        }
+      } catch { /* alert optional */ }
+    }
     await context.supabase.from("login_events").insert({
-      user_id: context.userId, user_name, event: data.event, ip, country, region, city, device: data.device,
+      user_id: context.userId, user_name, event: data.event, ip, country, region, city, device: data.device, ...risk,
     });
     return { ok: true };
   });
