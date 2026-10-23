@@ -54,3 +54,37 @@ export const deleteManualPunch = createServerFn({ method: "POST" })
       .eq("device_sn", "MANUAL").eq("device_user_id", data.deviceUserId).eq("punched_at", data.at);
     return { ok: !error };
   });
+
+/** Supervisor emails a worker their personal check-in link (selfie + location on their own phone). */
+export const emailCheckinLink = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ employeeId: z.string().min(1).max(100), email: z.string().trim().email().max(200) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isHr } = await context.supabase.rpc("is_hr", { _user_id: context.userId });
+    if (!isAdmin && !isHr) return { ok: false as const, error: "forbidden" };
+    const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+    const { data: emp } = await db.from("employees").select("id,name,active,checkin_token").eq("id", data.employeeId).maybeSingle();
+    if (!emp || !emp.active) return { ok: false as const, error: "employee" };
+    let token = emp.checkin_token;
+    if (!token) {
+      token = Array.from(crypto.getRandomValues(new Uint8Array(18)), (b) => b.toString(16).padStart(2, "0")).join("");
+      await db.from("employees").update({ checkin_token: token }).eq("id", emp.id);
+    }
+    const email = data.email.toLowerCase();
+    await db.from("employees").update({ email }).eq("id", emp.id);
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const origin = new URL(getRequest().url).origin;
+    const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+    try {
+      const r = await sendTemplateEmail("checkin-link", email, {
+        templateData: { name: emp.name, link: `${origin}/checkin/${token}` },
+        idempotencyKey: `checkin-link-${emp.id}-${Date.now()}`,
+      });
+      if (!r.sent) return { ok: false as const, error: "suppressed" };
+    } catch (e: any) {
+      console.error("checkin link email failed", e);
+      return { ok: false as const, error: e?.code === "domain_not_verified" ? "domain" : "send" };
+    }
+    return { ok: true as const };
+  });
