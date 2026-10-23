@@ -9,7 +9,7 @@
         "@ai-sdk/react": "^4.0.140",
         "@hookform/resolvers": "^5.2.2",
         "@lovable.dev/cloud-auth-js": "^1.1.2",
-        "@lovable.dev/email-js": "0.3.1",
+        "@lovable.dev/email-js": "0.4.0",
         "@lovable.dev/mcp-js": "^3.2.2",
         "@lovable.dev/webhooks-js": "0.0.3",
         "@radix-ui/react-accordion": "^1.2.12",
@@ -302,7 +302,7 @@
 
     "@lovable.dev/cloud-auth-js": ["@lovable.dev/cloud-auth-js@1.2.1", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@lovable.dev/cloud-auth-js/-/cloud-auth-js-1.2.1.tgz", {}, "sha512-BetMp9TvV/QgZ54KBr0yhPNqcB2Z6VqrF3H54sNgsKpKeSQO0CFDtPNtSmtKW9cCsHAp7yXCl04X82Zfdjo0CA=="],
 
-    "@lovable.dev/email-js": ["@lovable.dev/email-js@0.3.1", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@lovable.dev/email-js/-/email-js-0.3.1.tgz", { "dependencies": { "@lovable.dev/webhooks-js": "0.0.3" }, "peerDependencies": { "@react-email/render": ">=1.0.0", "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["@react-email/render", "react", "react-dom"] }, "sha512-cDi5nj3afHsmqESsbga5pL4zRz0xxLNGkxpRLIkqTGOBOVeMkO069wR9Cd+T+z7GBTS41X3rU/QNf9WBUNpFSQ=="],
+    "@lovable.dev/email-js": ["@lovable.dev/email-js@0.4.0", "", { "dependencies": { "@lovable.dev/webhooks-js": "0.0.3" }, "peerDependencies": { "@react-email/render": ">=1.0.0", "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["@react-email/render", "react", "react-dom"] }, "sha512-WMYLIRto47bkpszNwrqqO+OIDuSZ8924DvdyR8BPIdS9Qd2LsXHQEadriFLRgjaKbMWlAWIxoeMZ2ez368Q0NA=="],
 
     "@lovable.dev/mcp-js": ["@lovable.dev/mcp-js@3.2.2", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@lovable.dev/mcp-js/-/mcp-js-3.2.2.tgz", { "dependencies": { "@modelcontextprotocol/client": "2.3.0", "@modelcontextprotocol/core": "2.3.0", "@modelcontextprotocol/sdk": "1.28.0", "@modelcontextprotocol/server": "2.0.0", "esbuild": "^0.27.0", "jose": "^6.2.2", "js-yaml": "^4.3.2" }, "peerDependencies": { "vite": ">=5.0.0 <9.0.0", "zod": "^3.25 || ^4.0" }, "optionalPeers": ["vite"], "bin": { "lovable-mcp-check": "./dist/cli/check-server.cjs", "lovable-mcp-extract-manifest": "./dist/cli/extract-manifest.cjs" } }, "sha512-d+61YtxEphmoULzpXs2RXZrpBg8LrvQ8lWmfqJj1QuCM+gwVejvnmdcxywEe/31VOV8Kc1Q9RpxC5HnpBCFHyQ=="],
 

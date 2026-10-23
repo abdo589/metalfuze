@@ -30,3 +30,4 @@
 - Forced sign-out/suspension: developer server fns in users.functions.ts write account_flags.force_logout_at (and ban via auth admin); IdleSignOut checks it each minute against user.last_sign_in_at, and every account change is logged to account_audit — so sessions can be ended without the user's token.
 - Activity log: DB triggers on app tables write public.activity_log (developer-only read); new monitored tables need a trg_activity_<table> trigger — server-side capture can't be skipped by any client.
 - Dropdowns listing "أخرى" render via src/components/OtherSelect.tsx with a stable list key; choosing "أخرى" means typing a new value saved to public.custom_options (list_name, value), shared with every account rather than device-local.
+- Every remote punch emails the employee (employees.email, else linked profile email) a 7-day signed selfie link via the checkin-selfie app email; failures never block the punch.
