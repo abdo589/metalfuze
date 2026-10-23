@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useState } from "react";
 import { Bug, Globe, KeyRound, RefreshCw, Trash2, UserPlus, Users, Wrench } from "lucide-react";
 import { LoginEvents } from "@/components/LoginEvents";
+import { EmployeeLogins } from "@/components/EmployeeLogins";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,10 +49,12 @@ function DevPage() {
           <TabsTrigger value="bugs"><Bug /> {t("الأعطال")}</TabsTrigger>
           <TabsTrigger value="accounts"><Users /> {t("إعدادات الحسابات")}</TabsTrigger>
           <TabsTrigger value="logins"><Globe /> {t("الدخول والخروج")}</TabsTrigger>
+          <TabsTrigger value="per-user"><Users /> {t("حسب الموظف")}</TabsTrigger>
         </TabsList>
         <TabsContent value="bugs"><Bugs /></TabsContent>
         <TabsContent value="accounts"><Accounts /></TabsContent>
         <TabsContent value="logins"><LoginEvents /></TabsContent>
+        <TabsContent value="per-user"><EmployeeLogins /></TabsContent>
       </Tabs>
     </div>
   );
