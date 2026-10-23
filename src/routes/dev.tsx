@@ -2,7 +2,8 @@ import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useState } from "react";
-import { Bug, Globe, KeyRound, RefreshCw, Trash2, UserPlus, Users, Wrench } from "lucide-react";
+import { Activity, Ban, Bug, CheckCircle2, Globe, History, KeyRound, LogOut, RefreshCw, Trash2, UserPlus, Users, Wrench } from "lucide-react";
+import { DevHealth, AccountAudit } from "@/components/DevHealth";
 import { LoginEvents } from "@/components/LoginEvents";
 import { EmployeeLogins } from "@/components/EmployeeLogins";
 import { toast } from "sonner";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { ASSIGNABLE_ROLES, createUser, deleteUser, listUsers, setUserPassword, setUserRole, type AppUser } from "@/lib/users.functions";
+import { ASSIGNABLE_ROLES, createUser, deleteUser, forceSignOut, listUsers, setUserBanned, setUserPassword, setUserRole, type AppUser } from "@/lib/users.functions";
 
 export const Route = createFileRoute("/dev")({
   head: () => ({
@@ -45,15 +46,19 @@ function DevPage() {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
       <h1 className="flex items-center gap-2 font-display text-2xl font-extrabold"><Wrench className="text-primary" /> {t("الأعطال وإعدادات الحسابات")}</h1>
       <Tabs defaultValue="bugs">
-        <TabsList>
+        <TabsList className="h-auto flex-wrap">
           <TabsTrigger value="bugs"><Bug /> {t("الأعطال")}</TabsTrigger>
           <TabsTrigger value="accounts"><Users /> {t("إعدادات الحسابات")}</TabsTrigger>
           <TabsTrigger value="logins"><Globe /> {t("الدخول والخروج")}</TabsTrigger>
+          <TabsTrigger value="health"><Activity /> {t("صحة الموقع")}</TabsTrigger>
+          <TabsTrigger value="audit"><History /> {t("سجل التغييرات")}</TabsTrigger>
           <TabsTrigger value="per-user"><Users /> {t("حسب الموظف")}</TabsTrigger>
         </TabsList>
         <TabsContent value="bugs"><Bugs /></TabsContent>
         <TabsContent value="accounts"><Accounts /></TabsContent>
         <TabsContent value="logins"><LoginEvents /></TabsContent>
+        <TabsContent value="health"><DevHealth /></TabsContent>
+        <TabsContent value="audit"><AccountAudit /></TabsContent>
         <TabsContent value="per-user"><EmployeeLogins /></TabsContent>
       </Tabs>
     </div>
@@ -124,6 +129,8 @@ function Accounts() {
   const remove = useServerFn(deleteUser);
   const setPw = useServerFn(setUserPassword);
   const setRole = useServerFn(setUserRole);
+  const ban = useServerFn(setUserBanned);
+  const kick = useServerFn(forceSignOut);
   const [users, setUsers] = useState<AppUser[] | null>(null);
   const [me, setMe] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -176,7 +183,7 @@ function Accounts() {
             {users === null && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">{t("جارٍ التحميل...")}</td></tr>}
             {users?.map((u) => (
               <tr key={u.id} className="border-b last:border-0">
-                <td className="p-3 font-medium">{u.name} {u.id === me && <span className="text-xs text-primary">{t("(أنت)")}</span>}</td>
+                <td className="p-3 font-medium">{u.name} {u.id === me && <span className="text-xs text-primary">{t("(أنت)")}</span>}{u.banned && <span className="ms-1 rounded-full bg-destructive px-2 py-0.5 text-xs text-destructive-foreground">{t("موقوف")}</span>}</td>
                 <td className="p-3" dir="ltr">{u.username}</td>
                 <td className="p-3">
                   <select className="rounded-md border bg-background px-2 py-1" value={mainRole(u)} disabled={u.id === me}
@@ -185,12 +192,20 @@ function Accounts() {
                   </select>
                 </td>
                 <td className="p-3">{u.lastSignIn ? new Date(u.lastSignIn).toLocaleDateString(locale()) : t("لم يدخل بعد")}</td>
-                <td className="p-3"><div className="flex justify-end gap-1">
+                <td className="p-3"><div className="flex flex-wrap justify-end gap-1">
                   <Button size="sm" variant="ghost" onClick={async () => {
                     const pw = prompt(`${t("كلمة السر الجديدة لـ")} ${u.name}:`, genPassword()); if (!pw) return;
                     const r = await setPw({ data: { id: u.id, password: pw } });
                     setMsg(r.ok ? { ok: true, text: `${t("كلمة السر الجديدة لـ")} ${u.name}: ${pw}` } : { ok: false, text: r.error });
                   }}><KeyRound /> {t("كلمة السر")}</Button>
+                  {u.id !== me && <Button size="sm" variant="ghost" onClick={async () => {
+                    if (!confirm(`${t("خروج من كل الأجهزة")}: ${u.name}?`)) return;
+                    const r = await kick({ data: { id: u.id } }); if (!r.ok) toast.error(r.error); else toast.success(t("سيخرج خلال دقيقة"));
+                  }}><LogOut /> {t("خروج من كل الأجهزة")}</Button>}
+                  {u.id !== me && <Button size="sm" variant="ghost" className={u.banned ? "text-primary" : "text-destructive"} onClick={async () => {
+                    if (!u.banned && !confirm(`${t("إيقاف حساب")} ${u.name}?`)) return;
+                    const r = await ban({ data: { id: u.id, banned: !u.banned } }); if (!r.ok) toast.error(r.error); load();
+                  }}>{u.banned ? <><CheckCircle2 /> {t("تفعيل")}</> : <><Ban /> {t("إيقاف")}</>}</Button>}
                   {u.id !== me && <Button size="icon" variant="ghost" className="text-destructive" aria-label={t("حذف")} onClick={async () => {
                     if (!confirm(`${t("حذف حساب")} ${u.name}?`)) return;
                     const r = await remove({ data: { id: u.id } }); setMsg(r.ok ? { ok: true, text: `${t("تم حذف")} ${u.name}` } : { ok: false, text: r.error }); load();

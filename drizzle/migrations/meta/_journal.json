@@ -351,6 +351,13 @@
       "when": 1792760047573,
       "tag": "0049_login_suspicious",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1792760475091,
+      "tag": "0050_account_audit_flags",
+      "breakpoints": true
     }
   ]
 }
