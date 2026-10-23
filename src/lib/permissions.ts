@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Role = "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | "sales" | null;
+export type Role = "developer" | "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | "sales" | null;
+
+/** The developer (Eng Abdelrhman) only sees the faults inbox and account settings. */
+export const DEV_PATHS = ["/dev"];
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
 export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail", "/sales"];
@@ -23,7 +26,7 @@ export function assistantAllowed(role: Role | undefined) {
   if (!role) return false;
   const lists: Partial<Record<Exclude<Role, null>, string[]>> = {
     hr: HR_PATHS, manager: MANAGER_PATHS, accountant: ACCOUNTANT_PATHS,
-    executive: EXECUTIVE_PATHS, mail: MAIL_PATHS, sales: SALES_PATHS,
+    executive: EXECUTIVE_PATHS, mail: MAIL_PATHS, sales: SALES_PATHS, developer: DEV_PATHS,
   };
   const list = lists[role];
   return list ? list.includes("/assistant") : true; // admin and viewer accounts keep the advisor
@@ -39,7 +42,7 @@ export function useRole() {
       if (!u.user) return alive && setRole(null);
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id);
       const roles = (data ?? []).map((r) => String(r.role));
-      const r: Role = roles.includes("admin") ? "admin" : roles.includes("hr") ? "hr" : roles.includes("viewer") ? "viewer" : roles.includes("accountant") ? "accountant" : roles.includes("executive") ? "executive" : roles.includes("mail") ? "mail" : roles.includes("sales") ? "sales" : "manager";
+      const r: Role = roles.includes("developer") ? "developer" : roles.includes("admin") ? "admin" : roles.includes("hr") ? "hr" : roles.includes("viewer") ? "viewer" : roles.includes("accountant") ? "accountant" : roles.includes("executive") ? "executive" : roles.includes("mail") ? "mail" : roles.includes("sales") ? "sales" : "manager";
       if (alive) setRole(r);
     };
     check();

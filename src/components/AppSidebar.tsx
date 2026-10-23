@@ -17,7 +17,7 @@ import {
   Users, FolderKanban, MessageSquare, Calculator,
   Radar,
   Mail, Star, FolderOpen, Building2,
-  Car,
+  Car, Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -58,14 +58,14 @@ const items = [
   { to: "/settlements", label: "المخالصات", icon: FileText },
   { to: "/assistant", label: "المستشار الذكي", icon: BrainCircuit },
   { to: "/sales", label: "المبيعات والعمولات", icon: Calculator },
-  { to: "/users", label: "المستخدمون", icon: Users },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const role = useRole();
   const unread = useUnreadMessages();
-  const visible = role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
+  const visible = role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }]
+    : role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
     : role === "sales" ? [{ to: "/sales", label: "المبيعات والعمولات", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
     : role === "mail" ? [{ to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "executive" ? [{ to: "/executive", label: "الملخص التنفيذي", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]

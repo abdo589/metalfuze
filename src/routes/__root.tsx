@@ -25,6 +25,7 @@ import { MessageAlerts } from "@/components/MessageAlerts";
 import { ExecSnapshotSync } from "@/lib/exec-snapshot";
 import { AutoTranslate } from "@/components/AutoTranslate";
 import { AssistantFab } from "@/components/AssistantFab";
+import { BugReportButton } from "@/components/BugReport";
 import { installReadCache } from "@/lib/read-cache";
 
 function NotFoundComponent() {
@@ -178,6 +179,7 @@ function RootComponent() {
         </div>
         </div>
         <AssistantFab />
+        <BugReportButton />
       </AuthGate>
       <footer className="border-t border-border py-3 text-center text-xs text-muted-foreground print:hidden">
         © Metal Fuze · <Link to="/privacy" className="underline hover:text-foreground">سياسة الخصوصية</Link>
