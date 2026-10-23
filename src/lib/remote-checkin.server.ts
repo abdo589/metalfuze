@@ -48,6 +48,7 @@ export async function recordRemotePunch(input: CheckinInput): Promise<CheckinRes
     lat: input.lat, lng: input.lng, distance_m: siteRow ? check.distance : null, photo_path: path, site_name: siteRow ? site.name : null,
   });
   if (error) { console.error("remote punch insert failed", error); return { ok: false, error: "save" }; }
+  await emailSelfie(db, emp.id, input.action, now, path, site.name);
   return { ok: true, time: now.toISOString(), distance: check.distance, site: site.name };
 }
 
@@ -70,4 +71,24 @@ export async function recordPing(employeeId: string, lat: number, lng: number, a
   }
   await db.from("location_pings").insert({ employee_id: emp.id, lat, lng, accuracy_m: accuracy ? Math.round(accuracy) : null, distance_m: distance });
   return { ok: true, onShift: true };
+}
+
+/** Emails the employee a confirmation with a 7-day link to their selfie. Never blocks the punch. */
+async function emailSelfie(db: any, empId: string, action: "in" | "out", at: Date, path: string, site: string) {
+  try {
+    const { data: e } = await db.from("employees").select("name,email").eq("id", empId).maybeSingle();
+    let to: string | null = e?.email || null;
+    if (!to) {
+      const { data: p } = await db.from("profiles").select("email").eq("employee_id", empId).maybeSingle();
+      to = p?.email || null;
+    }
+    if (!to) return;
+    const { data: signed } = await db.storage.from("attendance-selfies").createSignedUrl(path, 7 * 86400);
+    const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+    await sendTemplateEmail("checkin-selfie", to, {
+      templateData: { name: e?.name, action, site, photoUrl: signed?.signedUrl,
+        time: at.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Riyadh" }) },
+      idempotencyKey: `checkin-selfie-${path}`,
+    });
+  } catch (err) { console.error("selfie email failed", err); }
 }
