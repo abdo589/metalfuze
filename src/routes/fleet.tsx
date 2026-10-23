@@ -12,6 +12,7 @@ import { t, useLanguage } from "@/lib/i18n";
 import { StatCard } from "@/components/ResidenciesPanel";
 import { PdfButton } from "@/components/PdfButton";
 import { daysLeft } from "@/lib/residency";
+import { OtherSelect } from "@/components/OtherSelect";
 
 export const Route = createFileRoute("/fleet")({
   head: () => ({
@@ -284,7 +285,7 @@ function FleetPage() {
           <DialogHeader><DialogTitle>{editVio?.id ? t("تعديل مخالفة") : t("إضافة مخالفة")}</DialogTitle></DialogHeader>
           {editVio && <div className="grid grid-cols-2 gap-3">
             <F label="رقم المخالفة"><Input dir="ltr" value={editVio.violation_no} onChange={(e) => setEditVio({ ...editVio, violation_no: e.target.value })} /></F>
-            <F label="نوع المخالفة"><select className={sel} value={editVio.violation_type} onChange={(e) => setEditVio({ ...editVio, violation_type: e.target.value })}>{VIO_TYPES.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select></F>
+            <F label="نوع المخالفة"><OtherSelect list="fleet_violation_type" base={VIO_TYPES} value={editVio.violation_type} onChange={(v) => setEditVio({ ...editVio, violation_type: v })} /></F>
             <F label="رقم اللوحة"><select className={sel} value={editVio.plate} onChange={(e) => { const c = cars.find((x) => x.plate === e.target.value); setEditVio({ ...editVio, plate: e.target.value, employee_no: c?.employee_no ?? "", employee_name: c?.employee_name ?? "" }); }}><option value="">—</option>{cars.map((c) => <option key={c.id} value={c.plate}>{c.plate}</option>)}</select></F>
             <F label="الموظف"><EmpSelect value={editVio.employee_name ? editVio.employee_no + "|" + editVio.employee_name : ""} onChange={(k) => setEditVio(pickEmp(editVio, k))} /></F>
             <F label="تاريخ المخالفة"><Input type="date" value={editVio.violation_date ?? ""} onChange={(e) => setEditVio({ ...editVio, violation_date: e.target.value })} /></F>
