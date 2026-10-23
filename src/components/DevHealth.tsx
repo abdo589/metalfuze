@@ -28,8 +28,8 @@ export function DevHealth({ bannedCount }: { bannedCount: number | null }) {
   }, []);
   useEffect(() => { void load(); }, [load]);
   const cards: [string, string | number | undefined][] = [
-    ["الأعطال المفتوحة", s?.open], ["أخطاء تلقائية اليوم", s?.auto], ["جهاز البصمة", s?.device],
-    ["دخول مريب (7 أيام)", s?.sus], ["حسابات نشطة اليوم", s?.active], ["حسابات موقوفة", bannedCount ?? "…"],
+    ["الأعطال المفتوحة", s?.["open"]], ["أخطاء تلقائية اليوم", s?.["auto"]], ["جهاز البصمة", s?.["device"]],
+    ["دخول مريب (7 أيام)", s?.["sus"]], ["حسابات نشطة اليوم", s?.["active"]], ["حسابات موقوفة", bannedCount ?? "…"],
   ];
   return (
     <div className="space-y-3 pt-3">
