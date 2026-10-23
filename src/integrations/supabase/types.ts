@@ -92,6 +92,39 @@ export type Database = {
         }
         Relationships: []
       }
+      activity_log: {
+        Row: {
+          action: string
+          actor_name: string
+          created_at: string
+          id: string
+          label: string
+          row_id: string
+          table_name: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          actor_name?: string
+          created_at?: string
+          id?: string
+          label?: string
+          row_id?: string
+          table_name: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          actor_name?: string
+          created_at?: string
+          id?: string
+          label?: string
+          row_id?: string
+          table_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_user_connections: {
         Row: {
           connection_key_ciphertext: string
