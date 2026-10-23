@@ -908,7 +908,9 @@ export type Database = {
           event: string
           id: string
           ip: string
+          reason: string
           region: string
+          suspicious: boolean
           user_id: string
           user_name: string
         }
@@ -920,7 +922,9 @@ export type Database = {
           event: string
           id?: string
           ip?: string
+          reason?: string
           region?: string
+          suspicious?: boolean
           user_id: string
           user_name?: string
         }
@@ -932,7 +936,9 @@ export type Database = {
           event?: string
           id?: string
           ip?: string
+          reason?: string
           region?: string
+          suspicious?: boolean
           user_id?: string
           user_name?: string
         }
