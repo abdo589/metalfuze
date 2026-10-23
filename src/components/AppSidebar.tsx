@@ -57,6 +57,7 @@ const items = [
   { to: "/messages", label: "الرسائل", icon: MessageSquare },
   { to: "/mail", label: "البريد (Outlook)", icon: Mail },
   { to: "/attendance-tracking", label: "تتبع الحضور", icon: Radar },
+  { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Radar },
   { to: "/settlements", label: "المخالصات", icon: FileText },
   { to: "/assistant", label: "المستشار الذكي", icon: BrainCircuit },
   { to: "/sales", label: "المبيعات والعمولات", icon: Calculator },
