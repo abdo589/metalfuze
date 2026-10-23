@@ -28,3 +28,14 @@ describe("attendance rules", () => {
     expect(d[0]!.excused).toBe(true);
   });
 });
+
+import { summarize } from "./attendance";
+describe("absence is counted day by day", () => {
+  it("does not count days before attendance started", () => {
+    const e = { id: "9", deviceUserId: "9", joined: "2026-01-01" } as any;
+    const p = [{ device_user_id: "9", punched_at: "2026-10-21T09:00:00+03:00" }];
+    // Wed 21 Oct present, Thu 22 Oct absent; 1-20 Oct were before any recording.
+    const s = summarize(e, p, "2026-10");
+    expect(s.absent).toBe(new Date().toISOString() >= "2026-10-23" ? 1 : 0);
+  });
+});
