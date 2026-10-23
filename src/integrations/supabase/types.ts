@@ -370,6 +370,104 @@ export type Database = {
         }
         Relationships: []
       }
+      custody_assets: {
+        Row: {
+          asset_no: string
+          brand: string
+          category: string
+          confirmed: boolean
+          created_at: string
+          dept: string
+          employee_name: string
+          employee_no: string
+          handover_date: string | null
+          id: string
+          model: string
+          name: string
+          notes: string
+          serial_no: string
+          specs: string
+          status: string
+        }
+        Insert: {
+          asset_no?: string
+          brand?: string
+          category?: string
+          confirmed?: boolean
+          created_at?: string
+          dept?: string
+          employee_name?: string
+          employee_no?: string
+          handover_date?: string | null
+          id?: string
+          model?: string
+          name?: string
+          notes?: string
+          serial_no?: string
+          specs?: string
+          status?: string
+        }
+        Update: {
+          asset_no?: string
+          brand?: string
+          category?: string
+          confirmed?: boolean
+          created_at?: string
+          dept?: string
+          employee_name?: string
+          employee_no?: string
+          handover_date?: string | null
+          id?: string
+          model?: string
+          name?: string
+          notes?: string
+          serial_no?: string
+          specs?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      custody_moves: {
+        Row: {
+          action: string
+          asset_id: string
+          created_at: string
+          employee_name: string
+          employee_no: string
+          id: string
+          move_date: string
+          note: string
+        }
+        Insert: {
+          action: string
+          asset_id: string
+          created_at?: string
+          employee_name?: string
+          employee_no?: string
+          id?: string
+          move_date?: string
+          note?: string
+        }
+        Update: {
+          action?: string
+          asset_id?: string
+          created_at?: string
+          employee_name?: string
+          employee_no?: string
+          id?: string
+          move_date?: string
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custody_moves_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "custody_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       department_managers: {
         Row: {
           dept: string
