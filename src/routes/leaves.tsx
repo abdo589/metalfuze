@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/permissions";
-import { listUsers, type AppUser } from "@/lib/users.functions";
+import { listUserNames } from "@/lib/users.functions";
 import { currentLanguage, t, useLanguage } from "@/lib/i18n";
 import {
   LEAVE_STATES, countLeaveDays, eachDay, leaveError, overlaps, returnDate, stateLabel,
@@ -579,11 +579,11 @@ function Reports({ reqs, emps, types, typeName, lang }: { reqs: LeaveRequest[]; 
 }
 
 function SettingsTab({ types, settings, mgrs, emps, onDone }: { types: LeaveType[]; settings: Settings; mgrs: Mgr[]; emps: Emp[]; onDone: () => void }) {
-  const [users, setUsers] = useState<AppUser[]>([]);
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
   const [tiers, setTiers] = useState<Tier[]>(settings.tiers);
   const [accrual, setAccrual] = useState(settings.accrual_from);
   const [list, setList] = useState<LeaveType[]>(types);
-  useEffect(() => { listUsers().then(setUsers).catch(() => {}); }, []);
+  useEffect(() => { listUserNames().then(setUsers).catch(() => {}); }, []);
   useEffect(() => setList(types), [types]);
   useEffect(() => { setTiers(settings.tiers); setAccrual(settings.accrual_from); }, [settings]);
   const depts = [...new Set(emps.map((e) => e.dept).filter(Boolean))].sort();
