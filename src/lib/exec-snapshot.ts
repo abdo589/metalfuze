@@ -34,7 +34,8 @@ export function ExecSnapshotSync() {
         const hasLocalProjects = localStorage.getItem("metalfuze.projects.v1") !== null;
         if (hasLocalProjects) {
           const ids = new Set(p.map((x) => x.id));
-          nextP = [...p, ...projectStore.all().filter((x) => !ids.has(x.id))];
+          const names = new Set(p.map((x) => (x.name || "").trim()));
+          nextP = [...p, ...projectStore.all().filter((x) => !ids.has(x.id) && !names.has((x.name || "").trim()))];
         }
         if (t) {
           const tids = new Set(t.map((x) => x.id));
