@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { EmployeeSignature } from "@/components/EmployeeSignature";
 import { useCanEditHr } from "@/lib/permissions";
 import { t, useLanguage } from "@/lib/i18n";
 import { EMPLOYEE_STATUSES } from "@/lib/employee-status";
@@ -171,6 +172,7 @@ function SettlementsPage() {
           <DialogHeader><DialogTitle>{edit?.id ? t("تفاصيل المخالصة") : t("إنشاء مخالصة")}</DialogTitle></DialogHeader>
           {edit && (
             <fieldset disabled={!canEdit} className="grid gap-3 sm:grid-cols-2">
+              {edit.employee_id && <div className="sm:col-span-2"><EmployeeSignature empId={edit.employee_id} name={edit.employee_name} /></div>}
               <label className="space-y-1 text-sm sm:col-span-2">{t("الموظف")}
                 <select className={`${sel} w-full`} value={edit.employee_id} onChange={(e) => pickEmp(e.target.value)}>
                   <option value="">—</option>{emps.map((e) => <option key={e.id} value={e.id}>{e.name} ({e.id})</option>)}

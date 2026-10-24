@@ -11,6 +11,7 @@ import { useRole } from "@/lib/permissions";
 import { importHrFile, type HrKey, type HrRow } from "@/lib/hr-file.functions";
 import sheets from "@/lib/hr-sheets.json";
 import { AdvancesCommissions } from "@/components/AdvancesCommissions";
+import { EmployeeSignature } from "@/components/EmployeeSignature";
 import { EmployeeReviews } from "@/components/EmployeeReviews";
 import { DocsOverview } from "@/components/DocsOverview";
 import { NationalitySelect } from "@/components/NationalitySelect";
@@ -236,6 +237,7 @@ function HrFilePage() {
                   ))}
                 </>
               )}
+              {isEmp && cur === "basic" && <EmployeeSignature empId={String(sel.data[ID] ?? "")} name={String(sel.data[NAME] ?? "")} />}
               {isEmp && cur === "money" && <AdvancesCommissions empId={String(sel.data[ID] ?? sel.id)} canEdit={canEdit} />}
               {isEmp && cur === "reviews" && <EmployeeReviews empNo={String(sel.data[ID] ?? "")} name={String(sel.data[NAME] ?? "")} />}
               {cur === "basic" && (
