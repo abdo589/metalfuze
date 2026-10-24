@@ -42,6 +42,7 @@ export function ExecSnapshotSync() {
           t = [...t, ...txnStore.all().filter((x) => !tids.has(x.id))];
         }
       }
+      nextP = uniqByName(nextP);
       if (nextP.length && JSON.stringify(nextP) !== JSON.stringify(projectStore.all())) projectStore.replaceAll(nextP);
       if (t && JSON.stringify(t) !== JSON.stringify(txnStore.all())) txnStore.replaceAll(t);
       first = false;
@@ -61,7 +62,7 @@ export function ExecSnapshotSync() {
       const { data } = await supabase.from("exec_snapshot").select("key,data");
       const now = new Date().toISOString();
       const rows: { key: string; data: never; updated_at: string }[] = [];
-      if (JSON.stringify(data?.find((r) => r.key === "projects")?.data ?? null) !== JSON.stringify(projects)) rows.push({ key: "projects", data: projects as never, updated_at: now });
+      if (JSON.stringify(data?.find((r) => r.key === "projects")?.data ?? null) !== JSON.stringify(uniqByName(projects))) rows.push({ key: "projects", data: uniqByName(projects) as never, updated_at: now });
       if (JSON.stringify(data?.find((r) => r.key === "transactions")?.data ?? null) !== JSON.stringify(txns)) rows.push({ key: "transactions", data: txns as never, updated_at: now });
       if (rows.length) await supabase.from("exec_snapshot").upsert(rows);
     }, 1500);
@@ -110,4 +111,10 @@ export function summarize(projects: Project[], txns: Txn[], today = new Date()) 
     collected: sum(txns, "collect"), spent: sum(txns, "pay"), balance: sum(txns, "collect") - sum(txns, "pay"),
     monthCollected: sum(mt, "collect"), monthSpent: sum(mt, "pay"),
   };
+}
+
+/** Keeps the first project of each name so repeated copies never return. */
+export function uniqByName(list: Project[]) {
+  const seen = new Set<string>();
+  return list.filter((p) => { const k = (p.name || "").trim(); if (seen.has(k)) return false; seen.add(k); return true; });
 }
