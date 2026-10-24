@@ -379,6 +379,13 @@
       "when": 1792782807324,
       "tag": "0053_custom_options",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1792871504080,
+      "tag": "0054_sales_deals_commission_guard",
+      "breakpoints": true
     }
   ]
 }
