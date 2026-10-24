@@ -35,7 +35,7 @@ export function ExecSnapshotSync() {
         if (hasLocalProjects) {
           const ids = new Set(p.map((x) => x.id));
           const names = new Set(p.map((x) => (x.name || "").trim()));
-          nextP = [...p, ...projectStore.all().filter((x) => !ids.has(x.id) && !names.has((x.name || "").trim()))];
+          nextP = [...p, ...projectStore.all().filter((x) => !ids.has(x.id) && (x.allowSameName || !names.has((x.name || "").trim())))];
         }
         if (t) {
           const tids = new Set(t.map((x) => x.id));
@@ -113,8 +113,15 @@ export function summarize(projects: Project[], txns: Txn[], today = new Date()) 
   };
 }
 
-/** Keeps the first project of each name so repeated copies never return. */
+/** Keeps the first project of each name so stale device copies never return,
+ *  except projects the user deliberately saved with a shared name (allowSameName). */
 export function uniqByName(list: Project[]) {
   const seen = new Set<string>();
-  return list.filter((p) => { const k = (p.name || "").trim(); if (seen.has(k)) return false; seen.add(k); return true; });
+  return list.filter((p) => {
+    if (p.allowSameName) return true;
+    const k = (p.name || "").trim();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
 }

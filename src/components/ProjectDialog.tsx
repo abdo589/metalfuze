@@ -174,12 +174,14 @@ export function ProjectDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t("إلغاء")}</Button>
           <Button disabled={!f.name.trim() || warrantyBad} onClick={() => {
             const others = projectStore.all().filter((p) => p.id !== f.id);
+            const nameDup = !!findDuplicate(others.map((p) => p.name), f.name);
             const dup = [
               findDuplicate(others.map((p) => p.code), f.code) ? `${t("رمز المشروع")}: ${f.code}` : "",
-              findDuplicate(others.map((p) => p.name), f.name) ? `${t("اسم المشروع")}: ${f.name}` : "",
+              nameDup ? `${t("اسم المشروع")}: ${f.name}` : "",
             ].filter(Boolean);
             if (dup.length && !confirm(`${t("يوجد مشروع مسجل بنفس البيانات")}\n${dup.join("\n")}\n${t("هل تريد الحفظ على أي حال؟")}`)) return;
-            projectStore.upsert(f); onOpenChange(false);
+            // A confirmed same-name project is kept on every device instead of being folded as a stale copy.
+            projectStore.upsert(nameDup ? { ...f, allowSameName: true } : f); onOpenChange(false);
           }}>
             {t("حفظ")}</Button>
         </DialogFooter>
