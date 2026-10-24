@@ -22,7 +22,7 @@ ${s.role ? `<div style="color:#555">${esc(s.role)}${s.dept ? ` — ${esc(s.dept)
 }
 
 /** E-mail signature card for one employee (looked up by number, else by name), with a copy button for Outlook. */
-export function EmployeeSignature({ empId, name }: { empId?: string | null; name?: string | null }) {
+export function EmployeeSignature({ empId, name }: { empId?: string | null | undefined; name?: string | null | undefined }) {
   const [sig, setSig] = useState<Sig | null>(null);
   useEffect(() => {
     let off = false;
