@@ -48,7 +48,7 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
     if (canEdit) {
       // Sales commissions are computed from the deal and added here automatically (one row per deal).
       const { data: deals } = await supabase.from("sales_deals").select("id,client,project,contract_value,commission_rate,shared,my_share,request").gt("contract_value", 0);
-      const mine = (deals ?? []).filter((d) => String((d.request as Record<string, unknown> | null)?.owner_emp ?? "") === empId);
+      const mine = (deals ?? []).filter((d) => String((d.request as Record<string, unknown> | null)?.["owner_emp"] ?? "") === empId);
       let changed = false;
       for (const d of mine) {
         const no = `SAL-${d.id.slice(0, 6)}`, amount = Math.round(commissionDue(d) * 100) / 100;
