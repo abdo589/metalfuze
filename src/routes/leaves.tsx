@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { EmployeeSignature } from "@/components/EmployeeSignature";
 import { useRole } from "@/lib/permissions";
 import { listUserNames } from "@/lib/users.functions";
 import { currentLanguage, t, useLanguage } from "@/lib/i18n";
@@ -356,6 +357,7 @@ function RequestDialog({ r, onClose, emp, typeName, lang, events, balance, canMa
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader><DialogTitle>#{r.request_no} · {emp?.name} · {typeName(r.type_id)}</DialogTitle></DialogHeader>
+        <EmployeeSignature empId={r.employee_id} name={emp?.name} />
         <Badge variant="outline" className={`w-fit ${TONE[r.status]}`}>{stateLabel(r.status, lang)}</Badge>
         <div className="grid gap-2 text-sm sm:grid-cols-2">
           {[["رقم الموظف", r.employee_id], ["الإدارة", emp?.dept], ["المسمى الوظيفي", emp?.role], ["عدد الأيام", r.working_days],

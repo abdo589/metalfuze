@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { EmployeeSignature } from "@/components/EmployeeSignature";
 import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { OtherSelect } from "@/components/OtherSelect";
@@ -196,6 +197,7 @@ function CustodyPage() {
                 {([["الشركة المصنعة", view.brand], ["الموديل", view.model], ["رقم الأصل", view.asset_no], ["الرقم التسلسلي", view.serial_no]] as const).map(([k, v]) => <div key={k}><div className="text-xs text-muted-foreground">{t(k)}</div><b dir="ltr">{v || "-"}</b></div>)}
               </div>
             </div>
+            {view.employee_name && <EmployeeSignature empId={view.employee_no} name={view.employee_name} />}
             <div className="flex flex-col gap-2">
               {canEdit && view.status === "مسلم" && <Button onClick={() => giveBack(view)}><RotateCcw /> {t("تسجيل إرجاع")}</Button>}
               {canEdit && view.status !== "مسلم" && <Button onClick={() => setHand({ asset_id: view.id, emp: "", date: today(), note: "" })}><Plus /> {t("تسليم عهدة")}</Button>}
