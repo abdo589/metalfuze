@@ -348,7 +348,7 @@ function SalesPage() {
                 <span dir="ltr">{new Date(l.at).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" })}</span> — {l.by}: {t(l.action === "reject" ? "رفض" : "موافقة")} ({t(wfLabel(l.from))} ← {t(wfLabel(l.to))}){l.note && <> — {l.note}</>}</li>)}</ul>}
             </div>
             <div><b>{t("اسم الشركة أو العميل")}:</b> {view.client}</div><div><b>{t("اسم المشروع")}:</b> {view.project}</div>
-            {mode === "pricing" && REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>
+            {REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>
               {sec.title === "بيانات طلب التسعير والمستندات" && (((view.request ?? {}) as Req)["docs"] as string[] | undefined)?.length ? <div><span className="text-muted-foreground">{t("مستندات المشروع")}:</span>{docsList(((view.request as Req)["docs"] as string[]), false)}</div> : null}
               {sec.fields.map((f) => { const v = ((view.request ?? {}) as Req)[f.k]; return <div key={f.k}><span className="text-muted-foreground">{t(f.l)}:</span> {Array.isArray(v) ? v.map((x) => t(x)).join("، ") : v ? (f.opts ? t(v) : v) : "—"}</div>; })}</div>)}
           </div>}
