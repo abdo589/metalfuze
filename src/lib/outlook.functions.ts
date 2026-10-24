@@ -43,8 +43,12 @@ export const startOutlookConnect = createServerFn({ method: "POST" })
     if (!clientKey) throw new Error("ربط Outlook غير مُعد بعد");
     const request = getRequest();
     const url = new URL(request.url);
-    const sandboxHost = url.hostname === "localhost" ? request.headers.get("x-forwarded-host") : null;
-    const returnUrl = new URL("/api/oauth/outlook/return", sandboxHost ? `https://${sandboxHost}` : url.origin).toString();
+    // Only known app hosts may receive the OAuth return; anything else falls back to the primary domain.
+    const ALLOWED_HOSTS = new Set(["www.metalfuze.com", "metalfuze.com", "metalfuze.lovable.app"]);
+    const isTrustedHost = (h: string) => ALLOWED_HOSTS.has(h) || /^[a-z0-9-]+--02a6c286-c077-48a7-9d7f-54c46553a921\.lovable\.app$/.test(h) || /^[a-z0-9-]+\.lovableproject\.com$/.test(h);
+    const candidate = (url.hostname === "localhost" ? request.headers.get("x-forwarded-host") : url.host)?.toLowerCase() ?? "";
+    const host = isTrustedHost(candidate) ? candidate : "www.metalfuze.com";
+    const returnUrl = new URL("/api/oauth/outlook/return", `https://${host}`).toString();
     const existing = await keyFor(context.userId);
     const { authorizeAppUserOAuth } = await import("@/integrations/lovable/appUserConnector");
     const { authorizationUrl } = await authorizeAppUserOAuth({
