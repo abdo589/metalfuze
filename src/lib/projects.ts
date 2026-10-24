@@ -31,6 +31,8 @@ export type Project = {
   hasContract: string;
   issues: string;
   notes: string;
+  /** Set when the user confirmed saving despite another project having the same name. */
+  allowSameName?: boolean;
 };
 
 const KEY = "metalfuze.projects.v1";
