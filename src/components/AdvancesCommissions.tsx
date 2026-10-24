@@ -63,7 +63,7 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
         list0 = (again.data ?? []) as unknown as (Row & { sheet: Kind })[];
       }
     }
-    const list = (list0 ?? []) as unknown as (Row & { sheet: Kind })[]).filter((r) => String(r.data[ID] ?? "") === empId);
+    const list = list0.filter((r) => String(r.data[ID] ?? "") === empId);
     setRows({ advances: list.filter((r) => r.sheet === "advances"), commissions: list.filter((r) => r.sheet === "commissions") });
   }, [empId, canEdit]);
   useEffect(() => { load(); }, [load]);
