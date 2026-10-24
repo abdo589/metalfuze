@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { commissionDue } from "@/lib/sales";
 
 type Kind = "advances" | "commissions";
 type Row = { id: string; data: Record<string, string | number> };
@@ -43,9 +44,28 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
   const load = useCallback(async () => {
     const { data, error } = await supabase.from("hr_records").select("id,sheet,data").in("sheet", ["advances", "commissions"]).order("sort");
     if (error) { toast.error("تعذر تحميل السلف والعمولات"); return; }
-    const list = ((data ?? []) as unknown as (Row & { sheet: Kind })[]).filter((r) => String(r.data[ID] ?? "") === empId);
+    let list0 = (data ?? []) as unknown as (Row & { sheet: Kind })[];
+    if (canEdit) {
+      // Sales commissions are computed from the deal and added here automatically (one row per deal).
+      const { data: deals } = await supabase.from("sales_deals").select("id,client,project,contract_value,commission_rate,shared,my_share,request").gt("contract_value", 0);
+      const mine = (deals ?? []).filter((d) => String((d.request as Record<string, unknown> | null)?.["owner_emp"] ?? "") === empId);
+      let changed = false;
+      for (const d of mine) {
+        const no = `SAL-${d.id.slice(0, 6)}`, amount = Math.round(commissionDue(d) * 100) / 100;
+        const ex = list0.find((r) => r.sheet === "commissions" && r.data["رقم العمولة"] === no);
+        if (ex && n(ex.data["المبلغ"]) === amount) continue;
+        changed = true;
+        if (ex) await supabase.from("hr_records").update({ data: { ...ex.data, "المبلغ": amount }, updated_at: new Date().toISOString() }).eq("id", ex.id);
+        else await supabase.from("hr_records").insert({ sheet: "commissions", sort: list0.length, data: { [ID]: empId, "رقم العمولة": no, "نوع العمولة": `عمولة مبيعات — ${d.client} / ${d.project}`, "تاريخ الاستحقاق": new Date().toISOString().slice(0, 10), "شهر الصرف": new Date().toISOString().slice(0, 7), "المبلغ": amount, "الحالة": "قيد المراجعة" } });
+      }
+      if (changed) {
+        const again = await supabase.from("hr_records").select("id,sheet,data").in("sheet", ["advances", "commissions"]).order("sort");
+        list0 = (again.data ?? []) as unknown as (Row & { sheet: Kind })[];
+      }
+    }
+    const list = list0.filter((r) => String(r.data[ID] ?? "") === empId);
     setRows({ advances: list.filter((r) => r.sheet === "advances"), commissions: list.filter((r) => r.sheet === "commissions") });
-  }, [empId]);
+  }, [empId, canEdit]);
   useEffect(() => { load(); }, [load]);
 
   function openNew(kind: Kind) {
