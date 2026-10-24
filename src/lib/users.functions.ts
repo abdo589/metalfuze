@@ -48,6 +48,22 @@ export const listUsers = createServerFn({ method: "GET" })
     }));
   });
 
+/** Minimal people list (id + name) for HR/admin pickers such as department leave approvers. */
+export const listUserNames = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ id: string; name: string }[]> => {
+    let ok = false;
+    for (const role of ["admin", "hr", "developer"]) {
+      const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: role as never });
+      if (data) { ok = true; break; }
+    }
+    if (!ok) throw new Error("غير مسموح");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
+    if (error) throw new Error("تعذر تحميل المستخدمين");
+    return data.users.map((u) => ({ id: u.id, name: (u.user_metadata?.["display_name"] as string) || (u.email ?? "") }));
+  });
+
 export const createUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { username: string; name: string; password: string }) => {
