@@ -17,7 +17,7 @@ function ipAllowed(request: Request): boolean {
 async function device(sn: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin.from("attendance_devices").select("approved").eq("serial_number", sn).maybeSingle();
-  if (data) await supabaseAdmin.from("attendance_devices").update({ last_seen: new Date().toISOString() }).eq("serial_number", sn);
+  if (data?.approved) await supabaseAdmin.from("attendance_devices").update({ last_seen: new Date().toISOString() }).eq("serial_number", sn);
   return { admin: supabaseAdmin, known: !!data, approved: !!data?.approved };
 }
 
@@ -43,7 +43,12 @@ export const Route = createFileRoute("/iclock/cdata")({
         const { admin, approved } = await device(sn);
         if (url.searchParams.get("table") !== "ATTLOG") return text("OK");
         if (!approved) return text("OK: 0"); // pending approval in the attendance page
-        const rows = parseAttlog(body).map((r) => ({ ...r, device_sn: sn }));
+        // Reject implausible punches: future times, older than 45 days, odd PINs, or oversized batches.
+        const now = Date.now();
+        const rows = parseAttlog(body).filter((r) => {
+          const t = Date.parse(r.punched_at);
+          return /^\d{1,9}$/.test(r.device_user_id) && Number.isFinite(t) && t <= now + 10 * 60_000 && t >= now - 45 * 86_400_000;
+        }).slice(0, 5000).map((r) => ({ ...r, device_sn: sn }));
         if (rows.length) {
           const { error } = await admin.from("attendance_logs").upsert(rows, { onConflict: "device_sn,device_user_id,punched_at", ignoreDuplicates: true });
           if (error) { console.error("attlog insert failed", error); return text("ERROR", 500); }
