@@ -139,7 +139,7 @@ export const translations: Record<string, string> = {
   "التقرير الشهري": "Monthly Report", "تصدير مسير Excel": "Export Payroll Excel", "إضافة موظف": "Add Employee",
   "اختيار الشهر": "Select month", "الشهر التالي": "Next Month", "الشهر السابق": "Previous Month", "الشهر الحالي": "Current Month",
   "إجمالي رواتب الشهر": "Total Monthly Payroll", "الموظفون النشطون": "Active Employees", "تم صرفه": "Paid",
-  "المتبقي للصرف": "Remaining to Pay", "بحث بالاسم أو الإدارة أو المشروع…": "Search name, department or project…",
+  "المتبقي للصرف": "Remaining to Pay", "اتصرف": "Paid", "الباقي": "Remaining", "باقي": "Remaining", "بحث بالاسم أو الإدارة أو المشروع…": "Search name, department or project…",
   "اعتماد صرف الشهر للجميع": "Mark Month Paid for All", "الموظف": "Employee", "الإدارة / المشروع": "Department / Project",
   "الأساسي": "Base Salary", "البدلات": "Allowances", "الخصومات": "Deductions", "الصافي": "Net Salary",
   "إجراءات": "Actions", "إلغاء الصرف": "Undo Payment", "اعتماد الصرف": "Mark Paid", "مدفوع ✓": "Paid ✓",
