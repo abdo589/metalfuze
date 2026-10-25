@@ -13,7 +13,7 @@ import { PdfButton } from "@/components/PdfButton";
 import { fmtMoney } from "@/lib/projects";
 import { summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
-import { availableMonths, forMonth, payoutTotals, monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
+import { availableMonths, forMonth, paidFor, withPaid, monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
 import { supabase } from "@/integrations/supabase/client";
 import { useApprovedLeaves } from "@/lib/leave-data";
 import { unpaidDaysInMonth, unpaidDeduction } from "@/lib/leave-engine";
@@ -214,7 +214,7 @@ function Payroll() {
                 <th className="p-3 font-medium">{t("الصافي")}</th>
                 <th className="p-3 font-medium">{t("الحضور والانصراف")}</th>
                 <th className="p-3 font-medium">{t("حالة")} {monthLabel(month)}</th>
-                <th className="p-3 font-medium">{t("المصروف له / الباقي")}</th>
+                <th className="p-3 font-medium">{t("اتصرف / الباقي")} {monthLabel(month)}</th>
                 <th className="p-3 font-medium print:hidden">{t("إجراءات")}</th>
               </tr>
             </thead>
@@ -262,7 +262,7 @@ function Payroll() {
                         <Badge variant="outline" className="bg-muted text-muted-foreground">{t("غير نشط")}</Badge>
                       )}
                     </td>
-                    <td className="p-3 text-xs">{(() => { const p = payoutTotals(e); return <div className="space-y-0.5"><div className="text-success">{t("اتصرف")}: <b>{fmtMoney(p.paid)}</b></div><div className="text-warning">{t("باقي")}: <b>{fmtMoney(p.remaining)}</b></div></div>; })()}</td>
+                    <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <button disabled={!canEdit} className="space-y-0.5 text-start" title={t("تعديل المبلغ المصروف")} onClick={() => { const v = window.prompt(t("المبلغ اللي اتصرف هذا الشهر"), String(p)); if (v === null || isNaN(Number(v))) return; payrollStore.upsert(withPaid(e, month, Number(v))); }}><div className="text-success">{t("اتصرف")}: <b>{fmtMoney(p)}</b></div><div className={net - p > 0 ? "text-warning" : "text-muted-foreground"}>{t("باقي")}: <b>{fmtMoney(net - p)}</b></div></button>; })()}</td>
                     <td className="p-3 print:hidden">
                       {canEdit && <div className="flex gap-1">
                         <Button variant="ghost" size="icon" onClick={() => { setEditing(e); setOpen(true); }} aria-label={t("تعديل")}>

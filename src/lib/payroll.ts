@@ -21,7 +21,7 @@ export type Employee = {
   email?: string; // يربط حساب الموظف بملفه تلقائيًا
   monthly?: Record<string, MonthPay>; // رواتب مختلفة لكل شهر (YYYY-MM)
 };
-export type MonthPay = { base: number; allowances: number; deductions: number };
+export type MonthPay = { base: number; allowances: number; deductions: number; paid?: number };
 
 /** Salary figures for a month: that month's entry, else the latest earlier entry, else the defaults. */
 export function forMonth(e: Employee, month: string): Employee {
@@ -149,13 +149,16 @@ export function newEmpId() {
   return "e" + Math.random().toString(36).slice(2, 10);
 }
 
-/** Cumulative payout for one employee, from the joined month (or first data month) to the current month. */
-export function payoutTotals(e: Employee, today = new Date()) {
-  let paid = 0, remaining = 0;
-  for (const m of availableMonths([e], today)) {
-    if (e.joined && m < String(e.joined).slice(0, 7)) continue;
-    const net = netSalary(forMonth(e, m));
-    if (e.paidMonths.includes(m)) paid += net; else if (e.active) remaining += net;
-  }
-  return { paid, remaining };
+
+/** Amount actually transferred for this month only (never carried to later months); defaults to full net when marked paid. */
+export function paidFor(e: Employee, month: string, net: number): number {
+  const v = e.monthly?.[month]?.paid;
+  if (typeof v === "number") return v;
+  return e.paidMonths.includes(month) ? net : 0;
+}
+
+/** Records the transferred amount for one month without changing that month's salary figures. */
+export function withPaid(e: Employee, month: string, paid: number): Employee {
+  const cur = forMonth(e, month);
+  return { ...e, monthly: { ...(e.monthly ?? {}), [month]: { base: cur.base, allowances: cur.allowances, deductions: cur.deductions, paid } } };
 }
