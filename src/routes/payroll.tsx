@@ -262,7 +262,7 @@ function Payroll() {
                     <td className="p-3">
                       {e.active ? (
                         <button
-                          onClick={() => canEdit && payrollStore.togglePaid(e.id, month)}
+                          onClick={() => { if (!canEdit) return; payrollStore.togglePaid(e.id, month); if (!paid) say(`${e.name}: ${t("تم صرف")} ${fmtMoney(finalNet(e))} ${t("ريال")}`); }}
                           disabled={!canEdit}
                           className={canEdit ? "cursor-pointer" : "cursor-default"}
                           title={paid ? t("إلغاء الصرف") : t("اعتماد الصرف")}
