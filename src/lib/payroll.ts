@@ -148,3 +148,14 @@ export function usePayroll() {
 export function newEmpId() {
   return "e" + Math.random().toString(36).slice(2, 10);
 }
+
+/** Cumulative payout for one employee, from the joined month (or first data month) to the current month. */
+export function payoutTotals(e: Employee, today = new Date()) {
+  let paid = 0, remaining = 0;
+  for (const m of availableMonths([e], today)) {
+    if (e.joined && m < String(e.joined).slice(0, 7)) continue;
+    const net = netSalary(forMonth(e, m));
+    if (e.paidMonths.includes(m)) paid += net; else if (e.active) remaining += net;
+  }
+  return { paid, remaining };
+}
