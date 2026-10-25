@@ -264,7 +264,7 @@ function Payroll() {
                         <Badge variant="outline" className="bg-muted text-muted-foreground">{t("غير نشط")}</Badge>
                       )}
                     </td>
-                    <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <button disabled={!canEdit} className="text-start" title={t("تعديل المبلغ المصروف")} onClick={() => { const v = window.prompt(t("المبلغ اللي اتصرف هذا الشهر"), String(p)); if (v === null || isNaN(Number(v))) return; payrollStore.upsert(withPaid(e, month, Number(v))); }}><span className="text-success">{t("تم صرف")}: <b>{fmtMoney(p)}</b></span></button>; })()}</td>
+                    <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <button disabled={!canEdit} className="text-start" title={t("تعديل المبلغ المصروف")} onClick={() => { const v = window.prompt(t("المبلغ الذي تم صرفه هذا الشهر"), String(p)); if (v === null || isNaN(Number(v))) return; payrollStore.upsert(withPaid(e, month, Number(v))); }}><span className="text-success">{t("تم صرف")}: <b>{fmtMoney(p)}</b></span></button>; })()}</td>
                     <td className="p-3 print:hidden">
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" aria-label={t("تفاصيل الموظف")} title={t("تفاصيل الموظف")} onClick={() => setDetail(e)}>
