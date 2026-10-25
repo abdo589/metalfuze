@@ -216,8 +216,7 @@ function Payroll() {
                 <th className="p-3 font-medium">{t("الصافي")}</th>
                 <th className="p-3 font-medium">{t("الحضور والانصراف")}</th>
                 <th className="p-3 font-medium">{t("حالة")} {monthLabel(month)}</th>
-                <th className="p-3 font-medium">{t("اتصرف")} {monthLabel(month)}</th>
-                <th className="p-3 font-medium">{t("الباقي")} {monthLabel(month)}</th>
+                <th className="p-3 font-medium">{t("تم صرف")} {monthLabel(month)}</th>
                 <th className="p-3 font-medium print:hidden">{t("إجراءات")}</th>
               </tr>
             </thead>
@@ -265,8 +264,7 @@ function Payroll() {
                         <Badge variant="outline" className="bg-muted text-muted-foreground">{t("غير نشط")}</Badge>
                       )}
                     </td>
-                    <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <button disabled={!canEdit} className="text-start" title={t("تعديل المبلغ المصروف")} onClick={() => { const v = window.prompt(t("المبلغ اللي اتصرف هذا الشهر"), String(p)); if (v === null || isNaN(Number(v))) return; payrollStore.upsert(withPaid(e, month, Number(v))); }}><span className="text-success">{t("اتصرف")}: <b>{fmtMoney(p)}</b></span></button>; })()}</td>
-                    <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <span className={net - p > 0 ? "text-warning" : "text-muted-foreground"}>{t("باقي")}: <b>{fmtMoney(net - p)}</b></span>; })()}</td>
+                    <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <button disabled={!canEdit} className="text-start" title={t("تعديل المبلغ المصروف")} onClick={() => { const v = window.prompt(t("المبلغ اللي اتصرف هذا الشهر"), String(p)); if (v === null || isNaN(Number(v))) return; payrollStore.upsert(withPaid(e, month, Number(v))); }}><span className="text-success">{t("تم صرف")}: <b>{fmtMoney(p)}</b></span></button>; })()}</td>
                     <td className="p-3 print:hidden">
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" aria-label={t("تفاصيل الموظف")} title={t("تفاصيل الموظف")} onClick={() => setDetail(e)}>
@@ -340,7 +338,7 @@ function Payroll() {
                     [t("البدلات"), fmtMoney(detail.allowances)],
                     [t("الخصومات"), fmtMoney(detail.deductions)],
                     [t("الصافي"), fmtMoney(net)],
-                    [t("اتصرف"), fmtMoney(paid)],
+                    [t("تم صرف"), fmtMoney(paid)],
                     [t("الباقي"), fmtMoney(net - paid)],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-lg border border-border p-2">
@@ -360,7 +358,7 @@ function Payroll() {
                           <tr className="border-b border-border text-right text-muted-foreground">
                             <th className="p-2 font-medium">{t("الشهر")}</th>
                             <th className="p-2 font-medium">{t("الصافي")}</th>
-                            <th className="p-2 font-medium">{t("اتصرف")}</th>
+                            <th className="p-2 font-medium">{t("تم صرف")}</th>
                             <th className="p-2 font-medium">{t("الباقي")}</th>
                             <th className="p-2 font-medium">{t("الحالة")}</th>
                           </tr>
