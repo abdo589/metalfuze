@@ -8,6 +8,20 @@ export const DEV_PATHS = ["/dev", "/mail"];
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
 export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail", "/sales"];
+/** Per-account menu trims: pages hidden from a specific account by its email (visible to everyone else). */
+const ACCOUNT_HIDDEN_PATHS: Record<string, string[]> = {
+  "haitham@metalfuze.local": ["/bank", "/hr-file", "/report"],
+};
+/** Paths hidden from the current signed-in account (empty for everyone else). */
+export function useHiddenPaths() {
+  const [hidden, setHidden] = useState<string[]>([]);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setHidden(data.user ? (ACCOUNT_HIDDEN_PATHS[data.user.email?.toLowerCase() ?? ""] ?? []) : []);
+    });
+  }, []);
+  return hidden;
+}
 /** HR pages (everything except employee data) that only admins (Eilaf, Abdelrhman) and HR may open; hidden from viewer accounts. */
 export const HR_ADMIN_ONLY = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance"];
 /** Self-registered project managers (and accounts without a role) only get their own workspace. */

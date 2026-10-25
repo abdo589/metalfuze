@@ -26,7 +26,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { setSidebar, useSidebar } from "@/lib/sidebar";
-import { HR_ADMIN_ONLY, HR_PATHS, useRole } from "@/lib/permissions";
+import { HR_ADMIN_ONLY, HR_PATHS, useHiddenPaths, useRole } from "@/lib/permissions";
 import { useUnreadMessages } from "@/lib/unread-messages";
 import { useEffect } from "react";
 import { toast } from "sonner";
