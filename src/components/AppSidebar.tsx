@@ -66,8 +66,9 @@ const items = [
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const role = useRole();
+  const hidden = useHiddenPaths();
   const unread = useUnreadMessages();
-  const visible = role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
+  const visible = (role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
     : role === "sales" ? [{ to: "/sales", label: "المبيعات", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
     : role === "mail" ? [{ to: "/mail", label: "البريد (Outlook)", icon: Mail }]
