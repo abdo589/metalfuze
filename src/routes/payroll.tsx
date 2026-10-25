@@ -2,8 +2,9 @@ import { useCanEditHr } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Banknote, CheckCircle2, FileDown, Pencil, Plus, Search, Trash2, Users, Wallet } from "lucide-react";
+import { ArrowRight, Banknote, CheckCircle2, Eye, FileDown, Pencil, Plus, Search, Trash2, Users, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +63,7 @@ function Payroll() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
+  const [detail, setDetail] = useState<Employee | null>(null);
 
   const active = employees.filter((e) => e.active);
   const s = useMemo(() => {
@@ -266,11 +268,14 @@ function Payroll() {
                     <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <button disabled={!canEdit} className="text-start" title={t("تعديل المبلغ المصروف")} onClick={() => { const v = window.prompt(t("المبلغ اللي اتصرف هذا الشهر"), String(p)); if (v === null || isNaN(Number(v))) return; payrollStore.upsert(withPaid(e, month, Number(v))); }}><span className="text-success">{t("اتصرف")}: <b>{fmtMoney(p)}</b></span></button>; })()}</td>
                     <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <span className={net - p > 0 ? "text-warning" : "text-muted-foreground"}>{t("باقي")}: <b>{fmtMoney(net - p)}</b></span>; })()}</td>
                     <td className="p-3 print:hidden">
-                      {canEdit && <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditing(e); setOpen(true); }} aria-label={t("تعديل")}>
-                          <Pencil className="size-4" />
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" aria-label={t("تفاصيل الموظف")} title={t("تفاصيل الموظف")} onClick={() => setDetail(e)}>
+                          <Eye className="size-4" />
                         </Button>
-                        <Button
+                        {canEdit && <Button variant="ghost" size="icon" onClick={() => { setEditing(e); setOpen(true); }} aria-label={t("تعديل")}>
+                          <Pencil className="size-4" />
+                        </Button>}
+                        {canEdit && <Button
                           variant="ghost" size="icon" aria-label={t("حذف")}
                           onClick={() => {
                             if (confirm(`${t("حذف")} ${e.name}?`)) {
@@ -280,8 +285,8 @@ function Payroll() {
                           }}
                         >
                           <Trash2 className="size-4 text-destructive" />
-                        </Button>
-                      </div>}
+                        </Button>}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -294,6 +299,92 @@ function Payroll() {
         </div>
       </section>
 
+      {/* تفاصيل الموظف — عين */}
+      <Dialog open={!!detail} onOpenChange={(o) => { if (!o) setDetail(null); }}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          {detail && (() => {
+            const net = finalNet(detail);
+            const paid = paidFor(detail, month, net);
+            const orig = rawEmployees.find((x) => x.id === detail.id);
+            const monthsShown = (orig ? availableMonths(rawEmployees) : []).filter((m) =>
+              m === month || !!orig!.monthly?.[m] || orig!.paidMonths.includes(m));
+            const hist = monthsShown.map((m) => {
+              const em = forMonth(orig!, m);
+              const n = netSalary(em) - unpaidDeduction((em.base || 0) + (em.allowances || 0), unpaidDaysInMonth(leaves.reqs, leaves.types, em.id, m));
+              const p = paidFor(em, m, n);
+              return { m, n, p, rest: n - p, done: em.paidMonths.includes(m) };
+            });
+            const a = att(detail);
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="font-display">{detail.name}</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className={detail.paidMonths.includes(month) ? "border-success/30 bg-success/15 text-success" : "border-warning/30 bg-warning/15 text-warning"}>
+                    {detail.paidMonths.includes(month) ? t("مدفوع ✓") : t("قيد الصرف")}
+                  </Badge>
+                  <Badge variant="outline" className={detail.active ? "border-success/30 bg-success/15 text-success" : "bg-muted text-muted-foreground"}>
+                    {detail.active ? t("نشط") : t("غير نشط")}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {[
+                    [t("الموظف"), detail.name],
+                    [t("المسمى"), detail.role || "—"],
+                    [t("الإدارة"), detail.dept || "—"],
+                    [t("المشروع"), detail.project || "—"],
+                    [t("تاريخ التعيين"), detail.joined ? new Date(detail.joined).toLocaleDateString(locale()) : "—"],
+                    [t("رقم البصمة"), detail.deviceUserId || "—"],
+                    [t("الأساسي"), fmtMoney(detail.base)],
+                    [t("البدلات"), fmtMoney(detail.allowances)],
+                    [t("الخصومات"), fmtMoney(detail.deductions)],
+                    [t("الصافي"), fmtMoney(net)],
+                    [t("اتصرف"), fmtMoney(paid)],
+                    [t("الباقي"), fmtMoney(net - paid)],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-lg border border-border p-2">
+                      <div className="text-xs text-muted-foreground">{label}</div>
+                      <div className="font-medium">{value}</div>
+                    </div>
+                  ))}
+                </div>
+                {unpaid(detail).days > 0 && <div className="text-xs text-destructive">{t("بدون راتب")}: {unpaid(detail).days} − {fmtMoney(unpaid(detail).amount)}</div>}
+                {a.linked && <div className="text-xs text-muted-foreground">{t("حضور")}: <b>{a.present}</b> · {t("تأخير")}: {a.late} · {t("غياب")}: {a.absent}</div>}
+                {hist.length > 0 && (
+                  <div>
+                    <h3 className="mb-2 font-display text-sm font-bold">{t("كل الشهور")}</h3>
+                    <div className="overflow-hidden rounded-lg border border-border">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-border text-right text-muted-foreground">
+                            <th className="p-2 font-medium">{t("الشهر")}</th>
+                            <th className="p-2 font-medium">{t("الصافي")}</th>
+                            <th className="p-2 font-medium">{t("اتصرف")}</th>
+                            <th className="p-2 font-medium">{t("الباقي")}</th>
+                            <th className="p-2 font-medium">{t("الحالة")}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {hist.map((h) => (
+                            <tr key={h.m} className={`border-b border-border/60 last:border-0 ${h.m === month ? "bg-muted/40" : ""}`}>
+                              <td className="p-2">{monthLabel(h.m)}</td>
+                              <td className="p-2">{fmtMoney(h.n)}</td>
+                              <td className="p-2 text-success">{fmtMoney(h.p)}</td>
+                              <td className={`p-2 ${h.rest > 0 ? "text-warning" : "text-muted-foreground"}`}>{fmtMoney(h.rest)}</td>
+                              <td className="p-2">{h.done ? t("مدفوع ✓") : t("قيد الصرف")}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
       <EmployeeDialog
         open={open}
         onOpenChange={setOpen}

@@ -144,6 +144,7 @@ export const translations: Record<string, string> = {
   "الأساسي": "Base Salary", "البدلات": "Allowances", "الخصومات": "Deductions", "الصافي": "Net Salary",
   "إجراءات": "Actions", "إلغاء الصرف": "Undo Payment", "اعتماد الصرف": "Mark Paid", "مدفوع ✓": "Paid ✓",
   "قيد الصرف": "Pending", "نشط": "Active", "غير نشط": "Inactive", "لا توجد نتائج مطابقة": "No matching results",
+  "تفاصيل الموظف": "Employee details", "كل الشهور": "All months", "الشهر": "Month",
   "تم حذف الموظف": "Employee deleted", "تم تحديث بيانات الموظف": "Employee updated", "تمت إضافة الموظف": "Employee added",
   "تعديل موظف": "Edit Employee", "اسم الموظف": "Employee Name", "المسمى الوظيفي": "Job Title",
   "الوظيفة": "Job", "الجنسية": "Nationality", "رقم الإقامة": "Iqama Number",
