@@ -290,7 +290,7 @@ function Payroll() {
                 );
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">{t("لا توجد نتائج مطابقة")}</td></tr>
+                <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">{t("لا توجد نتائج مطابقة")}</td></tr>
               )}
             </tbody>
           </table>
