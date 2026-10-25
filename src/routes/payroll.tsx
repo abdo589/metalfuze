@@ -2,8 +2,9 @@ import { useCanEditHr } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Banknote, CheckCircle2, Eye, FileDown, Pencil, Plus, Search, Trash2, Users, Wallet } from "lucide-react";
+import { ArrowRight, Banknote, CheckCircle2, Eye, FileDown, Pencil, Plus, Search, Trash2, Users, Volume2, VolumeX, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { payrollVoiceOn, setPayrollVoice, speakPayroll } from "@/lib/speak";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,10 @@ function Payroll() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [detail, setDetail] = useState<Employee | null>(null);
+  /** Voice announcements: every paid amount is spoken aloud (toggle next to the month picker). */
+  const [voice, setVoice] = useState(true);
+  useEffect(() => { setVoice(payrollVoiceOn()); }, []);
+  const say = (text: string) => { if (voice) speakPayroll(text, locale()); };
 
   const active = employees.filter((e) => e.active);
   const s = useMemo(() => {
@@ -188,9 +193,17 @@ function Payroll() {
             <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("بحث بالاسم أو الإدارة أو المشروع…")} className="pr-9" />
           </div>
+          <Button variant="outline" size="icon" aria-label={t("الصوت")} title={voice ? t("إيقاف النطق الصوتي") : t("تشغيل النطق الصوتي")}
+            onClick={() => { const on = !voice; setVoice(on); setPayrollVoice(on); if (on) speakPayroll(t("الصوت"), locale()); }}>
+            {voice ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+          </Button>
           {canEdit && <Button
             variant="outline"
-            onClick={() => { payrollStore.payAll(month); toast.success(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}`); }}
+            onClick={() => {
+              payrollStore.payAll(month);
+              toast.success(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}`);
+              say(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}: ${fmtMoney(s.total)} ${t("ريال")}`);
+            }}
           >
             <CheckCircle2 /> {t("اعتماد صرف الشهر للجميع")}</Button>}
           {canEdit && <Button
@@ -249,7 +262,7 @@ function Payroll() {
                     <td className="p-3">
                       {e.active ? (
                         <button
-                          onClick={() => canEdit && payrollStore.togglePaid(e.id, month)}
+                          onClick={() => { if (!canEdit) return; payrollStore.togglePaid(e.id, month); if (!paid) say(`${e.name}: ${t("تم صرف")} ${fmtMoney(finalNet(e))} ${t("ريال")}`); }}
                           disabled={!canEdit}
                           className={canEdit ? "cursor-pointer" : "cursor-default"}
                           title={paid ? t("إلغاء الصرف") : t("اعتماد الصرف")}
@@ -264,7 +277,7 @@ function Payroll() {
                         <Badge variant="outline" className="bg-muted text-muted-foreground">{t("غير نشط")}</Badge>
                       )}
                     </td>
-                    <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <button disabled={!canEdit} className="text-start" title={t("تعديل المبلغ المصروف")} onClick={() => { const v = window.prompt(t("المبلغ الذي تم صرفه هذا الشهر"), String(p)); if (v === null || isNaN(Number(v))) return; payrollStore.upsert(withPaid(e, month, Number(v))); }}><span className="text-success">{t("تم صرف")}: <b>{fmtMoney(p)}</b></span></button>; })()}</td>
+                    <td className="p-3 text-xs">{(() => { const net = finalNet(e); const p = paidFor(e, month, net); return <button disabled={!canEdit} className="text-start" title={t("تعديل المبلغ المصروف")} onClick={() => { const v = window.prompt(t("المبلغ الذي تم صرفه هذا الشهر"), String(p)); if (v === null || isNaN(Number(v))) return; payrollStore.upsert(withPaid(e, month, Number(v))); const rest = net - Number(v); say(`${e.name}: ${t("تم صرف")} ${fmtMoney(Number(v))} ${t("ريال")}` + (rest > 0 ? `، ${t("الباقي")} ${fmtMoney(rest)} ${t("ريال")}` : "")); }}><span className="text-success">{t("تم صرف")}: <b>{fmtMoney(p)}</b></span></button>; })()}</td>
                     <td className="p-3 print:hidden">
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" aria-label={t("تفاصيل الموظف")} title={t("تفاصيل الموظف")} onClick={() => setDetail(e)}>

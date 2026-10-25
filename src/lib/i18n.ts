@@ -202,6 +202,10 @@ export const translations: Record<string, string> = {
   "كل بصمة جوال تظهر في مكانها الفعلي، وكل موقع عمل داخل دائرة المسافة المسموحة.": "Every phone punch appears at its exact spot, and each work site shows its allowed-radius circle.",
   "لا توجد مواقع ولا بصمات جوال على الخريطة بعد": "No work sites or phone punches on the map yet",
 };
+// Payroll voice announcements
+Object.assign(translations, {
+  "الصوت": "Voice", "إيقاف النطق الصوتي": "Turn voice off", "تشغيل النطق الصوتي": "Turn voice on",
+});
 // Project deviation labels
 Object.assign(translations, {
   "الانحراف بالأيام": "Deviation (days)", "نسبة الانحراف": "Deviation %", "تقديم": "Early", "انتهى في الميعاد": "Finished on time", "حتى الآن": "so far",
