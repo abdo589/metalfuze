@@ -17,9 +17,9 @@ import { OtherSelect } from "@/components/OtherSelect";
 
 export const Route = createFileRoute("/sales")({
   head: () => ({ meta: [
-    { title: "المبيعات والعمولات — Metal Fuze" },
+    { title: "المبيعات — Metal Fuze" },
     { name: "description", content: "سجل العملاء وعروض الأسعار والعقود وعمولة المبيعات 2%." },
-    { property: "og:title", content: "المبيعات والعمولات — Metal Fuze" },
+    { property: "og:title", content: "المبيعات — Metal Fuze" },
     { property: "og:description", content: "سجل العملاء وعروض الأسعار والعقود وعمولة المبيعات." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
   ] }),
@@ -219,7 +219,7 @@ function SalesPage() {
   return (
     <main className="space-y-6 p-4 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold">{t("المبيعات والعمولات")}</h1>
+        <h1 className="font-display text-2xl font-bold">{t("المبيعات")}</h1>
         <div className="flex gap-2">
           {canEdit && <Button onClick={() => { setMode("pricing"); setEdit(blank()); }}><Plus />{t("طلب تسعيرة مشروع جديد")}</Button>}
         </div>

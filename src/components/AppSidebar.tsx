@@ -60,7 +60,7 @@ const items = [
   { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Radar },
   { to: "/settlements", label: "المخالصات", icon: FileText },
   { to: "/assistant", label: "المستشار الذكي", icon: BrainCircuit },
-  { to: "/sales", label: "المبيعات والعمولات", icon: Calculator },
+  { to: "/sales", label: "المبيعات", icon: Calculator },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -69,7 +69,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const unread = useUnreadMessages();
   const visible = role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
-    : role === "sales" ? [{ to: "/sales", label: "المبيعات والعمولات", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
+    : role === "sales" ? [{ to: "/sales", label: "المبيعات", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
     : role === "mail" ? [{ to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "executive" ? [{ to: "/executive", label: "الملخص التنفيذي", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
     : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
