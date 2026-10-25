@@ -63,6 +63,7 @@ function Payroll() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
+  const [detail, setDetail] = useState<Employee | null>(null);
 
   const active = employees.filter((e) => e.active);
   const s = useMemo(() => {
