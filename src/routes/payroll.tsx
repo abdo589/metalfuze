@@ -73,9 +73,11 @@ function Payroll() {
   const active = employees.filter((e) => e.active);
   const s = useMemo(() => {
     const total = active.reduce((a, e) => a + finalNet(e), 0);
-    const paidList = active.filter((e) => e.paidMonths.includes(month));
-    const paidSum = paidList.reduce((a, e) => a + finalNet(e), 0);
-    return { total, paidCount: paidList.length, paidSum, remaining: total - paidSum };
+    /** The "paid" card counts every amount actually disbursed this month (including partial payments). */
+    const paidOf = (e: Employee) => paidFor(e, month, finalNet(e));
+    const paidSum = active.reduce((a, e) => a + paidOf(e), 0);
+    const paidCount = active.filter((e) => paidOf(e) > 0).length;
+    return { total, paidCount, paidSum, remaining: total - paidSum };
   }, [active, month, adj]);
 
   const filtered = employees.filter((e) =>
@@ -86,7 +88,7 @@ function Payroll() {
     try {
       const { exportBrandedExcel } = await import("@/lib/branded-excel");
       const total = active.reduce((x, e) => x + finalNet(e), 0);
-      const paidN = active.filter((e) => e.paidMonths.includes(month)).reduce((x, e) => x + finalNet(e), 0);
+      const paidN = active.reduce((x, e) => x + paidFor(e, month, finalNet(e)), 0);
       await exportBrandedExcel({
         filename: `${locale() === "en-GB" ? "Payroll" : "مسير-رواتب"}-${month}.xlsx`,
         reportTitle: `${t("مسير الرواتب")} — ${month}`,
