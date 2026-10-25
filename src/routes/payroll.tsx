@@ -65,6 +65,10 @@ function Payroll() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [detail, setDetail] = useState<Employee | null>(null);
+  /** Voice announcements: every paid amount is spoken aloud (toggle next to the month picker). */
+  const [voice, setVoice] = useState(true);
+  useEffect(() => { setVoice(payrollVoiceOn()); }, []);
+  const say = (text: string) => { if (voice) speakPayroll(text, locale()); };
 
   const active = employees.filter((e) => e.active);
   const s = useMemo(() => {
