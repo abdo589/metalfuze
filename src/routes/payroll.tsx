@@ -193,9 +193,17 @@ function Payroll() {
             <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("بحث بالاسم أو الإدارة أو المشروع…")} className="pr-9" />
           </div>
+          <Button variant="outline" size="icon" aria-label={t("الصوت")} title={voice ? t("إيقاف النطق الصوتي") : t("تشغيل النطق الصوتي")}
+            onClick={() => { const on = !voice; setVoice(on); setPayrollVoice(on); if (on) speakPayroll(t("الصوت"), locale()); }}>
+            {voice ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+          </Button>
           {canEdit && <Button
             variant="outline"
-            onClick={() => { payrollStore.payAll(month); toast.success(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}`); }}
+            onClick={() => {
+              payrollStore.payAll(month);
+              toast.success(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}`);
+              say(`${t("تم اعتماد صرف الرواتب")} ${monthLabel(month)}: ${fmtMoney(s.total)} ${t("ريال")}`);
+            }}
           >
             <CheckCircle2 /> {t("اعتماد صرف الشهر للجميع")}</Button>}
           {canEdit && <Button
