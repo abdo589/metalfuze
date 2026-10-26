@@ -179,6 +179,11 @@ function SalesPage() {
     if (f.opts) return <div key={f.k} className="space-y-1.5">{lab}{f.opts.includes("أخرى")
       ? <OtherSelect list={`sales_${f.k}`} base={f.opts} value={String(v ?? "")} onChange={(x) => setR(f.k, x)} />
       : <Select value={String(v ?? "")} onValueChange={(x) => setR(f.k, x)}><SelectTrigger><SelectValue placeholder={t("اختر")} /></SelectTrigger><SelectContent>{f.opts.map((o) => <SelectItem key={o} value={o}>{t(o)}</SelectItem>)}</SelectContent></Select>}</div>;
+    if (f.link) return <div key={f.k} className="space-y-1.5 sm:col-span-2">{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
+      <div className="flex items-center gap-2">
+        <Input dir="ltr" placeholder="https://..." value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value.trim())} />
+        {!!String(v ?? "").trim() && <Button type="button" size="sm" variant="outline" onClick={() => window.open(href(String(v)), "_blank", "noopener")}><Link2 className="size-4" /> {t("فتح")}</Button>}
+      </div></div>;
     return <div key={f.k} className={`space-y-1.5 ${f.long || f.hint ? "sm:col-span-2" : ""}`}>{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
       {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
   };
@@ -351,7 +356,7 @@ function SalesPage() {
             <div><b>{t("اسم الشركة أو العميل")}:</b> {view.client}</div><div><b>{t("اسم المشروع")}:</b> {view.project}</div>
             {REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>
               {sec.title === "بيانات طلب التسعير والمستندات" && (((view.request ?? {}) as Req)["docs"] as string[] | undefined)?.length ? <div><span className="text-muted-foreground">{t("مستندات المشروع")}:</span>{docsList(((view.request as Req)["docs"] as string[]), false)}</div> : null}
-              {sec.fields.map((f) => { const v = ((view.request ?? {}) as Req)[f.k]; return <div key={f.k}><span className="text-muted-foreground">{t(f.l)}:</span> {Array.isArray(v) ? v.map((x) => t(x)).join("، ") : v ? (f.opts ? t(v) : v) : "—"}</div>; })}</div>)}
+              {sec.fields.map((f) => { const v = ((view.request ?? {}) as Req)[f.k]; return <div key={f.k}><span className="text-muted-foreground">{t(f.l)}:</span> {Array.isArray(v) ? v.map((x) => t(x)).join("، ") : v ? (f.link ? <a className="text-primary underline" dir="ltr" href={href(String(v))} target="_blank" rel="noopener noreferrer">{String(v)}</a> : f.opts ? t(v) : v) : "—"}</div>; })}</div>)}
           </div>}
         </DialogContent>
       </Dialog>
