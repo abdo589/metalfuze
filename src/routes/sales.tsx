@@ -70,7 +70,7 @@ const REQUEST_FORM: { title: string; fields: F[] }[] = [
     { k: "has_docs", l: "هل توجد مستندات للمشروع؟", opts: ["نعم", "لا"] },
     { k: "budget_mentioned", l: "هل ذكر العميل ميزانية أو سعرًا متوقعًا للمشروع؟", req: true, opts: ["نعم", "لا"] },
     { k: "budget", l: "الميزانية أو النطاق السعري المتوقع من العميل (ريال سعودي)", hint: "يُعبأ فقط إذا ذكر العميل مبلغًا محددًا أو نطاقًا تقريبيًا، ولا يُكتب أي رقم غير مؤكد." },
-    { k: "link_url", l: "رابط (Link)", link: true, hint: "الصق رابطًا خارجيًا: مجلد Google Drive، ملف، صور المشروع، أو أي صفحة مطلوبة للتسعير." },
+    { k: "link_url", l: "رابط المشروع", link: true, hint: "الصق رابطًا خارجيًا: مجلد Google Drive، ملف، صور المشروع، أو أي صفحة مطلوبة للتسعير." },
   ] },
 ];
 const blank = (): Partial<D> => ({ client: "", project: "", client_type: "جديد", shared: false, partner_name: "", my_share: 100, quote_value: 0, contract_value: 0, collected: 0, commission_rate: 2, payout_status: "لم تُستحق", stage: "تسعير", notes: "", request: {} });
