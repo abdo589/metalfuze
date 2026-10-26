@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Coins, Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { Coins, Eye, Link2, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -59,7 +59,7 @@ const REQUEST_FORM: { title: string; fields: F[] }[] = [
   ] },
   { title: "بيانات المشروع", fields: [
     { k: "in_riyadh", l: "هل المشروع داخل مدينة الرياض؟", opts: ["نعم", "لا"] },
-    { k: "location_url", l: "رابط موقع المشروع" },
+    { k: "location_url", l: "رابط موقع المشروع", link: true },
     { k: "scope", l: "وصف مختصر لنطاق العمل المطلوب", req: true, long: true },
     { k: "project_state", l: "حالة المشروع الحالية", req: true, multi: true, opts: ["لم يبدأ", "تحت التنفيذ", "قائم ويحتاج تجديدًا"] },
     { k: "start_time", l: "موعد بدء التنفيذ المتوقع", req: true, opts: ["فوري", "خلال شهر", "خلال 1-3 أشهر", "أكثر من 3 أشهر", "غير محدد"] },
@@ -80,6 +80,8 @@ const missing = (e: Partial<D>) => {
   return REQUEST_FORM.some((s) => s.fields.some((f) => f.req && (Array.isArray(r[f.k]) ? !(r[f.k] as string[]).length : !String(r[f.k] ?? "").trim())));
 };
 const fmt = (n: number) => Math.round(n).toLocaleString(locale());
+/** Open a pasted link even when the user forgot "https://". */
+const href = (s: string) => (/^https?:\/\//i.test(s) ? s : `https://${s}`);
 
 function SalesPage() {
   useLanguage();
