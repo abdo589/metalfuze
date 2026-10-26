@@ -60,7 +60,6 @@ const REQUEST_FORM: { title: string; fields: F[] }[] = [
   ] },
   { title: "بيانات المشروع", fields: [
     { k: "in_riyadh", l: "هل المشروع داخل مدينة الرياض؟", opts: ["نعم", "لا"] },
-    { k: "location_url", l: "رابط موقع المشروع", link: true },
     { k: "scope", l: "وصف مختصر لنطاق العمل المطلوب", req: true, long: true },
     { k: "project_state", l: "حالة المشروع الحالية", req: true, multi: true, opts: ["لم يبدأ", "تحت التنفيذ", "قائم ويحتاج تجديدًا"] },
     { k: "start_time", l: "موعد بدء التنفيذ المتوقع", req: true, opts: ["فوري", "خلال شهر", "خلال 1-3 أشهر", "أكثر من 3 أشهر", "غير محدد"] },
