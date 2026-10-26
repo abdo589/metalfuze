@@ -153,6 +153,15 @@ function SalesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, period]);
 
+  // Unsaved form drafts survive closing the dialog or leaving the page (per record, this device).
+  const draftKey = (id?: string) => `sales-draft:${id ?? "new"}`;
+  const openDraft = (base: Partial<D>) => {
+    try { const d = localStorage.getItem(draftKey(base.id)); setEdit(d ? { ...base, ...JSON.parse(d) } : base); } catch { setEdit(base); }
+  };
+  useEffect(() => {
+    if (!edit || mode !== "pricing") return;
+    try { localStorage.setItem(draftKey(edit.id), JSON.stringify(edit)); } catch { /* storage full */ }
+  }, [edit, mode]);
   async function save(): Promise<void> {
     if (!edit) return;
     const { id, created_at: _c, owner_id: _o, ...rest } = edit as D;
@@ -160,6 +169,7 @@ function SalesPage() {
     const payload = { ...rest, request: req, updated_at: new Date().toISOString() };
     const { error } = id ? await supabase.from("sales_deals").update(payload).eq("id", id) : await supabase.from("sales_deals").insert(payload);
     if (error) { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); return; }
+    try { localStorage.removeItem(draftKey(id)); } catch { /* ignore */ }
     toast.success(t("تم الحفظ")); setEdit(null); load();
   }
   async function remove(d: D) {
@@ -243,7 +253,7 @@ function SalesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-bold">{t("المبيعات")}</h1>
         <div className="flex gap-2">
-          {canEdit && <Button onClick={() => { setMode("pricing"); setEdit(blank()); }}><Plus />{t("طلب تسعيرة مشروع جديد")}</Button>}
+          {canEdit && <Button onClick={() => { setMode("pricing"); openDraft(blank()); }}><Plus />{t("طلب تسعيرة مشروع جديد")}</Button>}
         </div>
       </div>
       <p className="text-sm text-muted-foreground">{t("العمولة 2% من قيمة العقد النهائية قبل الضريبة، مقسومة حسب نسبة المشاركة.")}</p>
@@ -297,7 +307,7 @@ function SalesPage() {
                 <td className="p-2" dir="ltr">{fmt(Number(d.collected))}</td><td className="p-2 font-semibold" dir="ltr">{fmt(commissionDue(d))}</td>
                 <td className="p-2">{t(d.payout_status)}</td>
                 <td className="p-2 whitespace-nowrap"><Button size="icon" variant="ghost" className="size-7" aria-label={t("التفاصيل")} onClick={() => setView(d)}><Eye className="size-4" /></Button>{canEdit && <>
-                  <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => { setMode("pricing"); setEdit(d); }}><Pencil className="size-4" /></Button>
+                  <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => { setMode("pricing"); openDraft(d); }}><Pencil className="size-4" /></Button>
                   <Button size="icon" variant="ghost" className="size-7" aria-label={t("العمولة")} title={t("العمولة")} onClick={() => { setMode("commission"); setEdit(d); }}><Coins className="size-4" /></Button>
                   <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(d)}><Trash2 className="size-4" /></Button></>}</td>
               </tr>
