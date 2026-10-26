@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Coins, Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { Coins, Eye, Link2, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -42,7 +42,7 @@ const wfLabel = (k: string) => WF.find((s) => s.k === k)?.l ?? k;
 type LogE = { at: string; by: string; from: string; to: string; action: string; note: string };
 type D = Tables<"sales_deals">;
 type Req = Record<string, string | string[]>;
-type F = { k: string; l: string; req?: boolean; opts?: string[]; multi?: boolean; hint?: string; long?: boolean };
+type F = { k: string; l: string; req?: boolean; opts?: string[]; multi?: boolean; hint?: string; long?: boolean; link?: boolean };
 // Questions of the "طلب تسعيرة مشروع جديد" pricing-request form, built into the site.
 const REQUEST_FORM: { title: string; fields: F[] }[] = [
   { title: "بيانات موظف المبيعات", fields: [
@@ -59,7 +59,7 @@ const REQUEST_FORM: { title: string; fields: F[] }[] = [
   ] },
   { title: "بيانات المشروع", fields: [
     { k: "in_riyadh", l: "هل المشروع داخل مدينة الرياض؟", opts: ["نعم", "لا"] },
-    { k: "location_url", l: "رابط موقع المشروع" },
+    { k: "location_url", l: "رابط موقع المشروع", link: true },
     { k: "scope", l: "وصف مختصر لنطاق العمل المطلوب", req: true, long: true },
     { k: "project_state", l: "حالة المشروع الحالية", req: true, multi: true, opts: ["لم يبدأ", "تحت التنفيذ", "قائم ويحتاج تجديدًا"] },
     { k: "start_time", l: "موعد بدء التنفيذ المتوقع", req: true, opts: ["فوري", "خلال شهر", "خلال 1-3 أشهر", "أكثر من 3 أشهر", "غير محدد"] },
@@ -70,6 +70,7 @@ const REQUEST_FORM: { title: string; fields: F[] }[] = [
     { k: "has_docs", l: "هل توجد مستندات للمشروع؟", opts: ["نعم", "لا"] },
     { k: "budget_mentioned", l: "هل ذكر العميل ميزانية أو سعرًا متوقعًا للمشروع؟", req: true, opts: ["نعم", "لا"] },
     { k: "budget", l: "الميزانية أو النطاق السعري المتوقع من العميل (ريال سعودي)", hint: "يُعبأ فقط إذا ذكر العميل مبلغًا محددًا أو نطاقًا تقريبيًا، ولا يُكتب أي رقم غير مؤكد." },
+    { k: "link_url", l: "رابط (Link)", link: true, hint: "الصق رابطًا خارجيًا: مجلد Google Drive، ملف، صور المشروع، أو أي صفحة مطلوبة للتسعير." },
   ] },
 ];
 const blank = (): Partial<D> => ({ client: "", project: "", client_type: "جديد", shared: false, partner_name: "", my_share: 100, quote_value: 0, contract_value: 0, collected: 0, commission_rate: 2, payout_status: "لم تُستحق", stage: "تسعير", notes: "", request: {} });
@@ -79,6 +80,8 @@ const missing = (e: Partial<D>) => {
   return REQUEST_FORM.some((s) => s.fields.some((f) => f.req && (Array.isArray(r[f.k]) ? !(r[f.k] as string[]).length : !String(r[f.k] ?? "").trim())));
 };
 const fmt = (n: number) => Math.round(n).toLocaleString(locale());
+/** Open a pasted link even when the user forgot "https://". */
+const href = (s: string) => (/^https?:\/\//i.test(s) ? s : `https://${s}`);
 
 function SalesPage() {
   useLanguage();
@@ -178,6 +181,11 @@ function SalesPage() {
     if (f.opts) return <div key={f.k} className="space-y-1.5">{lab}{f.opts.includes("أخرى")
       ? <OtherSelect list={`sales_${f.k}`} base={f.opts} value={String(v ?? "")} onChange={(x) => setR(f.k, x)} />
       : <Select value={String(v ?? "")} onValueChange={(x) => setR(f.k, x)}><SelectTrigger><SelectValue placeholder={t("اختر")} /></SelectTrigger><SelectContent>{f.opts.map((o) => <SelectItem key={o} value={o}>{t(o)}</SelectItem>)}</SelectContent></Select>}</div>;
+    if (f.link) return <div key={f.k} className="space-y-1.5 sm:col-span-2">{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
+      <div className="flex items-center gap-2">
+        <Input dir="ltr" placeholder="https://..." value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value.trim())} />
+        {!!String(v ?? "").trim() && <Button type="button" size="sm" variant="outline" onClick={() => window.open(href(String(v)), "_blank", "noopener")}><Link2 className="size-4" /> {t("فتح")}</Button>}
+      </div></div>;
     return <div key={f.k} className={`space-y-1.5 ${f.long || f.hint ? "sm:col-span-2" : ""}`}>{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
       {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
   };
@@ -350,7 +358,7 @@ function SalesPage() {
             <div><b>{t("اسم الشركة أو العميل")}:</b> {view.client}</div><div><b>{t("اسم المشروع")}:</b> {view.project}</div>
             {REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>
               {sec.title === "بيانات طلب التسعير والمستندات" && (((view.request ?? {}) as Req)["docs"] as string[] | undefined)?.length ? <div><span className="text-muted-foreground">{t("مستندات المشروع")}:</span>{docsList(((view.request as Req)["docs"] as string[]), false)}</div> : null}
-              {sec.fields.map((f) => { const v = ((view.request ?? {}) as Req)[f.k]; return <div key={f.k}><span className="text-muted-foreground">{t(f.l)}:</span> {Array.isArray(v) ? v.map((x) => t(x)).join("، ") : v ? (f.opts ? t(v) : v) : "—"}</div>; })}</div>)}
+              {sec.fields.map((f) => { const v = ((view.request ?? {}) as Req)[f.k]; return <div key={f.k}><span className="text-muted-foreground">{t(f.l)}:</span> {Array.isArray(v) ? v.map((x) => t(x)).join("، ") : v ? (f.link ? <a className="text-primary underline" dir="ltr" href={href(String(v))} target="_blank" rel="noopener noreferrer">{String(v)}</a> : f.opts ? t(v) : v) : "—"}</div>; })}</div>)}
           </div>}
         </DialogContent>
       </Dialog>
