@@ -189,7 +189,6 @@ function SalesPage() {
         {f.k === "link_url" && !!String(v ?? "").trim() && <Button type="button" size="sm" disabled={busy} onClick={() => pull(String(v))}><Download className="size-4" /> {t("سحب الملف")}</Button>}
       </div>
       {f.k === "link_url" && busy && <p className="text-xs text-muted-foreground">{t("جارٍ سحب الملف...")}</p>}
-      {f.k === "link_url" && docsList((((edit?.request ?? {}) as Req)["docs"] as string[]) ?? [], true)}
       </div>;
     return <div key={f.k} className={`space-y-1.5 ${f.long || f.hint ? "sm:col-span-2" : ""}`}>{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
       {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
