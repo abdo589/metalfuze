@@ -47,7 +47,7 @@ type F = { k: string; l: string; req?: boolean; opts?: string[]; multi?: boolean
 // Questions of the "طلب تسعيرة مشروع جديد" pricing-request form, built into the site.
 const REQUEST_FORM: { title: string; fields: F[] }[] = [
   { title: "بيانات موظف المبيعات", fields: [
-    { k: "sales_name", l: "اسم موظف المبيعات", req: true },
+    { k: "sales_name", l: "اسم موظف المبيعات", req: true, opts: ["هالة الخميسي", "نجلاء عساف", "أخرى"] },
     { k: "sales_email", l: "البريد الإلكتروني لموظف المبيعات", req: true },
     { k: "work_type", l: "نوع الأعمال", req: true, opts: ["أعمال العظم", "أعمال التشطيب", "أعمال الإيبوكسي", "أعمال الخشبيات", "أعمال اللوحات", "أعمال متعددة التخصصات"] },
   ] },
