@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Coins, Eye, Link2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Coins, Download, Eye, Link2, Pencil, Plus, Trash2 } from "lucide-react";
+import { pullLinkFile } from "@/lib/link-file.functions";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -183,9 +184,13 @@ function SalesPage() {
       : <Select value={String(v ?? "")} onValueChange={(x) => setR(f.k, x)}><SelectTrigger><SelectValue placeholder={t("اختر")} /></SelectTrigger><SelectContent>{f.opts.map((o) => <SelectItem key={o} value={o}>{t(o)}</SelectItem>)}</SelectContent></Select>}</div>;
     if (f.link) return <div key={f.k} className="space-y-1.5 sm:col-span-2">{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
       <div className="flex items-center gap-2">
-        <Input dir="ltr" placeholder="https://..." value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value.trim())} />
+        <Input dir="ltr" placeholder="https://..." value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value.trim())}
+          onPaste={f.k === "link_url" ? (e) => { const s = e.clipboardData.getData("text").trim(); if (s) setTimeout(() => pull(s), 0); } : undefined} />
         {!!String(v ?? "").trim() && <Button type="button" size="sm" variant="outline" onClick={() => window.open(href(String(v)), "_blank", "noopener")}><Link2 className="size-4" /> {t("فتح")}</Button>}
-      </div></div>;
+        {f.k === "link_url" && !!String(v ?? "").trim() && <Button type="button" size="sm" disabled={busy} onClick={() => pull(String(v))}><Download className="size-4" /> {t("سحب الملف")}</Button>}
+      </div>
+      {f.k === "link_url" && busy && <p className="text-xs text-muted-foreground">{t("جارٍ سحب الملف...")}</p>}
+      </div>;
     return <div key={f.k} className={`space-y-1.5 ${f.long || f.hint ? "sm:col-span-2" : ""}`}>{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
       {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
   };
@@ -204,6 +209,16 @@ function SalesPage() {
       if (error) toast.error(`${t("تعذر رفع الملف")}: ${f.name}`); else added.push(path);
     }
     setR("docs", [...cur, ...added]); setBusy(false);
+  }
+  async function pull(url: string) {
+    setBusy(true);
+    try {
+      const r = await pullLinkFile({ data: { url } });
+      if (!r.ok) { toast.error(t(r.error)); return; }
+      setEdit((e) => { const req = (e?.request ?? {}) as Req; const cur = (req["docs"] as string[] | undefined) ?? [];
+        return { ...e, request: { ...req, has_docs: "نعم", docs: [...cur, r.path] } }; });
+      toast.success(t("تم سحب الملف وإضافته للمشروع"));
+    } catch { toast.error(t("تعذر سحب الملف")); } finally { setBusy(false); }
   }
   async function openFile(path: string) {
     const { data } = await supabase.storage.from("sales-files").createSignedUrl(path, 600);
