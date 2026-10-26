@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Coins, Eye, Link2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Coins, Download, Eye, Link2, Pencil, Plus, Trash2 } from "lucide-react";
+import { pullLinkFile } from "@/lib/link-file.functions";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
