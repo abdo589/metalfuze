@@ -15,12 +15,33 @@ const ACCOUNT_HIDDEN_PATHS: Record<string, string[]> = {
 /** Paths hidden from the current signed-in account (empty for everyone else). */
 export function useHiddenPaths() {
   const [hidden, setHidden] = useState<string[]>([]);
+  const access = useMyAccess();
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setHidden(data.user ? (ACCOUNT_HIDDEN_PATHS[data.user.email?.toLowerCase() ?? ""] ?? []) : []);
     });
   }, []);
-  return hidden;
+  return access?.blocked_paths?.length ? [...hidden, ...access.blocked_paths] : hidden;
+}
+
+/** The developer's per-account access settings for the signed-in user (null = none). */
+type MyAccess = { blocked_paths: string[]; read_only: boolean } | null;
+let accessCache: { uid: string; p: Promise<MyAccess> } | null = null;
+export function useMyAccess() {
+  const [a, setA] = useState<MyAccess>(null);
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      if (!accessCache || accessCache.uid !== uid) {
+        accessCache = { uid, p: Promise.resolve(supabase.from("account_access").select("blocked_paths,read_only").eq("user_id", uid).maybeSingle()).then((r) => (r.data as MyAccess) ?? null, () => null) };
+      }
+      accessCache.p.then((v) => alive && setA(v));
+    });
+    return () => { alive = false; };
+  }, []);
+  return a;
 }
 /** HR pages (everything except employee data) that only admins (Eilaf, Abdelrhman) and HR may open; hidden from viewer accounts. */
 export const HR_ADMIN_ONLY = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance"];
@@ -69,12 +90,15 @@ export function useRole() {
 /** Admins edit everything; HR edits only within the HR pages (the only ones they can open). */
 export function useCanEdit() {
   const role = useRole();
-  return role === "admin" || role === "hr";
+  const ro = useMyAccess()?.read_only;
+  return !ro && (role === "admin" || role === "hr");
 }
 
 /** HR data (employees, payroll, attendance, documents, leave) is edited by HR (Aisha) only; everyone else views. */
 export function useCanEditHr() {
-  return useRole() === "hr";
+  const role = useRole();
+  const ro = useMyAccess()?.read_only;
+  return !ro && role === "hr";
 }
 
 /** Payments & collections: admins plus the CEO account (its records feed Hisham's summary). */
@@ -82,5 +106,6 @@ export function useCanEditPayments() {
   const role = useRole();
   const [isCeo, setIsCeo] = useState(false);
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setIsCeo(data.user?.email === "ceo@metalfuze.local")); }, []);
-  return role === "admin" || isCeo;
+  const ro = useMyAccess()?.read_only;
+  return !ro && (role === "admin" || isCeo);
 }

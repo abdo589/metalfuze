@@ -35,7 +35,7 @@ import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
 
-const items = [
+export const items = [
   { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
   { to: "/payments", label: "الدفع والتحصيل", icon: HandCoins },
   { to: "/bank", label: "رصيد البنك", icon: Landmark },

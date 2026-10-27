@@ -5,6 +5,7 @@ import { t } from "@/lib/i18n";
 import { idleExpired, readLastActivity, touchActivity, warnSoon } from "@/lib/idle-signout";
 import { signOutTracked } from "@/lib/login-tracking";
 import { shouldForceOut } from "@/lib/force-logout";
+import { checkMyAccess } from "@/lib/access.functions";
 
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll", "touchstart", "focus"] as const;
 const HEARTBEAT_MS = 15 * 1000; // how often "I'm here" is written down
@@ -32,7 +33,7 @@ export function IdleSignOut() {
       const { data } = await supabase.auth.getSession();
       if (!data.session) return; // nobody signed in — nothing to end
       const now = Date.now();
-      if (now - lastFlagCheck > 55_000) {
+      if (now - lastFlagCheck > 55_000 || lastFlagCheck === 0) {
         lastFlagCheck = now;
         const u = data.session.user;
         const { data: flag } = await supabase.from("account_flags").select("force_logout_at").eq("user_id", u.id).maybeSingle();
@@ -41,6 +42,10 @@ export function IdleSignOut() {
           toast.info(t("تم تسجيل خروجك بواسطة المبرمج"));
           return;
         }
+        try {
+          const { reason } = await checkMyAccess();
+          if (reason) { await signOutTracked(); toast.error(t(reason), { duration: 15000 }); return; }
+        } catch { /* network hiccup — check again next round */ }
       }
       const last = readLastActivity(now);
       if (idleExpired(last, now)) {

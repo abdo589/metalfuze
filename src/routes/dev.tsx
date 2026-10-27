@@ -7,6 +7,7 @@ import { DevHealth, AccountAudit } from "@/components/DevHealth";
 import { LoginEvents } from "@/components/LoginEvents";
 import { EmployeeLogins } from "@/components/EmployeeLogins";
 import { ActivityMonitor } from "@/components/ActivityMonitor";
+import { AccessControl } from "@/components/AccessControl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ function DevPage() {
           <TabsTrigger value="audit"><History /> {t("سجل التغييرات")}</TabsTrigger>
           <TabsTrigger value="per-user"><Users /> {t("حسب الموظف")}</TabsTrigger>
           <TabsTrigger value="monitor"><Activity /> {t("المتابعة الدورية")}</TabsTrigger>
+          <TabsTrigger value="access"><KeyRound /> {t("صلاحيات الدخول")}</TabsTrigger>
         </TabsList>
         <TabsContent value="bugs"><Bugs /></TabsContent>
         <TabsContent value="accounts"><Accounts /></TabsContent>
@@ -63,6 +65,7 @@ function DevPage() {
         <TabsContent value="audit"><AccountAudit /></TabsContent>
         <TabsContent value="per-user"><EmployeeLogins /></TabsContent>
         <TabsContent value="monitor"><ActivityMonitor /></TabsContent>
+        <TabsContent value="access"><AccessControl /></TabsContent>
       </Tabs>
     </div>
   );

@@ -386,6 +386,13 @@
       "when": 1792871504080,
       "tag": "0054_sales_deals_commission_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1793088856733,
+      "tag": "0055_account_access",
+      "breakpoints": true
     }
   ]
 }

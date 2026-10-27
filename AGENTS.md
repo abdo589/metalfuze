@@ -29,5 +29,6 @@
 - Sign-in/sign-out audit: AuthGate/IdleSignOut log via src/lib/login-tracking.ts to a server fn that reads IP/location from request headers (not the browser) into login_events; only the developer reads it on /dev — always sign out through signOutTracked so logouts are recorded.
 - Forced sign-out/suspension: developer server fns in users.functions.ts write account_flags.force_logout_at (and ban via auth admin); IdleSignOut checks it each minute against user.last_sign_in_at, and every account change is logged to account_audit — so sessions can be ended without the user's token.
 - Activity log: DB triggers on app tables write public.activity_log (developer-only read); new monitored tables need a trg_activity_<table> trigger — server-side capture can't be skipped by any client.
-- Dropdowns listing "أخرى" render via src/components/OtherSelect.tsx with a stable list key; choosing "أخرى" means typing a new value saved to public.custom_options (list_name, value), shared with every account rather than device-local.
+- Dropdowns listing "أخرى" render via src/components/OtherSelect.tsx ; new values go to public.custom_options, shared by all accounts.
 - Every remote punch emails the employee (employees.email, else linked profile email) a 7-day signed selfie link via the checkin-selfie app email; failures never block the punch.
+- Per-account access rules live in public.account_access (developer writes); IdleSignOut checks hours/IP/device server-side via checkMyAccess so the browser can't fake them.
