@@ -153,14 +153,24 @@ function SalesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, period]);
 
-  // Unsaved form drafts survive closing the dialog or leaving the page (per record, this device).
+  // Unsaved form answers (request fields only) survive closing the dialog or leaving the page.
+  // Only the user's typed request answers are kept — never workflow/pricing/stage columns — and
+  // only after an actual edit, so reopening never rolls back changes made by others.
   const draftKey = (id?: string) => `sales-draft:${id ?? "new"}`;
+  const dirty = useRef(false);
   const openDraft = (base: Partial<D>) => {
-    try { const d = localStorage.getItem(draftKey(base.id)); setEdit(d ? { ...base, ...JSON.parse(d) } : base); } catch { setEdit(base); }
+    dirty.current = false;
+    try {
+      const d = localStorage.getItem(draftKey(base.id));
+      const saved = d ? (JSON.parse(d) as { request?: Req }) : null;
+      setEdit(saved?.request && typeof saved.request === "object"
+        ? { ...base, request: { ...((base.request ?? {}) as Req), ...saved.request } }
+        : base);
+    } catch { setEdit(base); }
   };
   useEffect(() => {
-    if (!edit || mode !== "pricing") return;
-    try { localStorage.setItem(draftKey(edit.id), JSON.stringify(edit)); } catch { /* storage full */ }
+    if (!edit || mode !== "pricing" || !dirty.current) return;
+    try { localStorage.setItem(draftKey(edit.id), JSON.stringify({ request: edit.request ?? {} })); } catch { /* storage full */ }
   }, [edit, mode]);
   async function save(): Promise<void> {
     if (!edit) return;
