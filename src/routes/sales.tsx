@@ -74,10 +74,15 @@ const REQUEST_FORM: { title: string; fields: F[] }[] = [
   ] },
 ];
 const blank = (): Partial<D> => ({ client: "", project: "", client_type: "جديد", shared: false, partner_name: "", my_share: 100, quote_value: 0, contract_value: 0, collected: 0, commission_rate: 2, payout_status: "لم تُستحق", stage: "تسعير", notes: "", request: {} });
-const missing = (e: Partial<D>) => {
+const missingList = (e: Partial<D>): string[] => {
   const r = (e.request ?? {}) as Req;
-  if (!e.client?.trim() || !e.project?.trim()) return true;
-  return REQUEST_FORM.some((s) => s.fields.some((f) => f.req && (Array.isArray(r[f.k]) ? !(r[f.k] as string[]).length : !String(r[f.k] ?? "").trim())));
+  const out: string[] = [];
+  if (!e.client?.trim()) out.push("اسم العميل");
+  if (!e.project?.trim()) out.push("اسم المشروع");
+  REQUEST_FORM.forEach((s) => s.fields.forEach((f) => {
+    if (f.req && (Array.isArray(r[f.k]) ? !(r[f.k] as string[]).length : !String(r[f.k] ?? "").trim())) out.push(f.l);
+  }));
+  return out;
 };
 const fmt = (n: number) => Math.round(n).toLocaleString(locale());
 /** Open a pasted link even when the user forgot "https://". */
@@ -174,11 +179,15 @@ function SalesPage() {
   }, [edit, mode]);
   async function save(): Promise<void> {
     if (!edit) return;
+    if (mode === "pricing") {
+      const miss = missingList(edit);
+      if (miss.length) { toast.error(`${t("أكمل الحقول المطلوبة")}: ${miss.map((m) => t(m)).join("، ")}`, { duration: 8000 }); return; }
+    }
     const { id, created_at: _c, owner_id: _o, ...rest } = edit as D;
     const req = { ...((rest.request ?? {}) as Req), ...(myEmp ? { owner_emp: myEmp } : {}) };
     const payload = { ...rest, request: req, updated_at: new Date().toISOString() };
     const { error } = id ? await supabase.from("sales_deals").update(payload).eq("id", id) : await supabase.from("sales_deals").insert(payload);
-    if (error) { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); return; }
+    if (error) { console.error("sales save", error); toast.error(`${t("تعذر الحفظ، حاول مرة أخرى")} (${error.message})`); return; }
     try { localStorage.removeItem(draftKey(id)); } catch { /* ignore */ }
     toast.success(t("تم الحفظ")); setEdit(null); load();
   }
@@ -371,7 +380,7 @@ function SalesPage() {
           </div>}
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setEdit(null)}>{t("إلغاء")}</Button>
-            <Button disabled={!edit || (mode === "pricing" && missing(edit))} onClick={save}>{t("حفظ")}</Button>
+            <Button disabled={!edit || busy} onClick={save}>{t("حفظ")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
