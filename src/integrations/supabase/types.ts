@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_access: {
+        Row: {
+          allowed_ips: string[]
+          blocked_paths: string[]
+          days: number[]
+          devices: string[]
+          end_time: string
+          read_only: boolean
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allowed_ips?: string[]
+          blocked_paths?: string[]
+          days?: number[]
+          devices?: string[]
+          end_time?: string
+          read_only?: boolean
+          start_time?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allowed_ips?: string[]
+          blocked_paths?: string[]
+          days?: number[]
+          devices?: string[]
+          end_time?: string
+          read_only?: boolean
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       account_audit: {
         Row: {
           action: string
