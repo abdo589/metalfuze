@@ -216,18 +216,26 @@ function SalesPage() {
   const [view, setView] = useState<D | null>(null);
   const [busy, setBusy] = useState(false);
   const fileName = (p: string) => p.split("/").pop()!.replace(/^\d+_/, "");
-  async function upload(files: FileList | null) {
-    if (!files?.length) return;
+  async function upload(files: FileList | File[] | null) {
+    const list = files ? Array.from(files) : [];
+    if (!list.length) return;
     setBusy(true);
-    const { data: u } = await supabase.auth.getUser();
-    const cur = (((edit?.request ?? {}) as Req)["docs"] as string[] | undefined) ?? [];
     const added: string[] = [];
-    for (const f of Array.from(files)) {
-      const path = `${u.user?.id}/${Date.now()}_${f.name.replace(/[^\w.\-\u0600-\u06FF]/g, "_")}`;
-      const { error } = await supabase.storage.from("sales-files").upload(path, f);
-      if (error) toast.error(`${t("تعذر رفع الملف")}: ${f.name}`); else added.push(path);
+    try {
+      const { data: u } = await supabase.auth.getUser();
+      for (const f of list) {
+        const ext = (f.name.match(/\.[A-Za-z0-9]+$/)?.[0] ?? "").toLowerCase();
+        const base = f.name.replace(/\.[A-Za-z0-9]+$/, "").replace(/[^\w.\-]/g, "_").slice(0, 60) || "file";
+        const path = `${u.user?.id}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${base}${ext}`;
+        const { error } = await supabase.storage.from("sales-files").upload(path, f, { contentType: f.type || "application/octet-stream", upsert: false });
+        if (error) toast.error(`${t("تعذر رفع الملف")}: ${f.name}`); else added.push(path);
+      }
+    } catch { toast.error(t("تعذر رفع الملف")); }
+    if (added.length) {
+      setR("docs", [...((((edit?.request ?? {}) as Req)["docs"] as string[] | undefined) ?? []), ...added]);
+      toast.success(t("تم رفع الملفات"));
     }
-    setR("docs", [...cur, ...added]); setBusy(false);
+    setBusy(false);
   }
   async function pull(url: string) {
     setBusy(true);
@@ -337,7 +345,7 @@ function SalesPage() {
               {sec.fields.map(field)}
               {sec.title === "بيانات طلب التسعير والمستندات" && ((edit.request ?? {}) as Req)["has_docs"] === "نعم" && <div className="space-y-1.5 sm:col-span-2">
                 <Label>{t("مستندات المشروع")}</Label>
-                <Input type="file" multiple disabled={busy} onChange={(e) => { upload(e.target.files); e.target.value = ""; }} />
+                <Input type="file" multiple disabled={busy} onChange={(e) => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; upload(fs); }} />
                 {busy && <p className="text-xs text-muted-foreground">{t("جارٍ الرفع...")}</p>}
                 {docsList((((edit.request ?? {}) as Req)["docs"] as string[]) ?? [], true)}
               </div>}
