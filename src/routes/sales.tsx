@@ -167,15 +167,20 @@ function SalesPage() {
     dirty.current = false;
     try {
       const d = localStorage.getItem(draftKey(base.id));
-      const saved = d ? (JSON.parse(d) as { request?: Req }) : null;
-      setEdit(saved?.request && typeof saved.request === "object"
-        ? { ...base, request: { ...((base.request ?? {}) as Req), ...saved.request } }
+      const saved = d ? (JSON.parse(d) as { request?: Req; client?: string; project?: string }) : null;
+      setEdit(saved
+        ? { ...base,
+            request: saved.request && typeof saved.request === "object"
+              ? { ...((base.request ?? {}) as Req), ...saved.request }
+              : ((base.request ?? {}) as Req),
+            client: saved.client ?? base.client,
+            project: saved.project ?? base.project }
         : base);
     } catch { setEdit(base); }
   };
   useEffect(() => {
     if (!edit || mode !== "pricing" || !dirty.current) return;
-    try { localStorage.setItem(draftKey(edit.id), JSON.stringify({ request: edit.request ?? {} })); } catch { /* storage full */ }
+    try { localStorage.setItem(draftKey(edit.id), JSON.stringify({ request: edit.request ?? {}, client: edit.client ?? "", project: edit.project ?? "" })); } catch { /* storage full */ }
   }, [edit, mode]);
   async function save(): Promise<void> {
     if (!edit) return;
