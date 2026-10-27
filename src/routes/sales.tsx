@@ -167,15 +167,20 @@ function SalesPage() {
     dirty.current = false;
     try {
       const d = localStorage.getItem(draftKey(base.id));
-      const saved = d ? (JSON.parse(d) as { request?: Req }) : null;
-      setEdit(saved?.request && typeof saved.request === "object"
-        ? { ...base, request: { ...((base.request ?? {}) as Req), ...saved.request } }
+      const saved = d ? (JSON.parse(d) as { request?: Req; client?: string; project?: string }) : null;
+      setEdit(saved
+        ? { ...base,
+            request: saved.request && typeof saved.request === "object"
+              ? { ...((base.request ?? {}) as Req), ...saved.request }
+              : ((base.request ?? {}) as Req),
+            ...(saved.client !== undefined ? { client: saved.client } : {}),
+            ...(saved.project !== undefined ? { project: saved.project } : {}) }
         : base);
     } catch { setEdit(base); }
   };
   useEffect(() => {
     if (!edit || mode !== "pricing" || !dirty.current) return;
-    try { localStorage.setItem(draftKey(edit.id), JSON.stringify({ request: edit.request ?? {} })); } catch { /* storage full */ }
+    try { localStorage.setItem(draftKey(edit.id), JSON.stringify({ request: edit.request ?? {}, client: edit.client ?? "", project: edit.project ?? "" })); } catch { /* storage full */ }
   }, [edit, mode]);
   async function save(): Promise<void> {
     if (!edit) return;
@@ -349,8 +354,8 @@ function SalesPage() {
           {edit && <div className="grid gap-4 sm:grid-cols-2">
             {mode === "pricing" && REQUEST_FORM.map((sec) => <div key={sec.title} className="contents">
               <h3 className="mt-2 border-b border-border pb-1 font-display font-bold sm:col-span-2">{t(sec.title)}</h3>
-              {sec.title === "بيانات العميل" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم الشركة أو العميل")}<span className="text-destructive"> *</span></Label><Input value={edit.client ?? ""} onChange={(e) => set("client", e.target.value)} /></div>}
-              {sec.title === "بيانات المشروع" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم المشروع")}<span className="text-destructive"> *</span></Label><Input value={edit.project ?? ""} onChange={(e) => set("project", e.target.value)} /></div>}
+              {sec.title === "بيانات العميل" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم الشركة أو العميل")}<span className="text-destructive"> *</span></Label><Input value={edit.client ?? ""} onChange={(e) => { dirty.current = true; set("client", e.target.value); }} /></div>}
+              {sec.title === "بيانات المشروع" && <div className="space-y-1.5 sm:col-span-2"><Label>{t("اسم المشروع")}<span className="text-destructive"> *</span></Label><Input value={edit.project ?? ""} onChange={(e) => { dirty.current = true; set("project", e.target.value); }} /></div>}
               {sec.fields.map(field)}
               {sec.title === "بيانات طلب التسعير والمستندات" && ((edit.request ?? {}) as Req)["has_docs"] === "نعم" && <div className="space-y-1.5 sm:col-span-2">
                 <Label>{t("مستندات المشروع")}</Label>
