@@ -182,7 +182,7 @@ function SalesPage() {
     try { localStorage.removeItem(draftKey(id)); } catch { /* ignore */ }
     toast.success(t("تم الحفظ")); setEdit(null); load();
   }
-  async function remove(d: D) { };
+  async function remove(d: D) {
     if (!confirm(t("حذف؟"))) return;
     await supabase.from("sales_deals").delete().eq("id", d.id); load();
   }
@@ -192,7 +192,7 @@ function SalesPage() {
       <Input type="text" inputMode="decimal" dir="ltr" placeholder="0" value={String(edit?.[k] ?? "")}
         onChange={(e) => set(k, Number(e.target.value.replace(/[^\d.]/g, "")) as never)} /></div>
   );
-  const setR = (k: string, v: string | string[]) => setEdit((e) => ({ ...e, request: { ...((e?.request ?? {}) as Req), [k]: v } }));
+  const setR = (k: string, v: string | string[]) => { dirty.current = true; setEdit((e) => ({ ...e, request: { ...((e?.request ?? {}) as Req), [k]: v } })); };
   const field = (f: F) => {
     const r = (edit?.request ?? {}) as Req; const v = r[f.k];
     const lab = <Label>{t(f.l)}{f.req && <span className="text-destructive"> *</span>}</Label>;
