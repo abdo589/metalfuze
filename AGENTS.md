@@ -31,3 +31,4 @@
 - Activity log: DB triggers on app tables write public.activity_log (developer-only read); new monitored tables need a trg_activity_<table> trigger — server-side capture can't be skipped by any client.
 - Dropdowns listing "أخرى" render via src/components/OtherSelect.tsx with a stable list key; choosing "أخرى" means typing a new value saved to public.custom_options (list_name, value), shared with every account rather than device-local.
 - Every remote punch emails the employee (employees.email, else linked profile email) a 7-day signed selfie link via the checkin-selfie app email; failures never block the punch.
+- Per-account access (pages, Riyadh sign-in hours, IPs, device type, view-only) lives in public.account_access (developer writes, owner reads); hours/IP/device are checked server-side by checkMyAccess from IdleSignOut each minute, so rules apply without trusting the browser clock.
