@@ -173,8 +173,8 @@ function SalesPage() {
             request: saved.request && typeof saved.request === "object"
               ? { ...((base.request ?? {}) as Req), ...saved.request }
               : ((base.request ?? {}) as Req),
-            client: saved.client ?? base.client,
-            project: saved.project ?? base.project }
+            ...(saved.client !== undefined ? { client: saved.client } : {}),
+            ...(saved.project !== undefined ? { project: saved.project } : {}) }
         : base);
     } catch { setEdit(base); }
   };
