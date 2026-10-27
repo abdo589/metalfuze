@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Coins, Download, Eye, Link2, Pencil, Plus, Trash2 } from "lucide-react";
 import { pullLinkFile } from "@/lib/link-file.functions";
 import { toast } from "sonner";
@@ -182,7 +182,7 @@ function SalesPage() {
     try { localStorage.removeItem(draftKey(id)); } catch { /* ignore */ }
     toast.success(t("تم الحفظ")); setEdit(null); load();
   }
-  async function remove(d: D) {
+  async function remove(d: D) { };
     if (!confirm(t("حذف؟"))) return;
     await supabase.from("sales_deals").delete().eq("id", d.id); load();
   }
