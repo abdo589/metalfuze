@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Coins, Download, Eye, Link2, Pencil, Plus, Trash2 } from "lucide-react";
 import { pullLinkFile } from "@/lib/link-file.functions";
 import { toast } from "sonner";
@@ -153,14 +153,24 @@ function SalesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, period]);
 
-  // Unsaved form drafts survive closing the dialog or leaving the page (per record, this device).
+  // Unsaved form answers (request fields only) survive closing the dialog or leaving the page.
+  // Only the user's typed request answers are kept — never workflow/pricing/stage columns — and
+  // only after an actual edit, so reopening never rolls back changes made by others.
   const draftKey = (id?: string) => `sales-draft:${id ?? "new"}`;
+  const dirty = useRef(false);
   const openDraft = (base: Partial<D>) => {
-    try { const d = localStorage.getItem(draftKey(base.id)); setEdit(d ? { ...base, ...JSON.parse(d) } : base); } catch { setEdit(base); }
+    dirty.current = false;
+    try {
+      const d = localStorage.getItem(draftKey(base.id));
+      const saved = d ? (JSON.parse(d) as { request?: Req }) : null;
+      setEdit(saved?.request && typeof saved.request === "object"
+        ? { ...base, request: { ...((base.request ?? {}) as Req), ...saved.request } }
+        : base);
+    } catch { setEdit(base); }
   };
   useEffect(() => {
-    if (!edit || mode !== "pricing") return;
-    try { localStorage.setItem(draftKey(edit.id), JSON.stringify(edit)); } catch { /* storage full */ }
+    if (!edit || mode !== "pricing" || !dirty.current) return;
+    try { localStorage.setItem(draftKey(edit.id), JSON.stringify({ request: edit.request ?? {} })); } catch { /* storage full */ }
   }, [edit, mode]);
   async function save(): Promise<void> {
     if (!edit) return;
@@ -182,7 +192,7 @@ function SalesPage() {
       <Input type="text" inputMode="decimal" dir="ltr" placeholder="0" value={String(edit?.[k] ?? "")}
         onChange={(e) => set(k, Number(e.target.value.replace(/[^\d.]/g, "")) as never)} /></div>
   );
-  const setR = (k: string, v: string | string[]) => setEdit((e) => ({ ...e, request: { ...((e?.request ?? {}) as Req), [k]: v } }));
+  const setR = (k: string, v: string | string[]) => { dirty.current = true; setEdit((e) => ({ ...e, request: { ...((e?.request ?? {}) as Req), [k]: v } })); };
   const field = (f: F) => {
     const r = (edit?.request ?? {}) as Req; const v = r[f.k];
     const lab = <Label>{t(f.l)}{f.req && <span className="text-destructive"> *</span>}</Label>;
