@@ -1,9 +1,5 @@
-# Roadmap
-
-- [ ] نشر الموقع — ملف Strix غير مرئي على النسخة المنشورة (ينفذ عند «انشر»).
-- [ ] تجربة «ربط Outlook» بعد إضافة redirect URI في Azure (تطبيق aef621d1) — لم تؤكد.
-- [ ] Yan Radizon وMohammed Saleh Al-Maiman — إضافتهم كموظفين؟ (سؤال مفتوح)
-- [ ] أرقام الرواتب الصحيحة لـ5 من 6 موظفي «المؤسسة» (مثلًا موسى: 5,500 أساسًا vs 5,000+500 بدل).
-- [ ] رقم الموظف المكرر 3 (عائشة وحاثم) — إعطاء أحدهما رقم مختلف.
-- [x] قائمة الشهور في صفحة الرواتب تتولد ديناميكيًا من البيانات (أقدم تعيين/سجل راتب/شهر مدفوع حتى الشهر الحالي) بدل الأسهم الثابتة.
-- [x] استخراج ملف Excel لسجل السيارات والمخالفات (ملخص + السيارات + المخالفات) — 2026-10-21
+# Roadmap — deep scan fixes
+- [x] Phase 1: read-only enforced in database, assistant role check, safe link downloads, sales insert reset + file read scoping
+- [ ] Phase 2: real forced sign-out, per-account local storage
+- [ ] Phase 3: projects/transactions as rows (needs user go-ahead — changes storage on all devices)
+- [ ] Phase 4: atomic roles, attendance unique index, leave locking/overlap

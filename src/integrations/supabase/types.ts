@@ -1705,6 +1705,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_read_sales_file: { Args: { _path: string }; Returns: boolean }
+      can_write: { Args: { _uid: string }; Returns: boolean }
       chat_directory: {
         Args: never
         Returns: {
