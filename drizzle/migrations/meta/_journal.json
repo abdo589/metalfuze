@@ -414,6 +414,13 @@
       "when": 1793190091645,
       "tag": "0058_enforce_read_only_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1793190225505,
+      "tag": "0059_revoke_user_sessions",
+      "breakpoints": true
     }
   ]
 }

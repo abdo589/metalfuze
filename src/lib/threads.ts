@@ -48,3 +48,10 @@ export function useThreads() {
     () => EMPTY,
   );
 }
+
+/** Drop this device's saved chats (used when a different account signs in or on sign-out). */
+export function resetThreads() {
+  cache = [];
+  try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+  listeners.forEach((l) => l());
+}

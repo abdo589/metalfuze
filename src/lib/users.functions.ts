@@ -142,6 +142,8 @@ export const setUserRole = createServerFn({ method: "POST" })
 async function forceOut(id: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin.from("account_flags").upsert({ user_id: id, force_logout_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+  // Revoke every refresh token so the session can't be renewed even if the browser ignores the flag.
+  await supabaseAdmin.rpc("revoke_user_sessions", { _uid: id });
 }
 
 export const setUserBanned = createServerFn({ method: "POST" })
