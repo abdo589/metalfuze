@@ -407,6 +407,13 @@
       "when": 1793190035973,
       "tag": "0057_harden_sales_insert_and_files",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1793190091645,
+      "tag": "0058_enforce_read_only_accounts",
+      "breakpoints": true
     }
   ]
 }
