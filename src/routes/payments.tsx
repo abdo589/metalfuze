@@ -370,7 +370,7 @@ function TxnDialog({ open, onOpenChange, txn, managers, projects }: {
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t("إلغاء")}</Button>
-          <Button disabled={!f.manager.trim() || f.amount <= 0} onClick={() => { txnStore.upsert(f); onOpenChange(false); toast.success(t("تم الحفظ")); }}>{t("حفظ")}</Button>
+          <Button disabled={!f.manager.trim() || f.amount <= 0} onClick={() => { { const pid = projectStore.all().find((q) => q.name.trim() === f.project.trim())?.id; txnStore.upsert(pid ? { ...f, projectId: pid } : f); } onOpenChange(false); toast.success(t("تم الحفظ")); }}>{t("حفظ")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
