@@ -41,8 +41,18 @@ export function MessageAlerts() {
         if (window.location.pathname !== "/messages") {
           toast.info(title, { description: text, action: { label: t("فتح"), onClick: () => navigate({ to: "/messages" }) } });
         }
-        if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
-          try { new Notification(title, { body: text, icon: "/icon-192.png" }); } catch { /* ignore */ }
+        // System notification outside the app whenever the window isn't in front.
+        if ("Notification" in window && Notification.permission === "granted" && (document.hidden || !document.hasFocus())) {
+          let sender = "";
+          try {
+            const sid = (payload.new as { sender_id?: string }).sender_id;
+            const { data: dir } = await supabase.rpc("chat_directory");
+            sender = (dir as { id: string; display_name: string }[] | null)?.find((p) => p.id === sid)?.display_name ?? "";
+          } catch { /* ignore */ }
+          try {
+            const n = new Notification(sender ? `${sender} — ${t("رسالة جديدة")}` : title, { body: text, icon: "/icon-192.png", tag: "dm" });
+            n.onclick = () => { window.focus(); navigate({ to: "/messages" }); n.close(); };
+          } catch { /* ignore */ }
         }
       })
       .subscribe();
