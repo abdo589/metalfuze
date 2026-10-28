@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CalendarClock, Coins, Download, Eye, Link2, Mail, Pencil, Plus, Trash2 } from "lucide-react";
 import { SalesMeetings } from "@/components/SalesMeetings";
+import { SalesReports } from "@/components/SalesReports";
 import { pullLinkFile } from "@/lib/link-file.functions";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -230,6 +231,7 @@ function SalesPage() {
   };
   const [view, setView] = useState<D | null>(null);
   const [meet, setMeet] = useState<D | null>(null);
+  const [reports, setReports] = useState(false);
   const mailClient = (d: D) => {
     const r = (d.request ?? {}) as Req;
     const to = String(r["contact_email"] ?? "").trim();
@@ -305,6 +307,7 @@ function SalesPage() {
           <Button key={p} size="sm" variant={period === p ? "default" : "outline"} onClick={() => setPeriod(p)}>
             {t(p === "month" ? "هذا الشهر" : p === "quarter" ? "هذا الربع" : "هذه السنة")}</Button>
         ))}
+        <Button size="sm" variant="secondary" className="ms-auto" onClick={() => setReports(true)}>{t("التقارير")}</Button>
       </div>
       <div className="grid gap-3 sm:grid-cols-4">
         {[["إجمالي العقود", stats.contracts], ["المحصّل", stats.collected], ["العمولة المستحقة", stats.due], ["العمولة المصروفة", stats.paid]].map(([l, v]) => (
@@ -428,6 +431,7 @@ function SalesPage() {
           </div>}
         </DialogContent>
       </Dialog>
+      <SalesReports open={reports} onClose={() => setReports(false)} rows={rows} />
       <SalesMeetings deal={meet} onClose={() => setMeet(null)} />
     </main>
   );
