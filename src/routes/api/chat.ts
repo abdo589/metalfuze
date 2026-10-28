@@ -57,7 +57,7 @@ export const Route = createFileRoute("/api/chat")({
         const { data: roleRows } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", auth.user.id);
         const roles = (roleRows ?? []).map((r) => r.role as string);
         const { assistantAllowed } = await import("@/lib/permissions");
-        const primary = (["admin","developer","hr","executive","accountant","sales","mail","viewer","manager"].find((r) => roles.includes(r)) ?? "manager") as Parameters<typeof assistantAllowed>[0];
+        const primary = (["developer","admin","hr","viewer","accountant","executive","mail","sales"].find((r) => roles.includes(r)) ?? "manager") as Parameters<typeof assistantAllowed>[0];
         if (!assistantAllowed(primary)) return new Response("غير مسموح لهذا الحساب", { status: 403 });
         const { data: acc } = await supabaseAdmin.from("account_access").select("blocked_paths").eq("user_id", auth.user.id).maybeSingle();
         if (acc?.blocked_paths?.includes("/assistant")) return new Response("غير مسموح لهذا الحساب", { status: 403 });
