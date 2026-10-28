@@ -38,7 +38,7 @@ function waitForCode(popup: Window) {
         || (type !== "appUserConnectorOAuthComplete" && type !== "appUserConnectorOAuthFailed")) return;
       cleanup();
       if (type === "appUserConnectorOAuthComplete") resolve(typeof e.data.code === "string" ? e.data.code : null);
-      else { popup.close(); reject(new Error("فشل ربط Outlook")); }
+      else { popup.close(); reject(new Error("فشل ربط Outlook" + (typeof e.data.error === "string" && e.data.error ? " — " + e.data.error : ""))); }
     };
     window.addEventListener("message", onMsg);
     const poll = window.setInterval(() => { if (popup.closed) { cleanup(); reject(new Error("أُغلقت النافذة قبل إكمال الربط")); } }, 500);
