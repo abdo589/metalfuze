@@ -50,6 +50,7 @@ export async function recordRemotePunch(input: CheckinInput): Promise<CheckinRes
     device_sn: "REMOTE", device_user_id: userId, punched_at: now.toISOString(), status, source: "remote",
     lat: input.lat, lng: input.lng, distance_m: siteRow ? check.distance : null, photo_path: path, site_name: siteRow ? site.name : null,
   });
+  if (error?.code === "23505") return { ok: false, error: input.action === "in" ? "already_in" : "already_out" };
   if (error) { console.error("remote punch insert failed", error); return { ok: false, error: "save" }; }
   await emailSelfie(db, emp.id, input.action, now, path, site.name);
   return { ok: true, time: now.toISOString(), distance: check.distance, site: site.name };
