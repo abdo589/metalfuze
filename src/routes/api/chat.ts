@@ -54,6 +54,13 @@ export const Route = createFileRoute("/api/chat")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: auth } = await supabaseAdmin.auth.getUser(token);
         if (!auth.user) return new Response("يجب تسجيل الدخول", { status: 401 });
+        const { data: roleRows } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", auth.user.id);
+        const roles = (roleRows ?? []).map((r) => r.role as string);
+        const { assistantAllowed } = await import("@/lib/permissions");
+        const primary = (["admin","developer","hr","executive","accountant","sales","mail","viewer","manager"].find((r) => roles.includes(r)) ?? "manager") as Parameters<typeof assistantAllowed>[0];
+        if (!assistantAllowed(primary)) return new Response("غير مسموح لهذا الحساب", { status: 403 });
+        const { data: acc } = await supabaseAdmin.from("account_access").select("blocked_paths").eq("user_id", auth.user.id).maybeSingle();
+        if (acc?.blocked_paths?.includes("/assistant")) return new Response("غير مسموح لهذا الحساب", { status: 403 });
         const raw = await request.text();
         if (raw.length > MAX_BODY_CHARS) return new Response("المرفقات كبيرة جداً — قلّل عدد الملفات أو حجمها", { status: 413 });
         let body: { messages?: UIMessage[]; projects?: unknown[]; today?: string; language?: string };
