@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api/oauth/outlook/return")({
         const code = url.searchParams.get("code") ?? "";
         const success = url.searchParams.get("success") === "true";
         const offline = url.searchParams.get("offline_access_allowed");
-        const error = url.searchParams.get("error");
+        const error = [url.searchParams.get("error"), url.searchParams.get("error_description")].filter(Boolean).join(": ").slice(0, 400) || null;
         const result = success && offline === "false" ? { success: true, connectorId, code: null }
           : success && code ? { success: true, connectorId, code }
           : { success: false, connectorId, error: error ?? (success ? "Missing code" : "OAuth failed") };
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/api/oauth/outlook/return")({
 <p>${result.success ? "تم الربط، جارٍ الإغلاق…" : "فشل الربط: " + esc((result as { error?: string }).error ?? "")}</p>
 <script>
 const r = ${safeJson};
-if (window.opener && window.opener !== window) window.opener.postMessage({ type: r.success ? "appUserConnectorOAuthComplete" : "appUserConnectorOAuthFailed", connectorId: r.connectorId, code: r.code ?? null }, window.location.origin);
+if (window.opener && window.opener !== window) window.opener.postMessage({ type: r.success ? "appUserConnectorOAuthComplete" : "appUserConnectorOAuthFailed", connectorId: r.connectorId, code: r.code ?? null, error: r.error ?? null }, window.location.origin);
 window.close();
 </script></body></html>`;
         return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
