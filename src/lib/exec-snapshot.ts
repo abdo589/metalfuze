@@ -7,10 +7,12 @@ import { txnStore, txnChanges, type Txn } from "./transactions";
 
 type Row = { id: string; data: unknown; version: number; deleted_at: string | null; updated_at: string };
 type Kind = "p" | "t";
-type Pending = { kind: Kind; id: string; deleted: boolean };
+/** baseVersion = the shared version this device's edit was made on (undefined = never synced, so insert). */
+type Pending = { kind: Kind; id: string; deleted: boolean; baseVersion?: number | undefined };
 
 const VER_KEY = "metalfuze.sync.versions.v1";
 const PEND_KEY = "metalfuze.sync.pending.v1";
+const CONFLICT_KEY = "metalfuze.sync.conflicts.v1";
 const readJson = <T,>(k: string, d: T): T => { try { return JSON.parse(localStorage.getItem(k) || "") as T; } catch { return d; } };
 
 /** Merge the shared rows into this device's list: rows are the truth unless this device has an unsent change for that item. */
@@ -48,8 +50,10 @@ export function ExecSnapshotSync() {
     const pending: Record<string, Pending> = readJson(PEND_KEY, {});
     const persist = () => { localStorage.setItem(VER_KEY, JSON.stringify(versions)); localStorage.setItem(PEND_KEY, JSON.stringify(pending)); };
     const mark = (kind: Kind) => (changed: { id: string }[], removed: string[]) => {
-      for (const x of changed) pending[`${kind}:${x.id}`] = { kind, id: x.id, deleted: false };
-      for (const id of removed) pending[`${kind}:${id}`] = { kind, id, deleted: true };
+      // Keep the version the first unsent edit was based on; later edits to the same item build on it.
+      const base = (key: string) => (pending[key] ? pending[key]!.baseVersion : versions[key]);
+      for (const x of changed) { const k = `${kind}:${x.id}`; pending[k] = { kind, id: x.id, deleted: false, baseVersion: base(k) }; }
+      for (const id of removed) { const k = `${kind}:${id}`; pending[k] = { kind, id, deleted: true, baseVersion: base(k) }; }
       persist();
       if (ready) schedulePush();
     };
@@ -72,8 +76,9 @@ export function ExecSnapshotSync() {
         const tids = new Set(trow.map((r) => r.id));
         for (const x of txnStore.all()) if (!tids.has(x.id)) pending[`t:${x.id}`] = { kind: "t", id: x.id, deleted: false };
       }
-      for (const r of prow) versions[`p:${r.id}`] = r.version;
-      for (const r of trow) versions[`t:${r.id}`] = r.version;
+      // Never move the version under an unsent edit — that is what lets the server reject it if someone else saved first.
+      for (const r of prow) if (!pending[`p:${r.id}`]) versions[`p:${r.id}`] = r.version;
+      for (const r of trow) if (!pending[`t:${r.id}`]) versions[`t:${r.id}`] = r.version;
       persist();
       const pp = new Set(Object.values(pending).filter((x) => x.kind === "p").map((x) => x.id));
       const tp = new Set(Object.values(pending).filter((x) => x.kind === "t").map((x) => x.id));
@@ -94,7 +99,7 @@ export function ExecSnapshotSync() {
         for (const [key, job] of Object.entries(pending)) {
           const table = job.kind === "p" ? "shared_projects" : "shared_txns";
           const item = job.kind === "p" ? projectStore.all().find((x) => x.id === job.id) : txnStore.all().find((x) => x.id === job.id);
-          const v = versions[key];
+          const v = "baseVersion" in job ? job.baseVersion : versions[key]; // old queues have no baseVersion
           if (!job.deleted && !item) { delete pending[key]; continue; }
           let rows: Row[] | null = null;
           if (v === undefined) {
@@ -108,10 +113,20 @@ export function ExecSnapshotSync() {
             if (r.error) throw r.error;
             rows = (r.data as Row[] | null) ?? [];
           }
-          delete pending[key];
-          if (!rows.length) { conflict = true; delete versions[key]; continue; }
+          const newer = pending[key] !== job; // edited again while this save was in flight
+          if (!rows.length) {
+            // Someone else saved first: keep this device's copy aside instead of silently losing or forcing it.
+            conflict = true;
+            if (item) {
+              const saved = readJson<unknown[]>(CONFLICT_KEY, []);
+              localStorage.setItem(CONFLICT_KEY, JSON.stringify([...saved, { at: new Date().toISOString(), kind: job.kind, item }].slice(-50)));
+            }
+            delete pending[key]; delete versions[key];
+            continue;
+          }
           const row = rows[0]!;
           versions[key] = row.version;
+          if (newer) pending[key]!.baseVersion = row.version; else delete pending[key];
           if (job.kind === "t" && !row.deleted_at) {
             // The receipt number is assigned by the database.
             const n = (row.data as Txn).number;

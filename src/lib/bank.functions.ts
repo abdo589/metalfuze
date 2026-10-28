@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { normalizeTxn } from "./bank";
+import { assertWritable } from "./write-guard";
 
 type Ctx = { supabase: { rpc: (f: string, a: Record<string, unknown>) => PromiseLike<{ data: unknown }> }; userId: string };
 
@@ -48,6 +49,7 @@ export const bankStatus = createServerFn({ method: "GET" }).middleware([requireS
 /** Starts a connection: creates (or reuses) the Lean customer and returns what the browser SDK needs. */
 export const startBankConnect = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   await assertAdmin(context as unknown as Ctx);
+  await assertWritable(context as never);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   let { data: conn } = await supabaseAdmin.from("bank_connections").select("*").order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (!conn) {
@@ -99,6 +101,7 @@ export const refreshBank = createServerFn({ method: "POST" }).middleware([requir
 
 export const disconnectBank = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   await assertAdmin(context as unknown as Ctx);
+  await assertWritable(context as never);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin.from("bank_connections").delete().neq("customer_id", "");
   return { ok: true };

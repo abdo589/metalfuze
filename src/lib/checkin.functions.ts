@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { recordRemotePunch } from "./remote-checkin.server";
+import { assertWritable } from "./write-guard";
 
 /** Supervisor records arrival/leaving for a worker (admins only). */
 export const supervisorCheckin = createServerFn({ method: "POST" })
@@ -14,6 +15,7 @@ export const supervisorCheckin = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     const { data: isHr } = await context.supabase.rpc("is_hr", { _user_id: context.userId });
     if (!isAdmin && !isHr) return { ok: false as const, error: "forbidden" };
+    await assertWritable(context);
     return recordRemotePunch(data);
   });
 
@@ -28,6 +30,7 @@ export const manualPunch = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     const { data: isHr } = await context.supabase.rpc("is_hr", { _user_id: context.userId });
     if (!isAdmin && !isHr) return { ok: false as const, error: "forbidden" };
+    await assertWritable(context);
     const at = new Date(data.at);
     if (at.getTime() > Date.now() + 5 * 60_000) return { ok: false as const, error: "future" };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -49,6 +52,7 @@ export const deleteManualPunch = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     const { data: isHr } = await context.supabase.rpc("is_hr", { _user_id: context.userId });
     if (!isAdmin && !isHr) return { ok: false as const };
+    await assertWritable(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("attendance_logs").delete()
       .eq("device_sn", "MANUAL").eq("device_user_id", data.deviceUserId).eq("punched_at", data.at);
@@ -63,6 +67,7 @@ export const emailCheckinLink = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     const { data: isHr } = await context.supabase.rpc("is_hr", { _user_id: context.userId });
     if (!isAdmin && !isHr) return { ok: false as const, error: "forbidden" };
+    await assertWritable(context);
     const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
     const { data: emp } = await db.from("employees").select("id,name,active,checkin_token").eq("id", data.employeeId).maybeSingle();
     if (!emp || !emp.active) return { ok: false as const, error: "employee" };
