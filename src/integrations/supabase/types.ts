@@ -1785,6 +1785,7 @@ export type Database = {
         Args: { _calendar: boolean; _end: string; _start: string }
         Returns: number
       }
+      revoke_user_sessions: { Args: { _uid: string }; Returns: undefined }
       sales_advance: {
         Args: {
           p_action: string
