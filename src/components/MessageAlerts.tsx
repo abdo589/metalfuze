@@ -17,6 +17,15 @@ export function MessageAlerts() {
     document.title = unread > 0 ? `(${unread}) ${base}` : base;
   }, [unread, path]);
 
+  // App icon badge (installed app on phone/desktop) showing the unread count.
+  useEffect(() => {
+    const nav = navigator as Navigator & { setAppBadge?: (n?: number) => Promise<void>; clearAppBadge?: () => Promise<void> };
+    try {
+      if (unread > 0) nav.setAppBadge?.(unread)?.catch(() => {});
+      else nav.clearAppBadge?.()?.catch(() => {});
+    } catch { /* unsupported */ }
+  }, [unread]);
+
   useEffect(() => {
     if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().catch(() => {});
     let me: string | null = null;
