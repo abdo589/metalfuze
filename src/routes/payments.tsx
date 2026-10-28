@@ -12,7 +12,7 @@ import { useCanEditPayments } from "@/lib/permissions";
 import { t, useLanguage, locale, translations } from "@/lib/i18n";
 /** Bilingual label for invoices: Arabic / English. */
 const bi = (k: string) => (translations[k] ? `${k} / ${translations[k]}` : k);
-import { fmtMoney, newId, useProjects } from "@/lib/projects";
+import { fmtMoney, newId, useProjects, projectStore } from "@/lib/projects";
 import { totals, txnStore, useTransactions, type Txn, type TxnType } from "@/lib/transactions";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 
