@@ -9,6 +9,8 @@ export type Txn = {
   date: string; // YYYY-MM-DD
   manager: string;
   project: string;
+  /** Project id (preferred link; name kept for display and old records). */
+  projectId?: string;
   party: string; // العميل أو المورد
   amount: number;
   method: string;
@@ -24,7 +26,16 @@ function load(): Txn[] {
   try { cache = JSON.parse(localStorage.getItem(KEY) ?? "[]"); } catch { cache = []; }
   return cache!;
 }
-function save(list: Txn[]) {
+export const txnChanges = new Set<(changed: Txn[], removed: string[]) => void>();
+
+function save(list: Txn[], fromSync = false) {
+  if (!fromSync) {
+    const before = new Map((cache ?? load()).map((x) => [x.id, JSON.stringify(x)]));
+    const changed = list.filter((x) => before.get(x.id) !== JSON.stringify(x));
+    const ids = new Set(list.map((x) => x.id));
+    const removed = [...before.keys()].filter((id) => !ids.has(id));
+    if (changed.length || removed.length) txnChanges.forEach((f) => f(changed, removed));
+  }
   cache = list;
   localStorage.setItem(KEY, JSON.stringify(list));
   listeners.forEach((l) => l());
@@ -49,6 +60,7 @@ export const txnStore = {
   all: () => load(),
   /** Replace the whole list as-is (used to load the CEO's saved records on any device). */
   replaceAll(list: Txn[]) { save(list); },
+  applyRemote(list: Txn[]) { load(); save(list, true); },
   upsert(x: Txn) {
     const list = load();
     const old = list.find((y) => y.id === x.id);
@@ -74,6 +86,7 @@ export function useTransactions() {
 /** A client collection adds to (or removes from) the project's "paid" amount on the dashboard. */
 function syncPaid(x: Txn, sign: 1 | -1) {
   if (x.type !== "collect") return;
-  const p = projectStore.all().find((q) => q.name.trim() === x.project.trim());
+  const all = projectStore.all();
+  const p = (x.projectId && all.find((q) => q.id === x.projectId)) || all.find((q) => q.name.trim() === x.project.trim());
   if (p) projectStore.upsert({ ...p, paid: Math.max(0, p.paid + sign * x.amount) });
 }

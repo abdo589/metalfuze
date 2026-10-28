@@ -421,6 +421,13 @@
       "when": 1793190225505,
       "tag": "0059_revoke_user_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1793190479466,
+      "tag": "0060_shared_projects_and_txns_rows",
+      "breakpoints": true
     }
   ]
 }

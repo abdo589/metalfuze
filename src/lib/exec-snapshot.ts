@@ -1,9 +1,29 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { projectStore, useProjects, type Project } from "./projects";
-import { txnStore, useTransactions, type Txn } from "./transactions";
+import { toast } from "sonner";
+import { t } from "./i18n";
+import { projectStore, projectChanges, type Project } from "./projects";
+import { txnStore, txnChanges, type Txn } from "./transactions";
 
-/** Admins (Eilaf, Abdelrhman) and the CEO share projects/payments through exec_snapshot so every account sees every update live. */
+type Row = { id: string; data: unknown; version: number; deleted_at: string | null; updated_at: string };
+type Kind = "p" | "t";
+type Pending = { kind: Kind; id: string; deleted: boolean };
+
+const VER_KEY = "metalfuze.sync.versions.v1";
+const PEND_KEY = "metalfuze.sync.pending.v1";
+const readJson = <T,>(k: string, d: T): T => { try { return JSON.parse(localStorage.getItem(k) || "") as T; } catch { return d; } };
+
+/** Merge the shared rows into this device's list: rows are the truth unless this device has an unsent change for that item. */
+export function mergeRemote<T extends { id: string }>(local: T[], rows: Row[], pending: Set<string>): T[] {
+  const out = new Map<string, T>();
+  for (const r of rows) if (!r.deleted_at) out.set(r.id, r.data as T);
+  for (const x of local) if (pending.has(x.id)) out.set(x.id, x);
+  for (const r of rows) if (r.deleted_at && !pending.has(r.id)) out.delete(r.id);
+  const order = new Map(local.map((x, i) => [x.id, i]));
+  return [...out.values()].sort((a, b) => (order.get(a.id) ?? 1e9) - (order.get(b.id) ?? 1e9));
+}
+
+/** Admins and the CEO share projects/payments one row per item, with versions so an older device can't overwrite newer edits. */
 export function ExecSnapshotSync() {
   const [mode, setMode] = useState<"ceo" | "admin" | null>(null);
   useEffect(() => {
@@ -19,55 +39,100 @@ export function ExecSnapshotSync() {
     const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
     return () => sub.subscription.unsubscribe();
   }, []);
-  const [ready, setReady] = useState(false);
+
   useEffect(() => {
-    if (!mode) { setReady(false); return; }
-    let first = true;
-    const pull = async () => {
-      const { data } = await supabase.from("exec_snapshot").select("key,data");
-      const p = (data?.find((r) => r.key === "projects")?.data as Project[] | undefined) ?? [];
-      let t = data?.find((r) => r.key === "transactions")?.data as Txn[] | undefined;
-      let nextP = p;
-      if (first && mode === "admin") {
-        // The shared cloud copy always wins; only add items that exist solely on this device
-        // (never the built-in sample data on a fresh device, never older local copies of shared items).
-        const hasLocalProjects = localStorage.getItem("metalfuze.projects.v1") !== null;
-        if (hasLocalProjects) {
-          const ids = new Set(p.map((x) => x.id));
-          const names = new Set(p.map((x) => (x.name || "").trim()));
-          nextP = [...p, ...projectStore.all().filter((x) => !ids.has(x.id) && (x.allowSameName || !names.has((x.name || "").trim())))];
-        }
-        if (t) {
-          const tids = new Set(t.map((x) => x.id));
-          t = [...t, ...txnStore.all().filter((x) => !tids.has(x.id))];
-        }
-      }
-      nextP = uniqByName(nextP);
-      if (nextP.length && JSON.stringify(nextP) !== JSON.stringify(projectStore.all())) projectStore.replaceAll(nextP);
-      if (t && JSON.stringify(t) !== JSON.stringify(txnStore.all())) txnStore.replaceAll(t);
-      first = false;
-      setReady(true);
+    if (!mode) return;
+    let alive = true;
+    let ready = false;
+    const versions: Record<string, number> = readJson(VER_KEY, {});
+    const pending: Record<string, Pending> = readJson(PEND_KEY, {});
+    const persist = () => { localStorage.setItem(VER_KEY, JSON.stringify(versions)); localStorage.setItem(PEND_KEY, JSON.stringify(pending)); };
+    const mark = (kind: Kind) => (changed: { id: string }[], removed: string[]) => {
+      for (const x of changed) pending[`${kind}:${x.id}`] = { kind, id: x.id, deleted: false };
+      for (const id of removed) pending[`${kind}:${id}`] = { kind, id, deleted: true };
+      persist();
+      if (ready) schedulePush();
     };
+    const onP = mark("p"), onT = mark("t");
+    projectChanges.add(onP); txnChanges.add(onT);
+
+    const pull = async () => {
+      const [pr, tr] = await Promise.all([
+        supabase.from("shared_projects").select("id,data,version,deleted_at,updated_at"),
+        supabase.from("shared_txns").select("id,data,version,deleted_at,updated_at"),
+      ]);
+      if (!alive || pr.error || tr.error) return;
+      const prow = (pr.data ?? []) as Row[], trow = (tr.data ?? []) as Row[];
+      if (!ready && mode === "admin" && Object.keys(versions).length === 0) {
+        // First sync on this device: send items that exist only here (never stale copies of shared names).
+        const ids = new Set(prow.map((r) => r.id));
+        const names = new Set(prow.map((r) => String((r.data as Project).name ?? "").trim()));
+        const hasLocal = localStorage.getItem("metalfuze.projects.v1") !== null;
+        if (hasLocal) for (const x of projectStore.all()) if (!ids.has(x.id) && (x.allowSameName || !names.has((x.name || "").trim()))) pending[`p:${x.id}`] = { kind: "p", id: x.id, deleted: false };
+        const tids = new Set(trow.map((r) => r.id));
+        for (const x of txnStore.all()) if (!tids.has(x.id)) pending[`t:${x.id}`] = { kind: "t", id: x.id, deleted: false };
+      }
+      for (const r of prow) versions[`p:${r.id}`] = r.version;
+      for (const r of trow) versions[`t:${r.id}`] = r.version;
+      persist();
+      const pp = new Set(Object.values(pending).filter((x) => x.kind === "p").map((x) => x.id));
+      const tp = new Set(Object.values(pending).filter((x) => x.kind === "t").map((x) => x.id));
+      const nextP = uniqByName(mergeRemote(projectStore.all(), prow, pp));
+      const nextT = mergeRemote(txnStore.all(), trow, tp);
+      if (JSON.stringify(nextP) !== JSON.stringify(projectStore.all())) projectStore.applyRemote(nextP);
+      if (JSON.stringify(nextT) !== JSON.stringify(txnStore.all())) txnStore.applyRemote(nextT);
+      ready = true;
+      if (Object.keys(pending).length) schedulePush();
+    };
+
+    let pushing = false;
+    const push = async () => {
+      if (pushing || !alive) return;
+      pushing = true;
+      let conflict = false;
+      try {
+        for (const [key, job] of Object.entries(pending)) {
+          const table = job.kind === "p" ? "shared_projects" : "shared_txns";
+          const item = job.kind === "p" ? projectStore.all().find((x) => x.id === job.id) : txnStore.all().find((x) => x.id === job.id);
+          const v = versions[key];
+          if (!job.deleted && !item) { delete pending[key]; continue; }
+          let rows: Row[] | null = null;
+          if (v === undefined) {
+            if (job.deleted) { delete pending[key]; continue; }
+            const r = await supabase.from(table).insert({ id: job.id, data: item as never }).select("id,data,version,deleted_at,updated_at");
+            if (r.error && r.error.code !== "23505") throw r.error;
+            rows = (r.data as Row[] | null) ?? [];
+          } else {
+            const patch = job.deleted ? { deleted_at: new Date().toISOString() } : { data: item as never, deleted_at: null };
+            const r = await supabase.from(table).update(patch).eq("id", job.id).eq("version", v).select("id,data,version,deleted_at,updated_at");
+            if (r.error) throw r.error;
+            rows = (r.data as Row[] | null) ?? [];
+          }
+          delete pending[key];
+          if (!rows.length) { conflict = true; delete versions[key]; continue; }
+          const row = rows[0]!;
+          versions[key] = row.version;
+          if (job.kind === "t" && !row.deleted_at) {
+            // The receipt number is assigned by the database.
+            const n = (row.data as Txn).number;
+            if (n && n !== (item as Txn).number) txnStore.applyRemote(txnStore.all().map((x) => (x.id === job.id ? { ...x, number: n } : x)));
+          }
+        }
+      } catch { /* retried on next change or pull */ }
+      finally { persist(); pushing = false; }
+      if (conflict) { toast.warning(t("تم تعديل بعض البيانات من جهاز آخر — تم تحميل أحدث نسخة")); await pull(); }
+    };
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedulePush = () => { clearTimeout(timer); timer = setTimeout(push, 800); };
+
     pull();
     const ch = supabase.channel(`sync-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "exec_snapshot" }, () => { pull(); }).subscribe();
+      .on("postgres_changes", { event: "*", schema: "public", table: "shared_projects" }, () => { pull(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "shared_txns" }, () => { pull(); })
+      .subscribe();
     const iv = setInterval(pull, 60000);
-    return () => { clearInterval(iv); supabase.removeChannel(ch); };
+    return () => { alive = false; clearTimeout(timer); clearInterval(iv); supabase.removeChannel(ch); projectChanges.delete(onP); txnChanges.delete(onT); };
   }, [mode]);
-  const projects = useProjects();
-  const txns = useTransactions();
-  useEffect(() => {
-    if (!mode || !ready) return;
-    const h = setTimeout(async () => {
-      const { data } = await supabase.from("exec_snapshot").select("key,data");
-      const now = new Date().toISOString();
-      const rows: { key: string; data: never; updated_at: string }[] = [];
-      if (JSON.stringify(data?.find((r) => r.key === "projects")?.data ?? null) !== JSON.stringify(uniqByName(projects))) rows.push({ key: "projects", data: uniqByName(projects) as never, updated_at: now });
-      if (JSON.stringify(data?.find((r) => r.key === "transactions")?.data ?? null) !== JSON.stringify(txns)) rows.push({ key: "transactions", data: txns as never, updated_at: now });
-      if (rows.length) await supabase.from("exec_snapshot").upsert(rows);
-    }, 1500);
-    return () => clearTimeout(h);
-  }, [mode, ready, projects, txns]);
   return null;
 }
 
@@ -76,15 +141,18 @@ export function useExecSnapshot() {
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      const { data } = await supabase.from("exec_snapshot").select("key,data,updated_at");
+      const [p, t] = await Promise.all([
+        supabase.from("shared_projects").select("data,updated_at").is("deleted_at", null),
+        supabase.from("shared_txns").select("data,updated_at").is("deleted_at", null),
+      ]);
       if (!alive) return;
-      const p = data?.find((r) => r.key === "projects");
-      const t = data?.find((r) => r.key === "transactions");
-      setState({ projects: (p?.data as Project[]) ?? [], txns: (t?.data as Txn[]) ?? [], updated: p?.updated_at ?? null, loading: false });
+      const updated = (p.data ?? []).reduce<string | null>((m, r) => (!m || r.updated_at > m ? r.updated_at : m), null);
+      setState({ projects: (p.data ?? []).map((r) => r.data as Project), txns: (t.data ?? []).map((r) => r.data as Txn), updated, loading: false });
     };
     load();
     const ch = supabase.channel(`exec-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "exec_snapshot" }, load).subscribe();
+      .on("postgres_changes", { event: "*", schema: "public", table: "shared_projects" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "shared_txns" }, load).subscribe();
     const iv = setInterval(load, 60000);
     return () => { alive = false; clearInterval(iv); supabase.removeChannel(ch); };
   }, []);

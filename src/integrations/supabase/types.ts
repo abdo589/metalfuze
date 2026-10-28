@@ -1607,6 +1607,66 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_projects: {
+        Row: {
+          data: Json
+          deleted_at: string | null
+          id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          data: Json
+          deleted_at?: string | null
+          id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          data?: Json
+          deleted_at?: string | null
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
+      shared_txns: {
+        Row: {
+          data: Json
+          deleted_at: string | null
+          id: string
+          number: string
+          project_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          data: Json
+          deleted_at?: string | null
+          id: string
+          number?: string
+          project_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          data?: Json
+          deleted_at?: string | null
+          id?: string
+          number?: string
+          project_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       traffic_violations: {
         Row: {
           amount: number
@@ -1705,7 +1765,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_edit_shared: { Args: never; Returns: boolean }
       can_read_sales_file: { Args: { _path: string }; Returns: boolean }
+      can_read_shared: { Args: never; Returns: boolean }
       can_write: { Args: { _uid: string }; Returns: boolean }
       chat_directory: {
         Args: never
