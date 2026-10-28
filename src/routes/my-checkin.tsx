@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getMyCheckinToken } from "@/lib/checkin.functions";
-import { useT } from "@/lib/i18n";
+import { t, useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/my-checkin")({
   head: () => ({ meta: [
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/my-checkin")({
 });
 
 function MyCheckin() {
-  const t = useT();
+  useLanguage();
   const navigate = useNavigate();
   const [failed, setFailed] = useState(false);
   useEffect(() => {
