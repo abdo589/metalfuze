@@ -1544,6 +1544,47 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_meetings: {
+        Row: {
+          attendees: string[]
+          created_at: string
+          created_by: string
+          deal_id: string
+          id: string
+          meeting_at: string
+          notes: string
+          place: string
+        }
+        Insert: {
+          attendees?: string[]
+          created_at?: string
+          created_by?: string
+          deal_id: string
+          id?: string
+          meeting_at: string
+          notes?: string
+          place?: string
+        }
+        Update: {
+          attendees?: string[]
+          created_at?: string
+          created_by?: string
+          deal_id?: string
+          id?: string
+          meeting_at?: string
+          notes?: string
+          place?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_meetings_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "sales_deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settlements: {
         Row: {
           created_at: string

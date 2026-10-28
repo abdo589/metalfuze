@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Coins, Download, Eye, Link2, Pencil, Plus, Trash2 } from "lucide-react";
+import { CalendarClock, Coins, Download, Eye, Link2, Mail, Pencil, Plus, Trash2 } from "lucide-react";
+import { SalesMeetings } from "@/components/SalesMeetings";
 import { pullLinkFile } from "@/lib/link-file.functions";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -228,6 +229,15 @@ function SalesPage() {
       {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
   };
   const [view, setView] = useState<D | null>(null);
+  const [meet, setMeet] = useState<D | null>(null);
+  const mailClient = (d: D) => {
+    const r = (d.request ?? {}) as Req;
+    const to = String(r["contact_email"] ?? "").trim();
+    if (!to) { toast.error(t("لا يوجد بريد إلكتروني لمسؤول التواصل")); return; }
+    const subject = `Metal Fuze — ${d.project}`;
+    const body = `${t("السادة")} ${d.client}${r["contact_name"] ? ` / ${r["contact_name"]}` : ""}\n\n${t("مرفق تفاصيل عرض السعر لمشروع")}: ${d.project}${Number(d.quote_value) ? `\n${t("قيمة العرض")}: ${fmt(Number(d.quote_value))}` : ""}\n\n${t("مع التحية")}\nMetal Fuze`;
+    window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
   const [busy, setBusy] = useState(false);
   const fileName = (p: string) => p.split("/").pop()!.replace(/^\d+_/, "");
   async function upload(files: FileList | File[] | null) {
@@ -338,7 +348,7 @@ function SalesPage() {
                 <td className="p-2" dir="ltr">{fmt(Number(d.quote_value))}</td><td className="p-2" dir="ltr">{fmt(Number(d.contract_value))}</td>
                 <td className="p-2" dir="ltr">{fmt(Number(d.collected))}</td><td className="p-2 font-semibold" dir="ltr">{fmt(commissionDue(d))}</td>
                 <td className="p-2">{t(d.payout_status)}</td>
-                <td className="p-2 whitespace-nowrap"><Button size="icon" variant="ghost" className="size-7" aria-label={t("التفاصيل")} onClick={() => setView(d)}><Eye className="size-4" /></Button>{canEdit && <>
+                <td className="p-2 whitespace-nowrap"><Button size="icon" variant="ghost" className="size-7" aria-label={t("التفاصيل")} onClick={() => setView(d)}><Eye className="size-4" /></Button><Button size="icon" variant="ghost" className="size-7" aria-label={t("إرسال للعميل")} title={t("إرسال للعميل")} onClick={() => mailClient(d)}><Mail className="size-4" /></Button><Button size="icon" variant="ghost" className="size-7" aria-label={t("الاجتماعات")} title={t("الاجتماعات")} onClick={() => setMeet(d)}><CalendarClock className="size-4" /></Button>{canEdit && <>
                   <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => { setMode("pricing"); openDraft(d); }}><Pencil className="size-4" /></Button>
                   <Button size="icon" variant="ghost" className="size-7" aria-label={t("العمولة")} title={t("العمولة")} onClick={() => { setMode("commission"); setEdit(d); }}><Coins className="size-4" /></Button>
                   <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(d)}><Trash2 className="size-4" /></Button></>}</td>
@@ -418,6 +428,7 @@ function SalesPage() {
           </div>}
         </DialogContent>
       </Dialog>
+      <SalesMeetings deal={meet} onClose={() => setMeet(null)} />
     </main>
   );
 }
