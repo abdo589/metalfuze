@@ -15,3 +15,16 @@ describe("mergeRemote", () => {
     expect(mergeRemote([{ id: "a", name: "mine" }], [row("a", "new")], new Set(["a"]))[0]!.name).toBe("mine");
   });
 });
+
+import { createReadCache } from "./read-cache";
+describe("read cache", () => {
+  it("does not keep a read that started before a write", async () => {
+    const c = createReadCache(60_000);
+    let release!: () => void;
+    const key = "https://x/rest/v1/employees?select=*|";
+    const slow = c.get(key, () => new Promise((r) => { release = () => r({ at: 0, status: 200, statusText: "", headers: [], body: new ArrayBuffer(0) }); }));
+    c.clearTable("employees");
+    release(); await slow;
+    expect(c.size()).toBe(0);
+  });
+});
