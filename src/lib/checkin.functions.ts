@@ -88,3 +88,20 @@ export const emailCheckinLink = createServerFn({ method: "POST" })
     }
     return { ok: true as const };
   });
+
+/** Any signed-in user gets the check-in link of the employee linked to their own account only. */
+export const getMyCheckinToken = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+    const { data: prof } = await db.from("profiles").select("employee_id").eq("id", context.userId).maybeSingle();
+    if (!prof?.employee_id) return { ok: false as const };
+    const { data: emp } = await db.from("employees").select("id,active,checkin_token").eq("id", prof.employee_id).maybeSingle();
+    if (!emp || !emp.active) return { ok: false as const };
+    let token = emp.checkin_token;
+    if (!token) {
+      token = Array.from(crypto.getRandomValues(new Uint8Array(18)), (b) => b.toString(16).padStart(2, "0")).join("");
+      await db.from("employees").update({ checkin_token: token }).eq("id", emp.id);
+    }
+    return { ok: true as const, token };
+  });

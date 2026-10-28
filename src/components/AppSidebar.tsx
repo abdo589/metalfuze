@@ -58,6 +58,7 @@ export const items = [
   { to: "/mail", label: "البريد (Outlook)", icon: Mail },
   { to: "/attendance-tracking", label: "تتبع الحضور", icon: Radar },
   { to: "/workers-checkin", label: "تسجيل حضور العمال", icon: Radar },
+  { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint },
   { to: "/settlements", label: "المخالصات", icon: FileText },
   { to: "/assistant", label: "المستشار الذكي", icon: BrainCircuit },
   { to: "/sales", label: "المبيعات", icon: Calculator },
@@ -68,13 +69,13 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const role = useRole();
   const hidden = useHiddenPaths();
   const unread = useUnreadMessages();
-  const visible = (role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
+  const visible = (role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
-    : role === "sales" ? [{ to: "/sales", label: "المبيعات", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }]
-    : role === "mail" ? [{ to: "/mail", label: "البريد (Outlook)", icon: Mail }]
-    : role === "executive" ? [{ to: "/executive", label: "الملخص التنفيذي", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
-    : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
-    : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }]
+    : role === "sales" ? [{ to: "/sales", label: "المبيعات", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
+    : role === "mail" ? [{ to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
+    : role === "executive" ? [{ to: "/executive", label: "الملخص التنفيذي", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
+    : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
+    : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === undefined ? [] : role === "admin" ? items.filter((i) => !["/establishment", "/est-payroll", "/attendance"].includes(i.to)) : items.filter((i) => i.to !== "/my-projects" && !HR_ADMIN_ONLY.includes(i.to)))
     .filter((i) => !hidden.includes(i.to));
   return (

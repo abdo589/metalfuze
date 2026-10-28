@@ -28,6 +28,7 @@ import { Route as LeavesRouteImport } from './routes/leaves'
 import { Route as MailRouteImport } from './routes/mail'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as MyCheckinRouteImport } from './routes/my-checkin'
 import { Route as MyProjectsRouteImport } from './routes/my-projects'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
@@ -151,6 +152,11 @@ const McpRoute = McpRouteImport.update({
 const MessagesRoute = MessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyCheckinRoute = MyCheckinRouteImport.update({
+  id: '/my-checkin',
+  path: '/my-checkin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MyProjectsRoute = MyProjectsRouteImport.update({
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
+  '/my-checkin': typeof MyCheckinRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -371,6 +378,7 @@ export interface FileRoutesByTo {
   '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
+  '/my-checkin': typeof MyCheckinRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -422,6 +430,7 @@ export interface FileRoutesById {
   '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
+  '/my-checkin': typeof MyCheckinRoute
   '/my-projects': typeof MyProjectsRoute
   '/payments': typeof PaymentsRoute
   '/payroll': typeof PayrollRoute
@@ -474,6 +483,7 @@ export interface FileRouteTypes {
     | '/mail'
     | '/mcp'
     | '/messages'
+    | '/my-checkin'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -524,6 +534,7 @@ export interface FileRouteTypes {
     | '/mail'
     | '/mcp'
     | '/messages'
+    | '/my-checkin'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -574,6 +585,7 @@ export interface FileRouteTypes {
     | '/mail'
     | '/mcp'
     | '/messages'
+    | '/my-checkin'
     | '/my-projects'
     | '/payments'
     | '/payroll'
@@ -625,6 +637,7 @@ export interface RootRouteChildren {
   MailRoute: typeof MailRoute
   McpRoute: typeof McpRoute
   MessagesRoute: typeof MessagesRoute
+  MyCheckinRoute: typeof MyCheckinRoute
   MyProjectsRoute: typeof MyProjectsRoute
   PaymentsRoute: typeof PaymentsRoute
   PayrollRoute: typeof PayrollRoute
@@ -789,6 +802,13 @@ declare module '@tanstack/react-router' {
       path: '/messages'
       fullPath: '/messages'
       preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-checkin': {
+      id: '/my-checkin'
+      path: '/my-checkin'
+      fullPath: '/my-checkin'
+      preLoaderRoute: typeof MyCheckinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/my-projects': {
@@ -1017,6 +1037,7 @@ const rootRouteChildren: RootRouteChildren = {
   MailRoute: MailRoute,
   McpRoute: McpRoute,
   MessagesRoute: MessagesRoute,
+  MyCheckinRoute: MyCheckinRoute,
   MyProjectsRoute: MyProjectsRoute,
   PaymentsRoute: PaymentsRoute,
   PayrollRoute: PayrollRoute,

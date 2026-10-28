@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 export type Role = "developer" | "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | "sales" | null;
 
 /** The developer (Eng Abdelrhman) only sees the faults inbox, account settings and his Outlook mailbox. */
-export const DEV_PATHS = ["/dev", "/mail"];
+export const DEV_PATHS = ["/dev", "/mail", "/messages", "/my-checkin"];
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
-export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail", "/sales"];
+export const HR_PATHS = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail", "/sales", "/my-checkin"];
 /** Per-account menu trims: pages hidden from a specific account by its email (visible to everyone else). */
 const ACCOUNT_HIDDEN_PATHS: Record<string, string[]> = {
   "haitham@metalfuze.local": ["/bank", "/hr-file", "/report"],
@@ -47,14 +47,14 @@ export function useMyAccess() {
 export const HR_ADMIN_ONLY = ["/payroll", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance"];
 /** Self-registered project managers (and accounts without a role) only get their own workspace. */
 /** Accountant (Aiftkhar) sees only the private accounting space. */
-export const ACCOUNTANT_PATHS = ["/accounting", "/messages", "/mail"];
+export const ACCOUNTANT_PATHS = ["/accounting", "/messages", "/mail", "/my-checkin"];
 /** Executive (Hisham) sees only the live summary, read-only. */
-export const EXECUTIVE_PATHS = ["/executive", "/messages", "/mail"];
-export const MANAGER_PATHS = ["/my-projects", "/messages", "/mail"];
+export const EXECUTIVE_PATHS = ["/executive", "/messages", "/mail", "/my-checkin"];
+export const MANAGER_PATHS = ["/my-projects", "/messages", "/mail", "/my-checkin"];
 /** Mail-only accounts open nothing but their Outlook mailbox. */
-export const MAIL_PATHS = ["/mail"];
+export const MAIL_PATHS = ["/mail", "/messages", "/my-checkin"];
 /** Sales (Hala) only opens her own sales & commission space. */
-export const SALES_PATHS = ["/sales", "/messages"];
+export const SALES_PATHS = ["/sales", "/messages", "/mail", "/my-checkin"];
 
 /** Who may open the AI advisor (/assistant) — mirrors RoleGuard's allowed lists, so the floating button never links to a blocked page. */
 export function assistantAllowed(role: Role | undefined) {
