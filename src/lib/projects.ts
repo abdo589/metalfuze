@@ -50,8 +50,18 @@ function load(): Project[] {
   return cache!;
 }
 
-function save(list: Project[]) {
+/** Called with ids changed/removed by this device (not by sync), so they can be sent to the shared store. */
+export const projectChanges = new Set<(changed: Project[], removed: string[]) => void>();
+
+function save(list: Project[], fromSync = false) {
   list = list.map(withAutoStatus);
+  if (!fromSync) {
+    const before = new Map((cache ?? []).map((x) => [x.id, JSON.stringify(x)]));
+    const changed = list.filter((x) => before.get(x.id) !== JSON.stringify(x));
+    const ids = new Set(list.map((x) => x.id));
+    const removed = [...before.keys()].filter((id) => !ids.has(id));
+    if (changed.length || removed.length) projectChanges.forEach((f) => f(changed, removed));
+  }
   cache = list;
   localStorage.setItem(KEY, JSON.stringify(list));
   listeners.forEach((l) => l());
@@ -69,6 +79,11 @@ export const projectStore = {
   },
   replaceAll(list: Project[]) {
     save(list);
+  },
+  /** Apply the shared copy without re-sending it. */
+  applyRemote(list: Project[]) {
+    load();
+    save(list, true);
   },
   reset() {
     save(seed as Project[]);
