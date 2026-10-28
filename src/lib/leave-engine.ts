@@ -108,6 +108,7 @@ export function leaveError(message: string | undefined): string {
   if (m.includes("LEAVE_NO_WORKDAYS")) return "الفترة المختارة لا تحتوي أيام عمل";
   if (m.includes("LEAVE_ATTACHMENT")) return "هذا النوع يحتاج مرفقًا (مثل التقرير الطبي)";
   if (m.includes("LEAVE_MAX_DAYS")) return "عدد الأيام أكبر من الحد المسموح لهذا النوع";
+  if (m.includes("LEAVE_OVERLAP")) return "يوجد طلب إجازة آخر في نفس الفترة";
   if (m.includes("LEAVE_BALANCE")) return "الرصيد المتبقي لا يكفي لهذا الطلب";
   if (m.includes("LEAVE_REASON")) return "اكتب السبب أولًا";
   if (m.includes("LEAVE_FORBIDDEN")) return "ليس لديك صلاحية لهذا الإجراء";
