@@ -435,6 +435,13 @@
       "when": 1793190720044,
       "tag": "0061_round4_concurrency_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1793194553427,
+      "tag": "0062_read_only_everywhere",
+      "breakpoints": true
     }
   ]
 }

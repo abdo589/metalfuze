@@ -1765,6 +1765,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assert_writable: { Args: never; Returns: undefined }
       can_edit_shared: { Args: never; Returns: boolean }
       can_read_sales_file: { Args: { _path: string }; Returns: boolean }
       can_read_shared: { Args: never; Returns: boolean }
