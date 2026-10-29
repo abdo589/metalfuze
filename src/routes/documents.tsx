@@ -106,7 +106,7 @@ function DocumentsPage() {
   }
   async function openFile(r: Doc, download: boolean) {
     if (!r.file_path) return;
-    const { data, error } = await supabase.storage.from("company-docs").createSignedUrl(r.file_path, 60, download ? { download: r.file_name || true } : undefined);
+    const { data, error } = await supabase.storage.from("company-docs").createSignedUrl(r.file_path, 10, download ? { download: r.file_name || true } : undefined);
     if (error || !data) { toast.error(t("تعذر فتح الملف")); return; }
     if (download) { const a = document.createElement("a"); a.href = data.signedUrl; a.click(); } else window.open(data.signedUrl, "_blank");
   }
