@@ -109,3 +109,17 @@ export function useCanEditPayments() {
   const ro = useMyAccess()?.read_only;
   return !ro && (role === "admin" || isCeo);
 }
+
+/** Ali (ali@metalfuze.local) has his own blank "إدارة مشاريع" workspace instead of the dashboard. */
+export const ALI_EMAIL = "ali@metalfuze.local";
+export const ALI_PATHS = ["/project-admin", "/messages", "/mail", "/my-checkin"];
+export function useIsAli() {
+  const [isAli, setIsAli] = useState<boolean | undefined>(undefined);
+  useEffect(() => {
+    const check = () => supabase.auth.getUser().then(({ data }) => setIsAli(data.user?.email === ALI_EMAIL));
+    check();
+    const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+  return isAli;
+}
