@@ -144,3 +144,69 @@ export function invoiceTotals(contractValue: number, list: Pick<CpInvoice, "stat
   return { contract: contractValue, invoiced, paid, remaining: contractValue - invoiced };
 }
 export const sar = (n: number, lang: string) => new Intl.NumberFormat(lang === "en" ? "en-US" : "ar-SA", { maximumFractionDigits: 2 }).format(n) + (lang === "en" ? " SAR" : " ر.س");
+
+export type CpActivity = Database["public"]["Tables"]["schedule_activities"]["Row"];
+export type CpDaily = Database["public"]["Tables"]["daily_reports"]["Row"];
+export const TRADES = ["مدني", "كهرباء", "ميكانيكا", "معماري", "سلامة", "مقاول من الباطن"];
+export const WEATHER = ["مشمس", "غائم", "ممطر", "مغبر", "عاصفة ترابية", "حار جدًا"];
+
+const DAY = 86400000;
+const d0 = (s: string) => new Date(s + "T00:00:00Z").getTime();
+export const iso = (t: number) => new Date(t).toISOString().slice(0, 10);
+export const daysBetween = (a: string, b: string) => Math.round((d0(b) - d0(a)) / DAY);
+
+/** Overall schedule progress, weighted by each activity's duration in days. */
+export function scheduleProgress(acts: Pick<CpActivity, "start_date" | "end_date" | "progress">[]) {
+  let w = 0, s = 0;
+  for (const a of acts) { const d = daysBetween(a.start_date, a.end_date) + 1; w += d; s += d * Number(a.progress); }
+  return w ? Math.round((s / w) * 10) / 10 : 0;
+}
+/** Planned progress at a date: share of each activity's duration already elapsed. */
+export function plannedProgress(acts: Pick<CpActivity, "start_date" | "end_date">[], at: string) {
+  let w = 0, s = 0;
+  for (const a of acts) {
+    const d = daysBetween(a.start_date, a.end_date) + 1; w += d;
+    s += d * Math.min(1, Math.max(0, (daysBetween(a.start_date, at) + 1) / d)) * 100;
+  }
+  return w ? Math.round((s / w) * 10) / 10 : 0;
+}
+export function ganttRange(acts: Pick<CpActivity, "start_date" | "end_date">[]) {
+  if (!acts.length) return null;
+  const start = acts.reduce((m, a) => (a.start_date < m ? a.start_date : m), acts[0].start_date);
+  const end = acts.reduce((m, a) => (a.end_date > m ? a.end_date : m), acts[0].end_date);
+  return { start, end, days: daysBetween(start, end) + 1 };
+}
+/** Monday-start week containing the date. */
+export function weekOf(date: string) {
+  const t = d0(date); const wd = (new Date(t).getUTCDay() + 6) % 7;
+  return { from: iso(t - wd * DAY), to: iso(t + (6 - wd) * DAY) };
+}
+export function monthOf(date: string) {
+  const [y, m] = date.split("-").map(Number);
+  return { from: `${y}-${String(m).padStart(2, "0")}-01`, to: iso(Date.UTC(y, m, 0)) };
+}
+const inR = (d: string | null, from: string, to: string) => !!d && d >= from && d <= to;
+
+export function periodReport(
+  input: { daily: CpDaily[]; subs: CpSubmission[]; invoices: CpInvoice[]; acts: CpActivity[] },
+  from: string, to: string,
+) {
+  const daily = input.daily.filter((r) => inR(r.report_date, from, to)).sort((a, b) => a.report_date.localeCompare(b.report_date));
+  const manpower: Record<string, number> = {};
+  for (const r of daily) for (const [k, v] of Object.entries((r.manpower ?? {}) as Record<string, number>)) manpower[k] = (manpower[k] ?? 0) + Number(v || 0);
+  const totalManDays = Object.values(manpower).reduce((a, b) => a + b, 0);
+  const subsIn = input.subs.filter((s) => inR(s.submitted_date, from, to) || inR(s.reply_date, from, to));
+  const docs = subsIn.filter((s) => s.type !== "WIR");
+  const wirs = subsIn.filter((s) => s.type === "WIR");
+  const codes = { A: 0, B: 0, C: 0, D: 0 } as Record<string, number>;
+  for (const s of subsIn) if (s.code && inR(s.reply_date, from, to)) codes[s.code] = (codes[s.code] ?? 0) + 1;
+  const invoices = input.invoices.filter((i) => inR(i.submitted_date, from, to) || inR(i.paid_date, from, to));
+  const invoiced = invoices.filter((i) => inR(i.submitted_date, from, to) && i.status !== "draft" && i.status !== "rejected").reduce((s, i) => s + Number(i.amount), 0);
+  const paid = invoices.filter((i) => i.status === "paid" && inR(i.paid_date, from, to)).reduce((s, i) => s + Number(i.net_amount ?? 0), 0);
+  const acts = input.acts.filter((a) => a.start_date <= to && a.end_date >= from);
+  return {
+    from, to, daily, manpower, totalManDays, docs, wirs, codes, invoices, invoiced, paid, acts,
+    actual: scheduleProgress(input.acts), planned: plannedProgress(input.acts, to),
+    issues: daily.filter((r) => r.issues.trim()).map((r) => ({ date: r.report_date, text: r.issues })),
+  };
+}
