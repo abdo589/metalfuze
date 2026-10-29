@@ -122,6 +122,6 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   );
 }
 
-export function F({ label, children }: { label: string; children: React.ReactNode }) {
+function F({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><Label>{label}</Label>{children}</div>;
 }

@@ -52,6 +52,7 @@ import { Route as CheckinTokenRouteImport } from './routes/checkin.$token'
 import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
 import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
 import { Route as LeaveTokenRouteImport } from './routes/leave.$token'
+import { Route as ProjectAdminProjectsRouteImport } from './routes/project-admin_.projects'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
 import { Route as ApiPublicLeaveRouteImport } from './routes/api/public/leave'
@@ -276,6 +277,11 @@ const LeaveTokenRoute = LeaveTokenRouteImport.update({
   path: '/leave/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectAdminProjectsRoute = ProjectAdminProjectsRouteImport.update({
+  id: '/project-admin_/projects',
+  path: '/project-admin/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -356,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/leave/$token': typeof LeaveTokenRoute
+  '/project-admin/projects': typeof ProjectAdminProjectsRoute
   '/assistant/': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
@@ -408,6 +415,7 @@ export interface FileRoutesByTo {
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/leave/$token': typeof LeaveTokenRoute
+  '/project-admin/projects': typeof ProjectAdminProjectsRoute
   '/assistant': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
@@ -461,6 +469,7 @@ export interface FileRoutesById {
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/leave/$token': typeof LeaveTokenRoute
+  '/project-admin_/projects': typeof ProjectAdminProjectsRoute
   '/assistant/': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
@@ -515,6 +524,7 @@ export interface FileRouteTypes {
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/leave/$token'
+    | '/project-admin/projects'
     | '/assistant/'
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
@@ -567,6 +577,7 @@ export interface FileRouteTypes {
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/leave/$token'
+    | '/project-admin/projects'
     | '/assistant'
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
@@ -619,6 +630,7 @@ export interface FileRouteTypes {
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/leave/$token'
+    | '/project-admin_/projects'
     | '/assistant/'
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
@@ -672,6 +684,7 @@ export interface RootRouteChildren {
   IclockCdataRoute: typeof IclockCdataRoute
   IclockGetrequestRoute: typeof IclockGetrequestRoute
   LeaveTokenRoute: typeof LeaveTokenRoute
+  ProjectAdminProjectsRoute: typeof ProjectAdminProjectsRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
@@ -985,6 +998,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeaveTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project-admin_/projects': {
+      id: '/project-admin_/projects'
+      path: '/project-admin/projects'
+      fullPath: '/project-admin/projects'
+      preLoaderRoute: typeof ProjectAdminProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -1081,6 +1101,7 @@ const rootRouteChildren: RootRouteChildren = {
   IclockCdataRoute: IclockCdataRoute,
   IclockGetrequestRoute: IclockGetrequestRoute,
   LeaveTokenRoute: LeaveTokenRoute,
+  ProjectAdminProjectsRoute: ProjectAdminProjectsRoute,
   AssistantIndexRoute: AssistantIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicCheckinRoute: ApiPublicCheckinRoute,
