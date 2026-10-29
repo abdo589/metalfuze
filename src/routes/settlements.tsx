@@ -102,17 +102,21 @@ function SettlementsPage() {
     const base = recalc({ ...edit, employee_id: e.id, employee_name: String(k["اسم الموظف"] ?? "") || e.name, joined: cJoined ?? e.joined,
       wage: cWage || Number(e.base) + Number(e.allowances), leave_days: Math.max(0, Math.floor(balances[e.id] ?? 0)) });
     setEdit(base);
-    const path = String(k["عقد العمل"] ?? "");
-    if (!path.startsWith("contracts/")) return;
-    const tid = toast.loading(t("جارٍ قراءة عقد العمل المرفوع…"));
-    extractContract({ data: { path } }).then((r) => {
-      if (!r.ok) { toast.error(t("تعذر قراءة ملف العقد، تم استخدام بيانات ملف الموظف"), { id: tid }); return; }
-      const f = r.fields;
-      const fileWage = f.total || (f.base ? f.base + f.allowances : 0);
+    // Uploaded PDFs, in priority order: start-of-work form first for the hiring date, contract first for salary.
+    const files = ["مباشرة العمل", "عقد العمل", "العرض الوظيفي"].map((f) => String(k[f] ?? ""))
+      .map((p) => (/^(contracts|work-start|job-offers)\//.test(p) ? p : ""));
+    if (!files.some(Boolean)) return;
+    const tid = toast.loading(t("جارٍ قراءة الملفات المرفوعة…"));
+    Promise.all(files.map((p) => (p ? extractContract({ data: { path: p } }).catch(() => null) : Promise.resolve(null)))).then((rs) => {
+      const got = rs.map((r) => (r && r.ok ? r.fields : null));
+      if (!got.some(Boolean)) { toast.error(t("تعذر قراءة الملفات، تم استخدام بيانات ملف الموظف"), { id: tid }); return; }
+      const joined = got.map((f) => f?.joined || "").find(Boolean) || "";
+      const wageOf = (f: typeof got[number]) => (f ? f.total || (f.base ? f.base + f.allowances : 0) : 0);
+      const fileWage = wageOf(got[1]) || wageOf(got[2]) || wageOf(got[0]);
       setEdit((cur) => cur && cur.employee_id === e.id ? recalc({ ...cur,
-        joined: f.joined || cur.joined, wage: fileWage || cur.wage }) : cur);
-      toast.success(t("تم سحب بيانات التعيين والراتب من العقد"), { id: tid });
-    }).catch(() => toast.error(t("تعذر قراءة ملف العقد"), { id: tid }));
+        joined: joined || cur.joined, wage: fileWage || cur.wage }) : cur);
+      toast.success(joined ? t("تم سحب تاريخ التعيين والراتب من الملفات المرفوعة") : t("لم يُذكر تاريخ التعيين في الملفات"), { id: tid });
+    });
   }
   async function save() {
     if (!edit?.employee_id) { toast.error(t("اختر الموظف")); return; }
