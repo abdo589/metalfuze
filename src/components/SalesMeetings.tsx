@@ -37,11 +37,7 @@ export function SalesMeetings({ deal, onClose }: { deal: { id: string; client: s
     const when = new Date(at);
     const { error } = await supabase.from("sales_meetings").insert({ deal_id: deal.id, meeting_at: when.toISOString(), place, notes, attendees: who });
     if (error) { setBusy(false); toast.error(`${t("تعذر الحفظ، حاول مرة أخرى")} (${error.message})`); return; }
-    const { data: profs } = await supabase.from("profiles").select("id,email").in("email", who);
-    const { data: u } = await supabase.auth.getUser();
-    const body = `📅 ${t("اجتماع مع عميل")}: ${deal.client} — ${deal.project}\n${t("الموعد")}: ${when.toLocaleString(locale())}${place ? `\n${t("المكان")}: ${place}` : ""}${notes ? `\n${notes}` : ""}`;
-    const msgs = (profs ?? []).filter((p) => p.id !== u.user?.id).map((p) => ({ recipient_id: p.id, body }));
-    if (msgs.length) await supabase.from("direct_messages").insert(msgs);
+    // Alerts to attendees are sent by the database right after the meeting is saved.
     setBusy(false);
     toast.success(t("تم حفظ الاجتماع وإرسال التنبيه"));
     setAt(""); setPlace(""); setNotes(""); load(deal.id);
