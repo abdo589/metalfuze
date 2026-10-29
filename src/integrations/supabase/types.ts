@@ -1857,6 +1857,87 @@ export type Database = {
         }
         Relationships: []
       }
+      submissions: {
+        Row: {
+          attachments: Json
+          code: string | null
+          consultant_notes: string
+          created_at: string
+          created_by: string | null
+          created_by_name: string
+          discipline: string
+          id: string
+          parent_id: string | null
+          project_id: string
+          ref_no: string
+          reply_date: string | null
+          revision: number
+          seq: number
+          status: string
+          submitted_date: string | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          attachments?: Json
+          code?: string | null
+          consultant_notes?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string
+          discipline?: string
+          id?: string
+          parent_id?: string | null
+          project_id: string
+          ref_no?: string
+          reply_date?: string | null
+          revision?: number
+          seq?: number
+          status?: string
+          submitted_date?: string | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          attachments?: Json
+          code?: string | null
+          consultant_notes?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string
+          discipline?: string
+          id?: string
+          parent_id?: string | null
+          project_id?: string
+          ref_no?: string
+          reply_date?: string | null
+          revision?: number
+          seq?: number
+          status?: string
+          submitted_date?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submissions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       traffic_violations: {
         Row: {
           amount: number
@@ -1968,6 +2049,7 @@ export type Database = {
         }[]
       }
       cp_can_manage: { Args: { _project: string }; Returns: boolean }
+      cp_can_submit: { Args: { _project: string }; Returns: boolean }
       cp_is_member: { Args: { _project: string }; Returns: boolean }
       has_role: {
         Args: {
