@@ -815,6 +815,112 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_notes: {
+        Row: {
+          author_id: string | null
+          author_name: string
+          created_at: string
+          id: string
+          invoice_id: string
+          note: string
+          note_date: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string
+          created_at?: string
+          id?: string
+          invoice_id: string
+          note: string
+          note_date?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          note?: string
+          note_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_notes_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount: number
+          attachments: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_no: number
+          net_amount: number | null
+          notes: string
+          paid_date: string | null
+          period_from: string | null
+          period_to: string | null
+          project_id: string
+          retention_pct: number
+          status: string
+          submitted_date: string | null
+          updated_at: string
+          wir_ids: string[]
+        }
+        Insert: {
+          amount?: number
+          attachments?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_no?: number
+          net_amount?: number | null
+          notes?: string
+          paid_date?: string | null
+          period_from?: string | null
+          period_to?: string | null
+          project_id: string
+          retention_pct?: number
+          status?: string
+          submitted_date?: string | null
+          updated_at?: string
+          wir_ids?: string[]
+        }
+        Update: {
+          amount?: number
+          attachments?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_no?: number
+          net_amount?: number | null
+          notes?: string
+          paid_date?: string | null
+          period_from?: string | null
+          period_to?: string | null
+          project_id?: string
+          retention_pct?: number
+          status?: string
+          submitted_date?: string | null
+          updated_at?: string
+          wir_ids?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       late_excuses: {
         Row: {
           created_at: string
@@ -2048,6 +2154,7 @@ export type Database = {
           id: string
         }[]
       }
+      cp_can_invoice: { Args: { _project: string }; Returns: boolean }
       cp_can_manage: { Args: { _project: string }; Returns: boolean }
       cp_can_submit: { Args: { _project: string }; Returns: boolean }
       cp_is_member: { Args: { _project: string }; Returns: boolean }

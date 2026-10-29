@@ -4,9 +4,9 @@ import { FolderKanban, Users, HardHat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CODES, codeColorVar, cpKeys, fetchProjects, isOverdue, isPending, latestRevisions, statusClass, statusLabel } from "@/lib/cp";
+import { invLate, invPending, sar, CODES, codeColorVar, cpKeys, fetchProjects, isOverdue, isPending, latestRevisions, statusClass, statusLabel } from "@/lib/cp";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { FileClock, AlarmClock } from "lucide-react";
+import { FileClock, AlarmClock, Wallet } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/project-admin")({
@@ -46,6 +46,16 @@ function ProjectAdminDashboard() {
   const pending = latest.filter(isPending).length;
   const overdue = latest.filter((s) => isOverdue(s)).length;
   const codeData = CODES.map((c) => ({ code: c.v, label: lang === "en" ? c.en : c.ar, count: latest.filter((s) => s.code === c.v).length }));
+  const invs = useQuery({
+    queryKey: ["cp", "invoices-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("invoices").select("id,status,submitted_date,net_amount");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const invPendingSum = (invs.data ?? []).filter(invPending).reduce((s, i) => s + Number(i.net_amount ?? 0), 0);
+  const invLateCount = (invs.data ?? []).filter((i) => invLate(i)).length;
   const list = projects.data ?? [];
   const active = list.filter((p) => p.status === "active").length;
 
@@ -63,6 +73,10 @@ function ProjectAdminDashboard() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Stat icon={<FileClock className="h-5 w-5" />} label="مستندات معلقة" value={subs.isLoading ? "…" : pending} />
         <Stat icon={<AlarmClock className="h-5 w-5" />} label="مستندات متأخرة (أكثر من 7 أيام)" value={subs.isLoading ? "…" : overdue} />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Stat icon={<Wallet className="h-5 w-5" />} label="مستخلصات معلقة (صافي)" value={invs.isLoading ? "…" : sar(invPendingSum, lang)} />
+        <Stat icon={<AlarmClock className="h-5 w-5" />} label="مستخلصات أكثر من 30 يوم بدون صرف" value={invs.isLoading ? "…" : invLateCount} />
       </div>
       <Card>
         <CardHeader><CardTitle>توزيع أكواد الاعتماد</CardTitle></CardHeader>

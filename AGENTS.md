@@ -36,3 +36,4 @@
 
 - Construction projects module (/project-admin, Ali-only via ALI_PATHS) uses tables projects/project_contracts/project_members and private contract-files bucket ({project_id}/...); access via cp_is_member/cp_can_manage so per-project roles in project_members drive RLS.
 - Consultant submissions (MIR/SUB/SD/WIR/OTHER) share one submissions table; ref numbers and Rev numbers are assigned by DB trigger (resubmits point parent_id at the original), and creation is limited by cp_can_submit — so numbering cannot collide or be forged.
+- Invoices (المستخلصات): invoice_no, net amount and the A/B-coded-WIR link rule are enforced in the database (invoices_guard trigger, generated net_amount); writes limited by cp_can_invoice — so figures and numbering cannot be faked from the browser.
