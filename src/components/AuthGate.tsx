@@ -9,7 +9,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { HR_PATHS, HR_ADMIN_ONLY, MANAGER_PATHS, ACCOUNTANT_PATHS, EXECUTIVE_PATHS, MAIL_PATHS, SALES_PATHS, DEV_PATHS, useHiddenPaths, useRole } from "@/lib/permissions";
+import { HR_PATHS, HR_ADMIN_ONLY, MANAGER_PATHS, ACCOUNTANT_PATHS, EXECUTIVE_PATHS, MAIL_PATHS, SALES_PATHS, DEV_PATHS, useHiddenPaths, useRole, useIsAli, ALI_PATHS } from "@/lib/permissions";
 import { oauthReturnPath } from "@/lib/oauth-return-path";
 import { signOutTracked, trackLogin } from "@/lib/login-tracking";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
@@ -20,13 +20,14 @@ function RoleGuard({ children }: { children: ReactNode }) {
   const hidden = useHiddenPaths();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
-  const allowed = role === "developer" ? DEV_PATHS : role === "hr" ? HR_PATHS : role === "manager" ? MANAGER_PATHS : role === "accountant" ? ACCOUNTANT_PATHS : role === "executive" ? EXECUTIVE_PATHS : role === "mail" ? MAIL_PATHS : role === "sales" ? SALES_PATHS : null;
+  const isAli = useIsAli();
+  const allowed = isAli ? ALI_PATHS : role === "developer" ? DEV_PATHS : role === "hr" ? HR_PATHS : role === "manager" ? MANAGER_PATHS : role === "accountant" ? ACCOUNTANT_PATHS : role === "executive" ? EXECUTIVE_PATHS : role === "mail" ? MAIL_PATHS : role === "sales" ? SALES_PATHS : null;
   const viewerBlocked = role === "viewer" && HR_ADMIN_ONLY.some((p) => pathname === p || pathname.startsWith(p + "/"));
   const personalBlocked = hidden.some((p) => pathname === p || pathname.startsWith(p + "/"));
   const blocked = viewerBlocked || personalBlocked || (!!allowed && !pathname.startsWith("/.lovable/oauth") && !allowed.some((p) => pathname.startsWith(p)));
-  const home = role === "developer" ? "/dev" : role === "sales" ? "/sales" : role === "mail" ? "/mail" : role === "executive" ? "/executive" : role === "accountant" ? "/accounting" : role === "manager" ? "/my-projects" : role === "viewer" ? "/" : "/payroll";
+  const home = isAli ? "/project-admin" : role === "developer" ? "/dev" : role === "sales" ? "/sales" : role === "mail" ? "/mail" : role === "executive" ? "/executive" : role === "accountant" ? "/accounting" : role === "manager" ? "/my-projects" : role === "viewer" ? "/" : "/payroll";
   useEffect(() => { if (blocked) navigate({ to: home, replace: true }); }, [blocked, home, navigate]);
-  if (role === undefined || blocked) return <div className="min-h-screen" />;
+  if (role === undefined || isAli === undefined || blocked) return <div className="min-h-screen" />;
   return <>{children}</>;
 }
 
