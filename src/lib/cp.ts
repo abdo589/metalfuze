@@ -49,3 +49,68 @@ export async function fetchProjects() {
   if (error) throw error;
   return data;
 }
+
+export type CpSubmission = Database["public"]["Tables"]["submissions"]["Row"];
+export type CpAttachment = { path: string; name: string };
+
+export const SUB_TYPES = [
+  { v: "MIR", ar: "طلب فحص مواد MIR", en: "MIR" },
+  { v: "SUB", ar: "تقديم Submittal", en: "Submittal" },
+  { v: "SD", ar: "مخطط تنفيذي Shop Drawing", en: "Shop Drawing" },
+  { v: "WIR", ar: "طلب استلام أعمال WIR", en: "WIR" },
+  { v: "OTHER", ar: "أخرى", en: "Other" },
+] as const;
+export const DISCIPLINES = [
+  { v: "civil", ar: "مدني", en: "Civil" },
+  { v: "electrical", ar: "كهرباء", en: "Electrical" },
+  { v: "mechanical", ar: "ميكانيكا", en: "Mechanical" },
+  { v: "architectural", ar: "معماري", en: "Architectural" },
+] as const;
+export const SUB_STATUSES = [
+  { v: "draft", ar: "مسودة", en: "Draft" },
+  { v: "submitted", ar: "مُقدم", en: "Submitted" },
+  { v: "under_review", ar: "تحت المراجعة", en: "Under review" },
+  { v: "replied", ar: "تم الرد", en: "Replied" },
+] as const;
+export const CODES = [
+  { v: "A", ar: "معتمد", en: "Approved" },
+  { v: "B", ar: "معتمد بملاحظات", en: "Approved as noted" },
+  { v: "C", ar: "يُعدل ويُعاد تقديمه", en: "Revise & resubmit" },
+  { v: "D", ar: "مرفوض", en: "Rejected" },
+] as const;
+export const codeClass: Record<string, string> = {
+  A: "bg-chart-2/20 text-chart-2 border-chart-2/40",
+  B: "bg-chart-1/20 text-chart-1 border-chart-1/40",
+  C: "bg-chart-4/20 text-chart-4 border-chart-4/40",
+  D: "bg-destructive/15 text-destructive border-destructive/40",
+};
+export const codeColorVar: Record<string, string> = { A: "var(--chart-2)", B: "var(--chart-1)", C: "var(--chart-4)", D: "var(--destructive)" };
+export const pick = (list: readonly { v: string; ar: string; en: string }[], v: string | null, lang: string) => {
+  const x = list.find((i) => i.v === v);
+  return x ? (lang === "en" ? x.en : x.ar) : (v ?? "—");
+};
+
+/** Pending = sent to the consultant and still waiting for a reply. */
+export const isPending = (s: Pick<CpSubmission, "status" | "reply_date">) => (s.status === "submitted" || s.status === "under_review") && !s.reply_date;
+
+/** Days since submission while waiting for a reply; null when not waiting. */
+export function waitingDays(s: Pick<CpSubmission, "status" | "reply_date" | "submitted_date">, today = new Date()): number | null {
+  if (!isPending(s) || !s.submitted_date) return null;
+  const start = new Date(s.submitted_date + "T00:00:00");
+  const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return Math.max(0, Math.round((t.getTime() - start.getTime()) / 86400000));
+}
+export const OVERDUE_DAYS = 7;
+export const isOverdue = (s: Pick<CpSubmission, "status" | "reply_date" | "submitted_date">, today = new Date()) => (waitingDays(s, today) ?? 0) > OVERDUE_DAYS;
+
+/** Latest revision of each document chain (original + its resubmissions). */
+export function latestRevisions(rows: CpSubmission[]) {
+  const m = new Map<string, CpSubmission>();
+  for (const r of rows) {
+    const k = r.parent_id ?? r.id;
+    const cur = m.get(k);
+    if (!cur || r.revision > cur.revision) m.set(k, r);
+  }
+  return [...m.values()];
+}
+export const canResubmit = (s: Pick<CpSubmission, "code">) => s.code === "C" || s.code === "D";
