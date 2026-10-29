@@ -34,6 +34,7 @@ import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as PerformanceRouteImport } from './routes/performance'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProjectAdminRouteImport } from './routes/project-admin'
 import { Route as ProjectReportsRouteImport } from './routes/project-reports'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as ResidenciesRouteImport } from './routes/residencies'
@@ -182,6 +183,11 @@ const PerformanceRoute = PerformanceRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectAdminRoute = ProjectAdminRouteImport.update({
+  id: '/project-admin',
+  path: '/project-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectReportsRoute = ProjectReportsRouteImport.update({
@@ -333,6 +339,7 @@ export interface FileRoutesByFullPath {
   '/payroll': typeof PayrollRoute
   '/performance': typeof PerformanceRoute
   '/privacy': typeof PrivacyRoute
+  '/project-admin': typeof ProjectAdminRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/residencies': typeof ResidenciesRoute
@@ -384,6 +391,7 @@ export interface FileRoutesByTo {
   '/payroll': typeof PayrollRoute
   '/performance': typeof PerformanceRoute
   '/privacy': typeof PrivacyRoute
+  '/project-admin': typeof ProjectAdminRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/residencies': typeof ResidenciesRoute
@@ -436,6 +444,7 @@ export interface FileRoutesById {
   '/payroll': typeof PayrollRoute
   '/performance': typeof PerformanceRoute
   '/privacy': typeof PrivacyRoute
+  '/project-admin': typeof ProjectAdminRoute
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/residencies': typeof ResidenciesRoute
@@ -489,6 +498,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/performance'
     | '/privacy'
+    | '/project-admin'
     | '/project-reports'
     | '/report'
     | '/residencies'
@@ -540,6 +550,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/performance'
     | '/privacy'
+    | '/project-admin'
     | '/project-reports'
     | '/report'
     | '/residencies'
@@ -591,6 +602,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/performance'
     | '/privacy'
+    | '/project-admin'
     | '/project-reports'
     | '/report'
     | '/residencies'
@@ -643,6 +655,7 @@ export interface RootRouteChildren {
   PayrollRoute: typeof PayrollRoute
   PerformanceRoute: typeof PerformanceRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProjectAdminRoute: typeof ProjectAdminRoute
   ProjectReportsRoute: typeof ProjectReportsRoute
   ReportRoute: typeof ReportRoute
   ResidenciesRoute: typeof ResidenciesRoute
@@ -846,6 +859,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project-admin': {
+      id: '/project-admin'
+      path: '/project-admin'
+      fullPath: '/project-admin'
+      preLoaderRoute: typeof ProjectAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/project-reports': {
       id: '/project-reports'
       path: '/project-reports'
@@ -1043,6 +1063,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayrollRoute: PayrollRoute,
   PerformanceRoute: PerformanceRoute,
   PrivacyRoute: PrivacyRoute,
+  ProjectAdminRoute: ProjectAdminRoute,
   ProjectReportsRoute: ProjectReportsRoute,
   ReportRoute: ReportRoute,
   ResidenciesRoute: ResidenciesRoute,
