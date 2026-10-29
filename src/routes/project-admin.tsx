@@ -4,7 +4,9 @@ import { FolderKanban, Users, HardHat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cpKeys, fetchProjects, statusClass, statusLabel } from "@/lib/cp";
+import { CODES, codeColorVar, cpKeys, fetchProjects, isOverdue, isPending, latestRevisions, statusClass, statusLabel } from "@/lib/cp";
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { FileClock, AlarmClock } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/project-admin")({
@@ -32,6 +34,18 @@ function ProjectAdminDashboard() {
       return count ?? 0;
     },
   });
+  const subs = useQuery({
+    queryKey: ["cp", "subs-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("submissions").select("id,parent_id,revision,status,code,reply_date,submitted_date");
+      if (error) throw error;
+      return latestRevisions(data as never);
+    },
+  });
+  const latest = subs.data ?? [];
+  const pending = latest.filter(isPending).length;
+  const overdue = latest.filter((s) => isOverdue(s)).length;
+  const codeData = CODES.map((c) => ({ code: c.v, label: lang === "en" ? c.en : c.ar, count: latest.filter((s) => s.code === c.v).length }));
   const list = projects.data ?? [];
   const active = list.filter((p) => p.status === "active").length;
 
@@ -46,6 +60,24 @@ function ProjectAdminDashboard() {
         <Stat icon={<FolderKanban className="h-5 w-5" />} label="إجمالي المشاريع" value={projects.isLoading ? "…" : list.length} />
         <Stat icon={<Users className="h-5 w-5" />} label="أعضاء الفريق" value={members.isLoading ? "…" : (members.data ?? 0)} />
       </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Stat icon={<FileClock className="h-5 w-5" />} label="مستندات معلقة" value={subs.isLoading ? "…" : pending} />
+        <Stat icon={<AlarmClock className="h-5 w-5" />} label="مستندات متأخرة (أكثر من 7 أيام)" value={subs.isLoading ? "…" : overdue} />
+      </div>
+      <Card>
+        <CardHeader><CardTitle>توزيع أكواد الاعتماد</CardTitle></CardHeader>
+        <CardContent className="h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={codeData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="code" stroke="var(--muted-foreground)" />
+              <YAxis allowDecimals={false} stroke="var(--muted-foreground)" width={30} />
+              <Tooltip formatter={(v) => [v, ""]} labelFormatter={(l) => `${l} · ${codeData.find((d) => d.code === l)?.label ?? ""}`} contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", color: "var(--popover-foreground)" }} />
+              <Bar dataKey="count" radius={[6, 6, 0, 0]}>{codeData.map((d) => <Cell key={d.code} fill={codeColorVar[d.code]} />)}</Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader><CardTitle>آخر المشاريع</CardTitle></CardHeader>
         <CardContent className="divide-y divide-border p-0">

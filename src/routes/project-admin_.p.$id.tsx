@@ -9,6 +9,7 @@ import { useLanguage } from "@/lib/i18n";
 import { CpOverview } from "@/components/cp/CpOverview";
 import { CpContractTab } from "@/components/cp/CpContractTab";
 import { CpTeamTab } from "@/components/cp/CpTeamTab";
+import { CpSubmissionsTab } from "@/components/cp/CpSubmissionsTab";
 
 export const Route = createFileRoute("/project-admin_/p/$id")({
   head: () => ({
@@ -25,8 +26,6 @@ export const Route = createFileRoute("/project-admin_/p/$id")({
 });
 
 const SOON = [
-  { v: "docs", l: "المستندات" },
-  { v: "wirs", l: "طلبات الاستلام WIRs" },
   { v: "ipc", l: "المستخلصات" },
   { v: "planning", l: "التخطيط" },
   { v: "reports", l: "التقارير" },
@@ -61,12 +60,16 @@ function ProjectDetails() {
             <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
             <TabsTrigger value="contract">العقد</TabsTrigger>
             <TabsTrigger value="team">فريق العمل</TabsTrigger>
+            <TabsTrigger value="docs">المستندات</TabsTrigger>
+            <TabsTrigger value="wirs">طلبات الاستلام WIRs</TabsTrigger>
             {SOON.map((s) => <TabsTrigger key={s.v} value={s.v}>{s.l}</TabsTrigger>)}
           </TabsList>
         </div>
         <TabsContent value="overview"><CpOverview project={p} /></TabsContent>
         <TabsContent value="contract"><CpContractTab projectId={p.id} /></TabsContent>
         <TabsContent value="team"><CpTeamTab projectId={p.id} /></TabsContent>
+        <TabsContent value="docs"><CpSubmissionsTab projectId={p.id} types={["MIR", "SUB", "SD", "OTHER"]} /></TabsContent>
+        <TabsContent value="wirs"><CpSubmissionsTab projectId={p.id} types={["WIR"]} /></TabsContent>
         {SOON.map((s) => (
           <TabsContent key={s.v} value={s.v}>
             <Card><CardContent className="py-12 text-center text-lg text-muted-foreground">قريباً</CardContent></Card>
