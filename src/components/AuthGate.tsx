@@ -9,7 +9,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { HR_PATHS, HR_ADMIN_ONLY, MANAGER_PATHS, ACCOUNTANT_PATHS, EXECUTIVE_PATHS, MAIL_PATHS, SALES_PATHS, DEV_PATHS, useHiddenPaths, useRole } from "@/lib/permissions";
+import { HR_PATHS, HR_ADMIN_ONLY, MANAGER_PATHS, ACCOUNTANT_PATHS, EXECUTIVE_PATHS, MAIL_PATHS, SALES_PATHS, DEV_PATHS, useHiddenPaths, useRole, useIsAli, ALI_PATHS } from "@/lib/permissions";
 import { oauthReturnPath } from "@/lib/oauth-return-path";
 import { signOutTracked, trackLogin } from "@/lib/login-tracking";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
