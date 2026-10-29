@@ -26,7 +26,7 @@ const blocked = (h: string) =>
   /^(localhost|0\.|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?|\[?f[cd])/i.test(h) || !h.includes(".");
 
 /** Checks a resolved IP address (v4 or v6) — not a hostname. */
-export const ipBlocked = (ip: string) => {
+export const ipBlocked = (ip: string): boolean => {
   const v = ip.toLowerCase().replace(/^\[|\]$/g, "");
   if (v.includes(":")) {
     const m = v.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
