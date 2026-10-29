@@ -172,8 +172,8 @@ export function plannedProgress(acts: Pick<CpActivity, "start_date" | "end_date"
 }
 export function ganttRange(acts: Pick<CpActivity, "start_date" | "end_date">[]) {
   if (!acts.length) return null;
-  const start = acts.reduce((m, a) => (a.start_date < m ? a.start_date : m), acts[0].start_date);
-  const end = acts.reduce((m, a) => (a.end_date > m ? a.end_date : m), acts[0].end_date);
+  const start = acts.reduce((m, a) => (a.start_date < m ? a.start_date : m), acts[0]!.start_date);
+  const end = acts.reduce((m, a) => (a.end_date > m ? a.end_date : m), acts[0]!.end_date);
   return { start, end, days: daysBetween(start, end) + 1 };
 }
 /** Monday-start week containing the date. */
@@ -182,7 +182,7 @@ export function weekOf(date: string) {
   return { from: iso(t - wd * DAY), to: iso(t + (6 - wd) * DAY) };
 }
 export function monthOf(date: string) {
-  const [y, m] = date.split("-").map(Number);
+  const [y = 2000, m = 1] = date.split("-").map(Number);
   return { from: `${y}-${String(m).padStart(2, "0")}-01`, to: iso(Date.UTC(y, m, 0)) };
 }
 const inR = (d: string | null, from: string, to: string) => !!d && d >= from && d <= to;
