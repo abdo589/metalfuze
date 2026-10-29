@@ -58,7 +58,7 @@ export function CpScheduleTab({ projectId }: { projectId: string }) {
 
 function Gantt({ acts, range, today, byId, onPick }: {
   acts: CpActivity[]; range: { start: string; end: string; days: number }; today: string;
-  byId: Map<string, CpActivity>; onPick?: (a: CpActivity) => void;
+  byId: Map<string, CpActivity>; onPick?: ((a: CpActivity) => void) | undefined;
 }) {
   const pct = (d: string) => (daysBetween(range.start, d) / range.days) * 100;
   // Month ticks
