@@ -33,3 +33,5 @@
 - Every remote punch emails the employee (employees.email, else linked profile email) a 7-day signed selfie link via the checkin-selfie app email; failures never block the punch.
 - Per-account access rules live in public.account_access (developer writes); IdleSignOut checks hours/IP/device server-side via checkMyAccess so the browser can't fake them.
 - Shared projects/payments sync one row per item via shared_projects/shared_txns (version-checked updates, deleted_at tombstones, DB-assigned receipt numbers) in src/lib/exec-snapshot.ts; exec_snapshot is deprecated for them — so stale devices cannot overwrite or resurrect data.
+
+- Construction projects module (/project-admin, Ali-only via ALI_PATHS) uses tables projects/project_contracts/project_members and private contract-files bucket ({project_id}/...); access via cp_is_member/cp_can_manage so per-project roles in project_members drive RLS.
