@@ -10,6 +10,7 @@ import { CpOverview } from "@/components/cp/CpOverview";
 import { CpContractTab } from "@/components/cp/CpContractTab";
 import { CpTeamTab } from "@/components/cp/CpTeamTab";
 import { CpSubmissionsTab } from "@/components/cp/CpSubmissionsTab";
+import { CpInvoicesTab } from "@/components/cp/CpInvoicesTab";
 
 export const Route = createFileRoute("/project-admin_/p/$id")({
   head: () => ({
@@ -26,7 +27,6 @@ export const Route = createFileRoute("/project-admin_/p/$id")({
 });
 
 const SOON = [
-  { v: "ipc", l: "المستخلصات" },
   { v: "planning", l: "التخطيط" },
   { v: "reports", l: "التقارير" },
 ];
@@ -62,6 +62,7 @@ function ProjectDetails() {
             <TabsTrigger value="team">فريق العمل</TabsTrigger>
             <TabsTrigger value="docs">المستندات</TabsTrigger>
             <TabsTrigger value="wirs">طلبات الاستلام WIRs</TabsTrigger>
+            <TabsTrigger value="ipc">المستخلصات</TabsTrigger>
             {SOON.map((s) => <TabsTrigger key={s.v} value={s.v}>{s.l}</TabsTrigger>)}
           </TabsList>
         </div>
@@ -69,6 +70,7 @@ function ProjectDetails() {
         <TabsContent value="contract"><CpContractTab projectId={p.id} /></TabsContent>
         <TabsContent value="team"><CpTeamTab projectId={p.id} /></TabsContent>
         <TabsContent value="docs"><CpSubmissionsTab projectId={p.id} types={["MIR", "SUB", "SD", "OTHER"]} /></TabsContent>
+        <TabsContent value="ipc"><CpInvoicesTab projectId={p.id} /></TabsContent>
         <TabsContent value="wirs"><CpSubmissionsTab projectId={p.id} types={["WIR"]} /></TabsContent>
         {SOON.map((s) => (
           <TabsContent key={s.v} value={s.v}>
