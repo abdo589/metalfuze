@@ -111,7 +111,7 @@ function SettlementsPage() {
       const got = rs.map((r) => (r && r.ok ? r.fields : null));
       if (!got.some(Boolean)) { toast.error(t("تعذر قراءة الملفات، تم استخدام بيانات ملف الموظف"), { id: tid }); return; }
       const joined = got.map((f) => f?.joined || "").find(Boolean) || "";
-      const wageOf = (f: typeof got[number]) => (f ? f.total || (f.base ? f.base + f.allowances : 0) : 0);
+      const wageOf = (f: (typeof got)[number] | undefined) => (f ? f.total || (f.base ? f.base + f.allowances : 0) : 0);
       const fileWage = wageOf(got[1]) || wageOf(got[2]) || wageOf(got[0]);
       setEdit((cur) => cur && cur.employee_id === e.id ? recalc({ ...cur,
         joined: joined || cur.joined, wage: fileWage || cur.wage }) : cur);
