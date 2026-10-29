@@ -54,14 +54,19 @@ function SettlementsPage() {
   const [status, setStatus] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [contracts, setContracts] = useState<Record<string, Record<string, unknown>>>({});
   const [edit, setEdit] = useState<(Omit<Row, "id"> & { id?: string }) | null>(null);
 
   const load = useCallback(async () => {
-    const [s, e, b] = await Promise.all([
+    const [s, e, b, c] = await Promise.all([
       supabase.from("settlements").select("*").order("created_at", { ascending: false }),
       supabase.from("employees").select("id,name,base,allowances,joined").order("name"),
       supabase.rpc("leave_balances"),
+      supabase.from("hr_records").select("data").eq("sheet", "employees"),
     ]);
+    // Contract details from the employee file (هيئة الموظفين), keyed by employee number.
+    if (c.data) setContracts(Object.fromEntries((c.data as { data: Record<string, unknown> }[])
+      .map((r) => [String(r.data?.["رقم الموظف"] ?? "").trim(), r.data]).filter(([k]) => k)));
     if (s.data) setRows(s.data as Row[]);
     if (e.data) setEmps(e.data as Emp[]);
     if (b.data) setBalances(Object.fromEntries((b.data as { employee_id: string; remaining: number }[]).map((x) => [x.employee_id, Number(x.remaining) || 0])));
@@ -89,8 +94,12 @@ function SettlementsPage() {
   function pickEmp(id: string) {
     const e = emps.find((x) => x.id === id);
     if (!e || !edit) return;
-    setEdit(recalc({ ...edit, employee_id: e.id, employee_name: e.name, joined: e.joined,
-      wage: Number(e.base) + Number(e.allowances), leave_days: Math.max(0, Math.floor(balances[e.id] ?? 0)) }));
+    const k = contracts[String(e.id).trim()] ?? {};
+    const num = (v: unknown) => { const n = Number(String(v ?? "").replace(/,/g, "")); return Number.isFinite(n) && n > 0 ? n : 0; };
+    const cWage = num(k["إجمالي الراتب"]) || (num(k["الراتب الأساسي"]) ? num(k["الراتب الأساسي"]) + num(k["البدلات"]) : 0);
+    const cJoined = typeof k["تاريخ التعيين"] === "string" && /^\d{4}-\d{2}-\d{2}/.test(k["تاريخ التعيين"] as string) ? (k["تاريخ التعيين"] as string).slice(0, 10) : null;
+    setEdit(recalc({ ...edit, employee_id: e.id, employee_name: String(k["اسم الموظف"] ?? "") || e.name, joined: cJoined ?? e.joined,
+      wage: cWage || Number(e.base) + Number(e.allowances), leave_days: Math.max(0, Math.floor(balances[e.id] ?? 0)) }));
   }
   async function save() {
     if (!edit?.employee_id) { toast.error(t("اختر الموظف")); return; }
