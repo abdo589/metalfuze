@@ -52,9 +52,11 @@ import { Route as CheckinTokenRouteImport } from './routes/checkin.$token'
 import { Route as IclockCdataRouteImport } from './routes/iclock/cdata'
 import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest'
 import { Route as LeaveTokenRouteImport } from './routes/leave.$token'
+import { Route as ProjectAdminProjectsRouteImport } from './routes/project-admin_.projects'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
 import { Route as ApiPublicLeaveRouteImport } from './routes/api/public/leave'
+import { Route as ProjectAdminPIdRouteImport } from './routes/project-admin_.p.$id'
 import { Route as ApiOauthOutlookReturnRouteImport } from './routes/api/oauth/outlook/return'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -276,6 +278,11 @@ const LeaveTokenRoute = LeaveTokenRouteImport.update({
   path: '/leave/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectAdminProjectsRoute = ProjectAdminProjectsRouteImport.update({
+  id: '/project-admin_/projects',
+  path: '/project-admin/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -289,6 +296,11 @@ const ApiPublicCheckinRoute = ApiPublicCheckinRouteImport.update({
 const ApiPublicLeaveRoute = ApiPublicLeaveRouteImport.update({
   id: '/api/public/leave',
   path: '/api/public/leave',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectAdminPIdRoute = ProjectAdminPIdRouteImport.update({
+  id: '/project-admin_/p/$id',
+  path: '/project-admin/p/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiOauthOutlookReturnRoute = ApiOauthOutlookReturnRouteImport.update({
@@ -356,10 +368,12 @@ export interface FileRoutesByFullPath {
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/leave/$token': typeof LeaveTokenRoute
+  '/project-admin/projects': typeof ProjectAdminProjectsRoute
   '/assistant/': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
+  '/project-admin/p/$id': typeof ProjectAdminPIdRoute
   '/api/oauth/outlook/return': typeof ApiOauthOutlookReturnRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -408,10 +422,12 @@ export interface FileRoutesByTo {
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/leave/$token': typeof LeaveTokenRoute
+  '/project-admin/projects': typeof ProjectAdminProjectsRoute
   '/assistant': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
+  '/project-admin/p/$id': typeof ProjectAdminPIdRoute
   '/api/oauth/outlook/return': typeof ApiOauthOutlookReturnRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -461,10 +477,12 @@ export interface FileRoutesById {
   '/iclock/cdata': typeof IclockCdataRoute
   '/iclock/getrequest': typeof IclockGetrequestRoute
   '/leave/$token': typeof LeaveTokenRoute
+  '/project-admin_/projects': typeof ProjectAdminProjectsRoute
   '/assistant/': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
+  '/project-admin_/p/$id': typeof ProjectAdminPIdRoute
   '/api/oauth/outlook/return': typeof ApiOauthOutlookReturnRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -515,10 +533,12 @@ export interface FileRouteTypes {
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/leave/$token'
+    | '/project-admin/projects'
     | '/assistant/'
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
+    | '/project-admin/p/$id'
     | '/api/oauth/outlook/return'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -567,10 +587,12 @@ export interface FileRouteTypes {
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/leave/$token'
+    | '/project-admin/projects'
     | '/assistant'
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
+    | '/project-admin/p/$id'
     | '/api/oauth/outlook/return'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -619,10 +641,12 @@ export interface FileRouteTypes {
     | '/iclock/cdata'
     | '/iclock/getrequest'
     | '/leave/$token'
+    | '/project-admin_/projects'
     | '/assistant/'
     | '/.lovable/oauth/consent'
     | '/api/public/checkin'
     | '/api/public/leave'
+    | '/project-admin_/p/$id'
     | '/api/oauth/outlook/return'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -672,10 +696,12 @@ export interface RootRouteChildren {
   IclockCdataRoute: typeof IclockCdataRoute
   IclockGetrequestRoute: typeof IclockGetrequestRoute
   LeaveTokenRoute: typeof LeaveTokenRoute
+  ProjectAdminProjectsRoute: typeof ProjectAdminProjectsRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
   ApiPublicLeaveRoute: typeof ApiPublicLeaveRoute
+  ProjectAdminPIdRoute: typeof ProjectAdminPIdRoute
   ApiOauthOutlookReturnRoute: typeof ApiOauthOutlookReturnRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -985,6 +1011,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeaveTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project-admin_/projects': {
+      id: '/project-admin_/projects'
+      path: '/project-admin/projects'
+      fullPath: '/project-admin/projects'
+      preLoaderRoute: typeof ProjectAdminProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -1004,6 +1037,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/leave'
       fullPath: '/api/public/leave'
       preLoaderRoute: typeof ApiPublicLeaveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/project-admin_/p/$id': {
+      id: '/project-admin_/p/$id'
+      path: '/project-admin/p/$id'
+      fullPath: '/project-admin/p/$id'
+      preLoaderRoute: typeof ProjectAdminPIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/oauth/outlook/return': {
@@ -1081,10 +1121,12 @@ const rootRouteChildren: RootRouteChildren = {
   IclockCdataRoute: IclockCdataRoute,
   IclockGetrequestRoute: IclockGetrequestRoute,
   LeaveTokenRoute: LeaveTokenRoute,
+  ProjectAdminProjectsRoute: ProjectAdminProjectsRoute,
   AssistantIndexRoute: AssistantIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicCheckinRoute: ApiPublicCheckinRoute,
   ApiPublicLeaveRoute: ApiPublicLeaveRoute,
+  ProjectAdminPIdRoute: ProjectAdminPIdRoute,
   ApiOauthOutlookReturnRoute: ApiOauthOutlookReturnRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,

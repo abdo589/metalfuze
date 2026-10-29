@@ -470,6 +470,13 @@
       "when": 1793261064107,
       "tag": "0066_lock_won_deals_and_verified_employee_link",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1793280327211,
+      "tag": "0067_construction_projects_phase1",
+      "breakpoints": true
     }
   ]
 }

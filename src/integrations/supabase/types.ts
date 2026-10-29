@@ -1382,6 +1382,56 @@ export type Database = {
           },
         ]
       }
+      project_contracts: {
+        Row: {
+          consultant: string
+          contract_file: string | null
+          contract_no: string
+          duration_days: number | null
+          pmo: string
+          project_id: string
+          signed_date: string | null
+          specs_file: string | null
+          tender_drawings_file: string | null
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          consultant?: string
+          contract_file?: string | null
+          contract_no?: string
+          duration_days?: number | null
+          pmo?: string
+          project_id: string
+          signed_date?: string | null
+          specs_file?: string | null
+          tender_drawings_file?: string | null
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          consultant?: string
+          contract_file?: string | null
+          contract_no?: string
+          duration_days?: number | null
+          pmo?: string
+          project_id?: string
+          signed_date?: string | null
+          specs_file?: string | null
+          tender_drawings_file?: string | null
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_files: {
         Row: {
           category: string
@@ -1412,6 +1462,105 @@ export type Database = {
           id?: string
           project_id?: string
           title?: string
+        }
+        Relationships: []
+      }
+      project_members: {
+        Row: {
+          access_role: string
+          created_at: string
+          email: string
+          id: string
+          job: string
+          manager_id: string | null
+          name: string
+          phone: string
+          project_id: string
+          user_id: string | null
+        }
+        Insert: {
+          access_role?: string
+          created_at?: string
+          email?: string
+          id?: string
+          job: string
+          manager_id?: string | null
+          name: string
+          phone?: string
+          project_id: string
+          user_id?: string | null
+        }
+        Update: {
+          access_role?: string
+          created_at?: string
+          email?: string
+          id?: string
+          job?: string
+          manager_id?: string | null
+          name?: string
+          phone?: string
+          project_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "project_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          client: string
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string
+          end_date: string | null
+          id: string
+          location: string
+          name: string
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          end_date?: string | null
+          id?: string
+          location?: string
+          name: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          end_date?: string | null
+          id?: string
+          location?: string
+          name?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1818,6 +1967,8 @@ export type Database = {
           id: string
         }[]
       }
+      cp_can_manage: { Args: { _project: string }; Returns: boolean }
+      cp_is_member: { Args: { _project: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
