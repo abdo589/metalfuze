@@ -25,13 +25,24 @@ export function directUrl(raw: string): string {
 const blocked = (h: string) =>
   /^(localhost|0\.|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?|\[?f[cd])/i.test(h) || !h.includes(".");
 
+/** Checks a resolved IP address (v4 or v6) — not a hostname. */
+export const ipBlocked = (ip: string): boolean => {
+  const v = ip.toLowerCase().replace(/^\[|\]$/g, "");
+  if (v.includes(":")) {
+    const m = v.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+    if (m) return ipBlocked(m[1]!);
+    return v === "::" || v === "::1" || /^(f[cd]|fe[89ab])/.test(v);
+  }
+  return /^(0\.|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/.test(v);
+};
+
 async function resolvesPrivate(host: string): Promise<boolean> {
   if (blocked(host)) return true;
   try {
     for (const t of ["A", "AAAA"]) {
       const r = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=${t}`, { headers: { accept: "application/dns-json" } });
       const j = (await r.json()) as { Answer?: { type: number; data: string }[] };
-      for (const a of j.Answer ?? []) if ((a.type === 1 || a.type === 28) && blocked(a.data)) return true;
+      for (const a of j.Answer ?? []) if ((a.type === 1 || a.type === 28) && ipBlocked(a.data)) return true;
     }
   } catch { return true; }
   return false;
