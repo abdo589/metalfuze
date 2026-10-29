@@ -48,6 +48,16 @@ async function resolvesPrivate(host: string): Promise<boolean> {
   return false;
 }
 
+/** Only well-known file-sharing services (and their download CDNs) may be contacted. */
+const ALLOWED_HOSTS = ["google.com", "googleusercontent.com", "googleapis.com", "dropbox.com", "dropboxusercontent.com", "onedrive.live.com", "1drv.ms", "1drv.com", "live.net", "sharepoint.com", "wetransfer.com", "we.tl", "box.com", "boxcloud.com", "icloud.com"];
+export function hostAllowed(h: string): boolean {
+  const host = h.toLowerCase().replace(/\.$/, "");
+  return ALLOWED_HOSTS.some((d) => host === d || host.endsWith(`.${d}`));
+}
+/** Document/image/archive types accepted from links. */
+const ALLOWED_EXT = /\.(pdf|docx?|xlsx?|pptx?|csv|txt|png|jpe?g|webp|gif|heic|dwg|dxf|zip|rar|7z)$/i;
+const ALLOWED_TYPE = /^(application\/(pdf|msword|vnd\.openxmlformats-officedocument\.[\w.]+|vnd\.ms-excel|vnd\.ms-powerpoint|zip|x-zip-compressed|x-rar-compressed|vnd\.rar|x-7z-compressed|acad|dxf|x-dwg)|image\/(png|jpeg|webp|gif|heic)|text\/(plain|csv))$/i;
+
 /** HTTPS only, each redirect re-checked, stops at 25 MB, 30s timeout. */
 async function safeFetch(start: string): Promise<{ res: Response; buf: Uint8Array } | { error: string }> {
   const ctl = new AbortController();
@@ -57,6 +67,7 @@ async function safeFetch(start: string): Promise<{ res: Response; buf: Uint8Arra
     for (let hop = 0; hop < 6; hop++) {
       const u = new URL(url);
       if (u.protocol !== "https:") return { error: "روابط https فقط" };
+      if (!hostAllowed(u.hostname)) return { error: "الروابط المسموحة: Google Drive وDropbox وOneDrive وSharePoint وWeTransfer وBox وiCloud" };
       if (await resolvesPrivate(u.hostname)) return { error: "رابط غير مسموح" };
       const res = await fetch(url, { redirect: "manual", signal: ctl.signal });
       if (res.status >= 300 && res.status < 400) {
@@ -97,11 +108,14 @@ export const pullLinkFile = createServerFn({ method: "POST" })
     const got = await safeFetch(target);
     if ("error" in got) return { ok: false as const, error: got.error };
     const { res, buf } = got;
-    const type = res.headers.get("content-type") ?? "application/octet-stream";
+    const rawType = (res.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
     const cd = res.headers.get("content-disposition") ?? "";
     let name = decodeURIComponent(cd.match(/filename\*=UTF-8''([^;]+)/i)?.[1] ?? cd.match(/filename="?([^";]+)"?/i)?.[1] ?? "")
       || decodeURIComponent(new URL(res.url || target).pathname.split("/").pop() || "") || "file";
     name = name.replace(/[^\w.\-\u0600-\u06FF]/g, "_").slice(0, 120);
+    const typeOk = ALLOWED_TYPE.test(rawType);
+    if (!typeOk && !ALLOWED_EXT.test(name)) return { ok: false as const, error: "نوع الملف غير مسموح (PDF، Office، صور، CAD، ملفات مضغوطة)" };
+    const type = typeOk ? rawType : "application/octet-stream";
     const path = `${context.userId}/${Date.now()}_${name}`;
     const { error } = await context.supabase.storage.from("sales-files").upload(path, buf, { contentType: type });
     if (error) return { ok: false as const, error: "تعذر حفظ الملف" };

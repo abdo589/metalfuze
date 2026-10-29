@@ -16,11 +16,11 @@ type F = Tables<"project_files">;
 function Thumb({ path, alt, onClick }: { path: string; alt: string; onClick: () => void }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
-    supabase.storage.from(BUCKET).createSignedUrl(path, 3600).then(({ data }) => setUrl(data?.signedUrl ?? null));
+    supabase.storage.from(BUCKET).createSignedUrl(path, 60).then(({ data }) => setUrl(data?.signedUrl ?? null));
   }, [path]);
   return (
     <button type="button" onClick={onClick} className="block aspect-square w-full bg-muted" aria-label={alt}>
-      {url ? <img src={url} alt={alt} loading="lazy" className="size-full object-cover" /> : <LoaderCircle className="m-auto size-4 animate-spin" />}
+      {url ? <img src={url} alt={alt} className="size-full object-cover" /> : <LoaderCircle className="m-auto size-4 animate-spin" />}
     </button>
   );
 }
@@ -86,7 +86,7 @@ export function ProjectFiles({ projectId, editable, defaults = DEFAULT_FILE_CATE
   }
 
   async function open(f: F, download: boolean) {
-    const { data } = await supabase.storage.from(BUCKET).createSignedUrl(f.file_path, 60, download ? { download: f.file_name } : undefined);
+    const { data } = await supabase.storage.from(BUCKET).createSignedUrl(f.file_path, 10, download ? { download: f.file_name } : undefined);
     if (data) window.open(data.signedUrl, "_blank");
   }
 

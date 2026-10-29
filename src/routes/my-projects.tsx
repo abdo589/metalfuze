@@ -175,7 +175,7 @@ function Reports({ project, mine, reload }: { project: P; mine: boolean; reload:
   }
 
   async function openFile(path: string) {
-    const { data } = await supabase.storage.from("project-files").createSignedUrl(path, 30);
+    const { data } = await supabase.storage.from("project-files").createSignedUrl(path, 10);
     if (data) window.open(data.signedUrl, "_blank");
   }
 

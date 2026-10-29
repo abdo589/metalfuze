@@ -360,7 +360,7 @@ async function downloadPersonPdf(r: Rec, rel: { k: HrKey; rows: Rec[] }[]) {
 /** Open a private file: open the tab synchronously (popup blockers), then point it at a signed URL. */
 async function openFile(path: string) {
   const w = window.open("", "_blank");
-  const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(path, 30);
+  const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(path, 10);
   if (error || !data) { w?.close(); toast.error("تعذر فتح الملف"); return; }
   if (w) w.location.href = data.signedUrl; else window.location.href = data.signedUrl;
 }
