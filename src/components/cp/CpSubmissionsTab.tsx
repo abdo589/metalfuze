@@ -184,7 +184,7 @@ function SubmissionDialog({ projectId, types, initial, history, onClose, onSaved
             </Select>
           </Fld>
           <Fld l="كود الاعتماد">
-            <Select value={f.code ?? "none"} onValueChange={(v) => setF({ ...f, code: v === "none" ? null : v, status: v === "none" ? f.status : "replied" })}>
+            <Select value={f.code ?? "none"} onValueChange={(v) => setF({ ...f, code: v === "none" ? null : v, status: v === "none" ? (f.status ?? "draft") : "replied" })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent><SelectItem value="none">— بدون —</SelectItem>{CODES.map((c) => <SelectItem key={c.v} value={c.v}>{c.v} · {lang === "en" ? c.en : c.ar}</SelectItem>)}</SelectContent>
             </Select>
@@ -217,7 +217,7 @@ function SubmissionDialog({ projectId, types, initial, history, onClose, onSaved
           </div>
         )}
         <DialogFooter className="gap-2">
-          {f.id && isLatest && canResubmit(f) && <Button variant="outline" onClick={() => onResubmit(f as CpSubmission)}><RotateCcw className="h-4 w-4" /> إعادة تقديم</Button>}
+          {f.id && isLatest && canResubmit({ code: f.code ?? null }) && <Button variant="outline" onClick={() => onResubmit(f as CpSubmission)}><RotateCcw className="h-4 w-4" /> إعادة تقديم</Button>}
           <Button onClick={save} disabled={busy}>حفظ</Button>
         </DialogFooter>
       </DialogContent>
