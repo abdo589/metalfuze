@@ -32,7 +32,7 @@ function sanitizeMessages(messages: UIMessage[]): UIMessage[] {
   let kept = 0;
   // Only user/assistant turns with text/file parts are accepted; earlier assistant turns are relabelled as quoted history so callers can't script the advisor's voice.
   const list = messages.filter((m) => m && (m.role === "user" || m.role === "assistant") && Array.isArray(m.parts));
-  return list.map((m, i) => ({
+  return list.map((m) => ({
     ...m,
     // Browser-supplied assistant turns can't be verified, so they are sent as quoted user-side history.
     role: "user" as const,
