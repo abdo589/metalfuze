@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // The app is private behind sign-in; only the public home/sign-in page is listed.
-const BASE_URL = "https://metalfuze.lovable.app";
+const BASE_URL = "https://www.metalfuze.com";
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
