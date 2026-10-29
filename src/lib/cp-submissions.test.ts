@@ -19,3 +19,20 @@ describe("submissions rules", () => {
     expect(r.map((x) => x.id).sort()).toEqual(["b", "c"]);
   });
 });
+
+import { invLate, invoiceTotals, netOf } from "./cp";
+describe("invoice rules", () => {
+  it("net = amount minus retention", () => { expect(netOf(1000000, 10)).toBe(900000); });
+  it("late only when unpaid more than 30 days", () => {
+    expect(invLate({ status: "approved", submitted_date: "2026-09-28" }, today)).toBe(true);
+    expect(invLate({ status: "approved", submitted_date: "2026-09-29" }, today)).toBe(false);
+    expect(invLate({ status: "paid", submitted_date: "2026-01-01" }, today)).toBe(false);
+  });
+  it("totals exclude drafts and rejected; paid uses net", () => {
+    const t = invoiceTotals(5000, [
+      { status: "paid", amount: 1000, net_amount: 900 }, { status: "submitted", amount: 500, net_amount: 450 },
+      { status: "rejected", amount: 700, net_amount: 630 }, { status: "draft", amount: 300, net_amount: 270 },
+    ]);
+    expect(t).toEqual({ contract: 5000, invoiced: 1500, paid: 900, remaining: 3500 });
+  });
+});

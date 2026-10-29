@@ -114,3 +114,33 @@ export function latestRevisions(rows: CpSubmission[]) {
   return [...m.values()];
 }
 export const canResubmit = (s: Pick<CpSubmission, "code">) => s.code === "C" || s.code === "D";
+
+export type CpInvoice = Database["public"]["Tables"]["invoices"]["Row"];
+export type CpInvoiceNote = Database["public"]["Tables"]["invoice_notes"]["Row"];
+export const INV_STATUSES = [
+  { v: "draft", ar: "مسودة", en: "Draft" },
+  { v: "submitted", ar: "مُقدم", en: "Submitted" },
+  { v: "approved", ar: "معتمد", en: "Approved" },
+  { v: "paid", ar: "مدفوع", en: "Paid" },
+  { v: "rejected", ar: "مرفوض", en: "Rejected" },
+] as const;
+export const invStatusClass: Record<string, string> = {
+  draft: "bg-muted text-muted-foreground", submitted: "bg-chart-1/20 text-chart-1", approved: "bg-chart-4/20 text-chart-4",
+  paid: "bg-chart-2/20 text-chart-2", rejected: "bg-destructive/15 text-destructive",
+};
+export const INVOICE_LATE_DAYS = 30;
+export const netOf = (amount: number, pct: number) => Math.round(amount * (1 - pct / 100) * 100) / 100;
+/** Pending = submitted or approved, not yet paid. */
+export const invPending = (i: Pick<CpInvoice, "status">) => i.status === "submitted" || i.status === "approved";
+export function invLate(i: Pick<CpInvoice, "status" | "submitted_date">, today = new Date()) {
+  if (!invPending(i) || !i.submitted_date) return false;
+  const d = (new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime() - new Date(i.submitted_date + "T00:00:00").getTime()) / 86400000;
+  return d > INVOICE_LATE_DAYS;
+}
+export function invoiceTotals(contractValue: number, list: Pick<CpInvoice, "status" | "amount" | "net_amount">[]) {
+  const live = list.filter((i) => i.status !== "rejected" && i.status !== "draft");
+  const invoiced = live.reduce((s, i) => s + Number(i.amount), 0);
+  const paid = list.filter((i) => i.status === "paid").reduce((s, i) => s + Number(i.net_amount ?? 0), 0);
+  return { contract: contractValue, invoiced, paid, remaining: contractValue - invoiced };
+}
+export const sar = (n: number, lang: string) => new Intl.NumberFormat(lang === "en" ? "en-US" : "ar-SA", { maximumFractionDigits: 2 }).format(n) + (lang === "en" ? " SAR" : " ر.س");
