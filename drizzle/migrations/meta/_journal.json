@@ -491,6 +491,13 @@
       "when": 1793280896509,
       "tag": "0069_cp_invoices",
       "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1793281173793,
+      "tag": "0070_cp_schedule_daily_reports",
+      "breakpoints": true
     }
   ]
 }

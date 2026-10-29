@@ -528,6 +528,59 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_reports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          created_by_name: string
+          id: string
+          issues: string
+          manpower: Json
+          photos: Json
+          project_id: string
+          report_date: string
+          updated_at: string
+          weather: string
+          work_done: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string
+          id?: string
+          issues?: string
+          manpower?: Json
+          photos?: Json
+          project_id: string
+          report_date?: string
+          updated_at?: string
+          weather?: string
+          work_done?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string
+          id?: string
+          issues?: string
+          manpower?: Json
+          photos?: Json
+          project_id?: string
+          report_date?: string
+          updated_at?: string
+          weather?: string
+          work_done?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       department_managers: {
         Row: {
           dept: string
@@ -1840,6 +1893,66 @@ export type Database = {
           },
         ]
       }
+      schedule_activities: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          depends_on: string | null
+          end_date: string
+          id: string
+          name: string
+          owner: string
+          progress: number
+          project_id: string
+          sort: number
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          depends_on?: string | null
+          end_date: string
+          id?: string
+          name: string
+          owner?: string
+          progress?: number
+          project_id: string
+          sort?: number
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          depends_on?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          owner?: string
+          progress?: number
+          project_id?: string
+          sort?: number
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_activities_depends_on_fkey"
+            columns: ["depends_on"]
+            isOneToOne: false
+            referencedRelation: "schedule_activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_activities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settlements: {
         Row: {
           created_at: string
@@ -2154,8 +2267,10 @@ export type Database = {
           id: string
         }[]
       }
+      cp_can_daily: { Args: { _project: string }; Returns: boolean }
       cp_can_invoice: { Args: { _project: string }; Returns: boolean }
       cp_can_manage: { Args: { _project: string }; Returns: boolean }
+      cp_can_plan: { Args: { _project: string }; Returns: boolean }
       cp_can_submit: { Args: { _project: string }; Returns: boolean }
       cp_is_member: { Args: { _project: string }; Returns: boolean }
       has_role: {
