@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cpKeys, statusClass, statusLabel } from "@/lib/cp";
 import { useLanguage } from "@/lib/i18n";
@@ -11,6 +10,8 @@ import { CpContractTab } from "@/components/cp/CpContractTab";
 import { CpTeamTab } from "@/components/cp/CpTeamTab";
 import { CpSubmissionsTab } from "@/components/cp/CpSubmissionsTab";
 import { CpInvoicesTab } from "@/components/cp/CpInvoicesTab";
+import { CpScheduleTab } from "@/components/cp/CpScheduleTab";
+import { CpReportsTab } from "@/components/cp/CpReportsTab";
 
 export const Route = createFileRoute("/project-admin_/p/$id")({
   head: () => ({
@@ -26,10 +27,7 @@ export const Route = createFileRoute("/project-admin_/p/$id")({
   component: ProjectDetails,
 });
 
-const SOON = [
-  { v: "planning", l: "التخطيط" },
-  { v: "reports", l: "التقارير" },
-];
+
 
 function ProjectDetails() {
   const { id } = Route.useParams();
@@ -63,7 +61,8 @@ function ProjectDetails() {
             <TabsTrigger value="docs">المستندات</TabsTrigger>
             <TabsTrigger value="wirs">طلبات الاستلام WIRs</TabsTrigger>
             <TabsTrigger value="ipc">المستخلصات</TabsTrigger>
-            {SOON.map((s) => <TabsTrigger key={s.v} value={s.v}>{s.l}</TabsTrigger>)}
+            <TabsTrigger value="planning">التخطيط</TabsTrigger>
+            <TabsTrigger value="reports">التقارير</TabsTrigger>
           </TabsList>
         </div>
         <TabsContent value="overview"><CpOverview project={p} /></TabsContent>
@@ -72,11 +71,8 @@ function ProjectDetails() {
         <TabsContent value="docs"><CpSubmissionsTab projectId={p.id} types={["MIR", "SUB", "SD", "OTHER"]} /></TabsContent>
         <TabsContent value="ipc"><CpInvoicesTab projectId={p.id} /></TabsContent>
         <TabsContent value="wirs"><CpSubmissionsTab projectId={p.id} types={["WIR"]} /></TabsContent>
-        {SOON.map((s) => (
-          <TabsContent key={s.v} value={s.v}>
-            <Card><CardContent className="py-12 text-center text-lg text-muted-foreground">قريباً</CardContent></Card>
-          </TabsContent>
-        ))}
+        <TabsContent value="planning"><CpScheduleTab projectId={p.id} /></TabsContent>
+        <TabsContent value="reports"><CpReportsTab projectId={p.id} projectName={p.name} /></TabsContent>
       </Tabs>
     </div>
   );
