@@ -274,7 +274,7 @@ function SalesPage() {
     } catch { toast.error(t("تعذر سحب الملف")); } finally { setBusy(false); }
   }
   async function openFile(path: string) {
-    const { data } = await supabase.storage.from("sales-files").createSignedUrl(path, 600);
+    const { data } = await supabase.storage.from("sales-files").createSignedUrl(path, 60);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   }
   async function removeFile(path: string) {

@@ -66,8 +66,8 @@ export const startBankConnect = createServerFn({ method: "POST" }).middleware([r
 export const refreshBank = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const ctx = context as unknown as Ctx;
   const { data: staff } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
-  const { data: viewer } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "viewer" });
-  if (!staff && !viewer) throw new Error("forbidden");
+  if (!staff) throw new Error("forbidden");
+  await assertWritable(context as never);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: conn } = await supabaseAdmin.from("bank_connections").select("*").order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (!conn) return { ok: false as const, error: "notconnected" };
