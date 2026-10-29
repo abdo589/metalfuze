@@ -15,5 +15,6 @@ export async function trackLogin(userId: string) {
 export async function signOutTracked() {
   try { await logLoginEvent({ data: { event: "logout", device: navigator.userAgent } }); } catch { /* ignore */ }
   localStorage.removeItem(KEY);
+  localStorage.removeItem("mf-switch-accounts");
   await supabase.auth.signOut();
 }
