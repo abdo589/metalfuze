@@ -22,7 +22,7 @@ export function CpOverview({ project }: { project: CpProject }) {
       name: f.name, code: f.code, client: f.client, location: f.location, status: f.status, description: f.description,
       start_date: f.start_date || null, end_date: f.end_date || null, updated_at: new Date().toISOString(),
     }).eq("id", project.id);
-    if (error) return toast.error("تعذر الحفظ: " + error.message);
+    if (error) { toast.error("تعذر الحفظ: " + error.message); return; }
     toast.success("تم الحفظ");
     setEdit(false);
     qc.invalidateQueries({ queryKey: ["cp"] });

@@ -88,11 +88,11 @@ function NewProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
   const save = async () => {
-    if (!f.name.trim()) return toast.error("اسم المشروع مطلوب");
+    if (!f.name.trim()) { toast.error("اسم المشروع مطلوب"); return; }
     setBusy(true);
     const { data, error } = await supabase.from("projects").insert({ ...f, start_date: f.start_date || null, end_date: f.end_date || null }).select("id").single();
     setBusy(false);
-    if (error) return toast.error("تعذر الحفظ: " + error.message);
+    if (error) { toast.error("تعذر الحفظ: " + error.message); return; }
     await qc.invalidateQueries({ queryKey: ["cp"] });
     onOpenChange(false);
     navigate({ to: "/project-admin/p/$id", params: { id: data.id } });

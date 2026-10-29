@@ -48,7 +48,7 @@ export function CpContractTab({ projectId }: { projectId: string }) {
     setBusy(k);
     const path = `${projectId}/${k}-${Date.now()}-${file.name.replace(/[^\w.\-]/g, "_")}`;
     const { error } = await supabase.storage.from("contract-files").upload(path, file);
-    if (error) { setBusy(null); return toast.error("تعذر الرفع: " + error.message); }
+    if (error) { setBusy(null); { toast.error("تعذر الرفع: " + error.message); return; } }
     const next = { ...f, [k]: path };
     setF(next);
     if (await persist(next)) toast.success("تم رفع الملف");
@@ -56,7 +56,7 @@ export function CpContractTab({ projectId }: { projectId: string }) {
   };
   const open = async (path: string) => {
     const { data, error } = await supabase.storage.from("contract-files").createSignedUrl(path, 10);
-    if (error || !data) return toast.error("تعذر فتح الملف");
+    if (error || !data) { toast.error("تعذر فتح الملف"); return; }
     window.open(data.signedUrl, "_blank", "noopener");
   };
 

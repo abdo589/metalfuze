@@ -33,7 +33,7 @@ export function CpTeamTab({ projectId }: { projectId: string }) {
 
   const save = async () => {
     if (!draft) return;
-    if (!draft.name.trim()) return toast.error("الاسم مطلوب");
+    if (!draft.name.trim()) { toast.error("الاسم مطلوب"); return; }
     const row = {
       project_id: projectId, name: draft.name.trim(), job: draft.job, phone: draft.phone, email: draft.email.trim(),
       access_role: draft.access_role, manager_id: draft.manager_id === "none" ? null : draft.manager_id,
@@ -41,14 +41,14 @@ export function CpTeamTab({ projectId }: { projectId: string }) {
     const { error } = draft.id
       ? await supabase.from("project_members").update(row).eq("id", draft.id)
       : await supabase.from("project_members").insert(row);
-    if (error) return toast.error("تعذر الحفظ: " + error.message);
+    if (error) { toast.error("تعذر الحفظ: " + error.message); return; }
     setDraft(null);
     refresh();
   };
   const remove = async (m: CpMember) => {
     if (!confirm(`حذف ${m.name}؟`)) return;
     const { error } = await supabase.from("project_members").delete().eq("id", m.id);
-    if (error) return toast.error("تعذر الحذف: " + error.message);
+    if (error) { toast.error("تعذر الحذف: " + error.message); return; }
     refresh();
   };
   const edit = (m: CpMember) => setDraft({ id: m.id, name: m.name, job: m.job, phone: m.phone, email: m.email, manager_id: m.manager_id ?? "none", access_role: m.access_role });
