@@ -20,7 +20,7 @@ function Thumb({ path, alt, onClick }: { path: string; alt: string; onClick: () 
   }, [path]);
   return (
     <button type="button" onClick={onClick} className="block aspect-square w-full bg-muted" aria-label={alt}>
-      {url ? <img src={url} alt={alt} loading="lazy" className="size-full object-cover" /> : <LoaderCircle className="m-auto size-4 animate-spin" />}
+      {url ? <img src={url} alt={alt} className="size-full object-cover" /> : <LoaderCircle className="m-auto size-4 animate-spin" />}
     </button>
   );
 }
