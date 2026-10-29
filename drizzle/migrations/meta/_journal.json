@@ -449,6 +449,13 @@
       "when": 1793195206605,
       "tag": "0063_sales_meetings",
       "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1793260076972,
+      "tag": "0064_restrict_sales_meetings_read",
+      "breakpoints": true
     }
   ]
 }
