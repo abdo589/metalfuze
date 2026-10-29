@@ -13,6 +13,7 @@ import { t, useLanguage } from "@/lib/i18n";
 import { EMPLOYEE_STATUSES } from "@/lib/employee-status";
 import { endOfService, leavePay, serviceYears, SETTLEMENT_STATUSES } from "@/lib/settlement";
 import { PdfButton } from "@/components/PdfButton";
+import { extractContract } from "@/lib/doc-extract.functions";
 
 export const Route = createFileRoute("/settlements")({
   head: () => ({
@@ -98,8 +99,20 @@ function SettlementsPage() {
     const num = (v: unknown) => { const n = Number(String(v ?? "").replace(/,/g, "")); return Number.isFinite(n) && n > 0 ? n : 0; };
     const cWage = num(k["إجمالي الراتب"]) || (num(k["الراتب الأساسي"]) ? num(k["الراتب الأساسي"]) + num(k["البدلات"]) : 0);
     const cJoined = typeof k["تاريخ التعيين"] === "string" && /^\d{4}-\d{2}-\d{2}/.test(k["تاريخ التعيين"] as string) ? (k["تاريخ التعيين"] as string).slice(0, 10) : null;
-    setEdit(recalc({ ...edit, employee_id: e.id, employee_name: String(k["اسم الموظف"] ?? "") || e.name, joined: cJoined ?? e.joined,
-      wage: cWage || Number(e.base) + Number(e.allowances), leave_days: Math.max(0, Math.floor(balances[e.id] ?? 0)) }));
+    const base = recalc({ ...edit, employee_id: e.id, employee_name: String(k["اسم الموظف"] ?? "") || e.name, joined: cJoined ?? e.joined,
+      wage: cWage || Number(e.base) + Number(e.allowances), leave_days: Math.max(0, Math.floor(balances[e.id] ?? 0)) });
+    setEdit(base);
+    const path = String(k["عقد العمل"] ?? "");
+    if (!path.startsWith("contracts/")) return;
+    const tid = toast.loading(t("جارٍ قراءة عقد العمل المرفوع…"));
+    extractContract({ data: { path } }).then((r) => {
+      if (!r.ok) { toast.error(t("تعذر قراءة ملف العقد، تم استخدام بيانات ملف الموظف"), { id: tid }); return; }
+      const f = r.fields;
+      const fileWage = f.total || (f.base ? f.base + f.allowances : 0);
+      setEdit((cur) => cur && cur.employee_id === e.id ? recalc({ ...cur,
+        joined: f.joined || cur.joined, wage: fileWage || cur.wage }) : cur);
+      toast.success(t("تم سحب بيانات التعيين والراتب من العقد"), { id: tid });
+    }).catch(() => toast.error(t("تعذر قراءة ملف العقد"), { id: tid }));
   }
   async function save() {
     if (!edit?.employee_id) { toast.error(t("اختر الموظف")); return; }
