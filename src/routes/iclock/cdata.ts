@@ -17,7 +17,6 @@ function ipAllowed(request: Request): boolean {
 async function device(sn: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin.from("attendance_devices").select("approved").eq("serial_number", sn).maybeSingle();
-  if (data?.approved) await supabaseAdmin.from("attendance_devices").update({ last_seen: new Date().toISOString() }).eq("serial_number", sn);
   return { admin: supabaseAdmin, known: !!data, approved: !!data?.approved };
 }
 
@@ -52,6 +51,8 @@ export const Route = createFileRoute("/iclock/cdata")({
         if (rows.length) {
           const { error } = await admin.from("attendance_logs").upsert(rows, { onConflict: "device_sn,device_user_id,punched_at", ignoreDuplicates: true });
           if (error) { console.error("attlog insert failed", error); return text("ERROR", 500); }
+          // last_seen only moves when real punches were stored, not on bare GET/heartbeat requests.
+          await admin.from("attendance_devices").update({ last_seen: new Date().toISOString() }).eq("serial_number", sn);
         }
         return text(`OK: ${rows.length}`);
       },
