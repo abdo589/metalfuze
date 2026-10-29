@@ -70,7 +70,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const hidden = useHiddenPaths();
   const unread = useUnreadMessages();
   const isAli = useIsAli();
-  const visible = (isAli ? [{ to: "/project-admin", label: "إدارة مشاريع", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
+  const visible = (isAli ? [{ to: "/project-admin", label: "إدارة مشاريع", icon: FolderKanban }, { to: "/project-admin/projects", label: "المشاريع", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
     : role === "sales" ? [{ to: "/sales", label: "المبيعات", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
