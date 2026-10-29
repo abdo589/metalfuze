@@ -108,7 +108,7 @@ export const pullLinkFile = createServerFn({ method: "POST" })
     const got = await safeFetch(target);
     if ("error" in got) return { ok: false as const, error: got.error };
     const { res, buf } = got;
-    const rawType = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+    const rawType = (res.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
     const cd = res.headers.get("content-disposition") ?? "";
     let name = decodeURIComponent(cd.match(/filename\*=UTF-8''([^;]+)/i)?.[1] ?? cd.match(/filename="?([^";]+)"?/i)?.[1] ?? "")
       || decodeURIComponent(new URL(res.url || target).pathname.split("/").pop() || "") || "file";
