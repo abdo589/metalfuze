@@ -55,6 +55,7 @@ import { Route as IclockGetrequestRouteImport } from './routes/iclock/getrequest
 import { Route as LeaveTokenRouteImport } from './routes/leave.$token'
 import { Route as ProjectAdminProjectsRouteImport } from './routes/project-admin_.projects'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as ApiPublicAttendanceAgentRouteImport } from './routes/api/public/attendance-agent'
 import { Route as ApiPublicCheckinRouteImport } from './routes/api/public/checkin'
 import { Route as ApiPublicLeaveRouteImport } from './routes/api/public/leave'
 import { Route as ProjectAdminPIdRouteImport } from './routes/project-admin_.p.$id'
@@ -294,6 +295,12 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAttendanceAgentRoute =
+  ApiPublicAttendanceAgentRouteImport.update({
+    id: '/api/public/attendance-agent',
+    path: '/api/public/attendance-agent',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCheckinRoute = ApiPublicCheckinRouteImport.update({
   id: '/api/public/checkin',
   path: '/api/public/checkin',
@@ -378,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/project-admin/projects': typeof ProjectAdminProjectsRoute
   '/assistant/': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/attendance-agent': typeof ApiPublicAttendanceAgentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
   '/project-admin/p/$id': typeof ProjectAdminPIdRoute
@@ -433,6 +441,7 @@ export interface FileRoutesByTo {
   '/project-admin/projects': typeof ProjectAdminProjectsRoute
   '/assistant': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/attendance-agent': typeof ApiPublicAttendanceAgentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
   '/project-admin/p/$id': typeof ProjectAdminPIdRoute
@@ -489,6 +498,7 @@ export interface FileRoutesById {
   '/project-admin_/projects': typeof ProjectAdminProjectsRoute
   '/assistant/': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/attendance-agent': typeof ApiPublicAttendanceAgentRoute
   '/api/public/checkin': typeof ApiPublicCheckinRoute
   '/api/public/leave': typeof ApiPublicLeaveRoute
   '/project-admin_/p/$id': typeof ProjectAdminPIdRoute
@@ -546,6 +556,7 @@ export interface FileRouteTypes {
     | '/project-admin/projects'
     | '/assistant/'
     | '/.lovable/oauth/consent'
+    | '/api/public/attendance-agent'
     | '/api/public/checkin'
     | '/api/public/leave'
     | '/project-admin/p/$id'
@@ -601,6 +612,7 @@ export interface FileRouteTypes {
     | '/project-admin/projects'
     | '/assistant'
     | '/.lovable/oauth/consent'
+    | '/api/public/attendance-agent'
     | '/api/public/checkin'
     | '/api/public/leave'
     | '/project-admin/p/$id'
@@ -656,6 +668,7 @@ export interface FileRouteTypes {
     | '/project-admin_/projects'
     | '/assistant/'
     | '/.lovable/oauth/consent'
+    | '/api/public/attendance-agent'
     | '/api/public/checkin'
     | '/api/public/leave'
     | '/project-admin_/p/$id'
@@ -712,6 +725,7 @@ export interface RootRouteChildren {
   ProjectAdminProjectsRoute: typeof ProjectAdminProjectsRoute
   AssistantIndexRoute: typeof AssistantIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  ApiPublicAttendanceAgentRoute: typeof ApiPublicAttendanceAgentRoute
   ApiPublicCheckinRoute: typeof ApiPublicCheckinRoute
   ApiPublicLeaveRoute: typeof ApiPublicLeaveRoute
   ProjectAdminPIdRoute: typeof ProjectAdminPIdRoute
@@ -1045,6 +1059,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/attendance-agent': {
+      id: '/api/public/attendance-agent'
+      path: '/api/public/attendance-agent'
+      fullPath: '/api/public/attendance-agent'
+      preLoaderRoute: typeof ApiPublicAttendanceAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/checkin': {
       id: '/api/public/checkin'
       path: '/api/public/checkin'
@@ -1145,6 +1166,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectAdminProjectsRoute: ProjectAdminProjectsRoute,
   AssistantIndexRoute: AssistantIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  ApiPublicAttendanceAgentRoute: ApiPublicAttendanceAgentRoute,
   ApiPublicCheckinRoute: ApiPublicCheckinRoute,
   ApiPublicLeaveRoute: ApiPublicLeaveRoute,
   ProjectAdminPIdRoute: ProjectAdminPIdRoute,
