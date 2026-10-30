@@ -42,6 +42,8 @@ export const Route = createFileRoute("/iclock/cdata")({
         const { admin, approved } = await device(sn);
         if (url.searchParams.get("table") !== "ATTLOG") return text("OK");
         if (!approved) return text("OK: 0"); // pending approval in the attendance page
+        // Once the office agent is live, set ATTENDANCE_PUSH_DISABLED=1 so unsigned pushes are never stored.
+        if (process.env["ATTENDANCE_PUSH_DISABLED"] === "1") return text("OK: 0");
         // Reject implausible punches: future times, older than 45 days, odd PINs, or oversized batches.
         const now = Date.now();
         const rows = parseAttlog(body).filter((r) => {
