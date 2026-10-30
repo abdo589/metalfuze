@@ -18,6 +18,7 @@ import {
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { daysLeft, projectStore } from "@/lib/projects";
 import { threadStore } from "@/lib/threads";
+import { SpeakButton, useVoiceAllowed } from "@/components/SpeakButton";
 
 const SUGGESTIONS = [
   "ما المشاريع الأكثر خطورة الآن ولماذا؟",
@@ -106,6 +107,7 @@ export function AssistantChat({ threadId }: { threadId: string }) {
   }, [status, messages, setMessages, threadId]);
 
   const busy = status === "submitted" || status === "streaming";
+  const voice = useVoiceAllowed();
 
   const onPick = async (list: FileList | null) => {
     if (!list?.length) return;
@@ -175,6 +177,9 @@ export function AssistantChat({ threadId }: { threadId: string }) {
                     </span>
                     : null)}
               </MessageContent>
+              {voice && m.role === "assistant" && !(busy && m.id === messages[messages.length - 1]?.id) && (
+                <SpeakButton text={m.parts.map((p) => (p.type === "text" ? p.text : "")).join(" ")} />
+              )}
             </Message>
           ))}
           {status === "submitted" && <Shimmer className="text-sm">{t("جارٍ تحليل بيانات النظام...")}</Shimmer>}
