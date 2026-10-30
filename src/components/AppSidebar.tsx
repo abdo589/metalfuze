@@ -64,7 +64,7 @@ export const items = [
   { to: "/sales", label: "المبيعات", icon: Calculator },
 ];
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function useNavItems() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const role = useRole();
   const hidden = useHiddenPaths();
@@ -80,6 +80,11 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === undefined ? [] : role === "admin" ? items.filter((i) => !["/establishment", "/est-payroll", "/attendance"].includes(i.to)) : items.filter((i) => i.to !== "/my-projects" && !HR_ADMIN_ONLY.includes(i.to)))
     .filter((i) => !hidden.includes(i.to));
+  return { visible, pathname, unread };
+}
+
+function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const { visible, pathname, unread } = useNavItems();
   return (
     <nav className="-mx-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-1">
       {visible.map((it) => {
@@ -204,6 +209,35 @@ export function AppSidebar() {
         <Logo className="w-28" />
         <span className="size-9 shrink-0" aria-hidden="true" />
       </header>
+
+      {/* Mobile: app-style bottom tab bar with the first pages; "المزيد" opens the full menu. */}
+      <BottomBar onMore={() => setOpen(true)} />
     </>
+  );
+}
+
+function BottomBar({ onMore }: { onMore: () => void }) {
+  const { visible, pathname, unread } = useNavItems();
+  const tabs = visible.slice(0, 4);
+  if (!tabs.length) return null;
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 grid border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden print:hidden"
+      style={{ gridTemplateColumns: `repeat(${tabs.length + 1}, minmax(0, 1fr))` }}>
+      {tabs.map((it) => {
+        const active = it.to === "/" ? pathname === "/" : pathname === it.to || pathname.startsWith(it.to + "/");
+        const badge = it.to === "/messages" ? unread : 0;
+        return (
+          <Link key={it.to} to={it.to} aria-current={active ? "page" : undefined}
+            className={`relative flex flex-col items-center gap-0.5 px-1 py-2 text-[11px] leading-tight ${active ? "text-primary" : "text-muted-foreground"}`}>
+            <it.icon className="size-5" />
+            <span className="line-clamp-1 text-center">{t(it.label)}</span>
+            {badge > 0 && <span className="absolute top-1 start-1/2 ms-2 min-w-4 rounded-full bg-destructive px-1 text-[10px] text-destructive-foreground">{badge > 99 ? "99+" : badge}</span>}
+          </Link>
+        );
+      })}
+      <button type="button" onClick={onMore} className="flex flex-col items-center gap-0.5 px-1 py-2 text-[11px] text-muted-foreground">
+        <Menu className="size-5" /><span>{t("المزيد")}</span>
+      </button>
+    </nav>
   );
 }
