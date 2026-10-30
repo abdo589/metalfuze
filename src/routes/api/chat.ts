@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, type UIMessage } from "ai";
-import { createResponsesCall } from "@/server/ai/responses";
+import { createResponsesCall, OPENAI_CONNECTOR_BASE_URL } from "@/server/ai/responses";
 import { buildSystemSnapshot, createCallerClient } from "@/server/system-context";
 
 const INSTRUCTIONS = `أنت "مستشار Metal Fuze"، المساعد الذكي داخل نظام إدارة الشركة.
@@ -53,7 +53,8 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       POST: async ({ request }) => {
         const apiKey = process.env["LOVABLE_API_KEY"];
-        if (!apiKey) return new Response("مفتاح الذكاء الاصطناعي غير مهيأ", { status: 500 });
+        const connKey = process.env["UDC_OPENAI_API_KEY"];
+        if (!apiKey || !connKey) return new Response("مفتاح الذكاء الاصطناعي غير مهيأ", { status: 500 });
         const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
         if (!token) return new Response("يجب تسجيل الدخول", { status: 401 });
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -85,7 +86,12 @@ export const Route = createFileRoute("/api/chat")({
         const instructions = `${INSTRUCTIONS}\nResponse language: ${body.language === "en" ? "English. End with Practical Recommendations." : "Arabic."}\n\nتاريخ اليوم: ${today}`;
         const call = createResponsesCall(
           request,
-          { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, model: "openai/gpt-6-astra" },
+          {
+            baseURL: OPENAI_CONNECTOR_BASE_URL,
+            apiKey,
+            model: "gpt-5.5",
+            extraHeaders: { "X-Connection-Api-Key": connKey },
+          },
           [dataMessage, systemMessage, ...(await convertToModelMessages(messages))],
           instructions,
           messages,
