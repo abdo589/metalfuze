@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, type UIMessage } from "ai";
-import { createResponsesCall } from "@/server/ai/responses";
+import { createResponsesCall, OPENAI_CONNECTOR_BASE_URL } from "@/server/ai/responses";
 import { buildSystemSnapshot, createCallerClient } from "@/server/system-context";
 
 const INSTRUCTIONS = `أنت "مستشار Metal Fuze"، المساعد الذكي داخل نظام إدارة الشركة.
