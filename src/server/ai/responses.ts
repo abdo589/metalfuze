@@ -1,27 +1,24 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText, type ModelMessage } from "ai";
 
-import {
-  createLovableAiGatewayRunIdFetch,
-  getLovableAiGatewayRunId,
-  withLovableAiGatewayRunIdHeader,
-} from "./run-id.ts";
+// The advisor runs on the workspace's own OpenAI connection (connector udc_openai),
+// routed through the connector gateway — usage is billed to the user's OpenAI
+// account, not to Lovable AI credits.
+// Auth: Authorization: Bearer $LOVABLE_API_KEY (gateway) + X-Connection-Api-Key: $UDC_OPENAI_API_KEY (connection).
+export const OPENAI_CONNECTOR_BASE_URL = "https://connector-gateway.lovable.dev/udc_openai/v1";
 
 export function createResponsesCall(
   request: Request,
-  config: { baseURL: string; apiKey: string; model: string },
+  config: { baseURL: string; apiKey: string; model: string; extraHeaders?: Record<string, string> },
   messages: ModelMessage[],
   instructions?: string,
   originalMessages?: import("ai").UIMessage[],
 ) {
-  const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
   const provider = createOpenAI({
-    baseURL: `${config.baseURL.replace(/\/+$/, "").replace(/\/v1$/, "")}/v1`,
+    baseURL: config.baseURL,
     apiKey: config.apiKey,
-    headers: { "Lovable-API-Key": config.apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-    fetch: runIdFetch.fetch,
+    ...(config.extraHeaders ? { headers: config.extraHeaders } : {}),
   });
-  const reasoning = config.model !== "openai/chat-latest";
   const result = streamText({
     model: provider.responses(config.model),
     // AI SDK 6 lacks `instructions`: rename this key to `system` there.
@@ -31,20 +28,14 @@ export function createResponsesCall(
     providerOptions: {
       openai: {
         store: false,
-        ...(reasoning
-          ? {
-              forceReasoning: true,
-              reasoningEffort: "medium",
-              reasoningSummary: "auto",
-              include: ["reasoning.encrypted_content"],
-            }
-          : {}),
+        reasoningEffort: "medium",
+        reasoningSummary: "auto",
+        include: ["reasoning.encrypted_content"],
       },
     },
   });
   return {
     result,
-    response: () =>
-      withLovableAiGatewayRunIdHeader(result.toUIMessageStreamResponse({ sendReasoning: true, ...(originalMessages ? { originalMessages } : {}) }), runIdFetch),
+    response: () => result.toUIMessageStreamResponse({ sendReasoning: true, ...(originalMessages ? { originalMessages } : {}) }),
   };
 }

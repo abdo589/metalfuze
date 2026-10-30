@@ -53,7 +53,8 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       POST: async ({ request }) => {
         const apiKey = process.env["LOVABLE_API_KEY"];
-        if (!apiKey) return new Response("مفتاح الذكاء الاصطناعي غير مهيأ", { status: 500 });
+        const connKey = process.env["UDC_OPENAI_API_KEY"];
+        if (!apiKey || !connKey) return new Response("مفتاح الذكاء الاصطناعي غير مهيأ", { status: 500 });
         const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
         if (!token) return new Response("يجب تسجيل الدخول", { status: 401 });
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
