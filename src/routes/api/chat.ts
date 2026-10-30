@@ -86,7 +86,12 @@ export const Route = createFileRoute("/api/chat")({
         const instructions = `${INSTRUCTIONS}\nResponse language: ${body.language === "en" ? "English. End with Practical Recommendations." : "Arabic."}\n\nتاريخ اليوم: ${today}`;
         const call = createResponsesCall(
           request,
-          { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, model: "openai/gpt-6-astra" },
+          {
+            baseURL: OPENAI_CONNECTOR_BASE_URL,
+            apiKey,
+            model: "gpt-5.5",
+            extraHeaders: { "X-Connection-Api-Key": connKey },
+          },
           [dataMessage, systemMessage, ...(await convertToModelMessages(messages))],
           instructions,
           messages,
