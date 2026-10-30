@@ -66,7 +66,7 @@ export function BugReportButton() {
 
   return (
     <>
-      <Button variant="outline" size="icon" className="fixed bottom-5 start-5 z-40 rounded-full shadow-lg print:hidden"
+      <Button variant="outline" size="icon" className="fixed bottom-20 lg:bottom-5 start-5 z-40 rounded-full shadow-lg print:hidden"
         aria-label={t("بلّغ عن عطل")} title={t("بلّغ عن عطل")} onClick={() => setOpen(true)}>
         <Bug />
       </Button>

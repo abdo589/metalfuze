@@ -150,7 +150,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => { installReadCache(); installAccountScope(); initializeLanguage(); initializeSidebar(); }, []);
+  useEffect(() => { installReadCache(); installAccountScope(); initializeLanguage(); initializeSidebar(); void import("@/lib/pwa-register").then((m) => m.registerAppSW()); }, []);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Personal phone check-in links are opened by employees without accounts.
@@ -174,7 +174,7 @@ function RootComponent() {
         <PrintLetterhead />
         <div className="flex min-h-screen flex-col lg:flex-row">
           <AppSidebar />
-          <main className="min-w-0 flex-1">
+          <main className="min-w-0 flex-1 pb-20 lg:pb-0">
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
           </main>
