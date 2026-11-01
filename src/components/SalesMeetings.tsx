@@ -12,10 +12,10 @@ import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { REQUIRED_MEETING_PEOPLE, standaloneMeetingInput } from "@/lib/sales-meetings";
 import { SalesMeetingAttendance } from "@/components/SalesMeetingAttendance";
 
-// People who must be alerted when a client meeting is scheduled.
+// Optional companions are separate from mandatory approval recipients.
 export const MEETING_PEOPLE = [
   ...REQUIRED_MEETING_PEOPLE,
-  { email: "ceo@metalfuze.local", name: "CEO" },
+  { email: "hisham@metalfuze.local", name: "هشام" },
   { email: "eilaf@metalfuze.local", name: "Eilaf" },
 ];
 
@@ -25,24 +25,23 @@ export function SalesMeetings({ deal, onClose, standalone = false }: { deal: { i
   const [list, setList] = useState<M[]>([]);
   const [at, setAt] = useState(""); const [place, setPlace] = useState(""); const [notes, setNotes] = useState("");
   const [topic, setTopic] = useState("");
-  const [who, setWho] = useState<string[]>(MEETING_PEOPLE.map((p) => p.email));
+  const [who, setWho] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const load = async (id: string) => {
     const { data, error } = await supabase.from("sales_meetings").select("*").eq("deal_id", id).order("meeting_at");
     if (error) { toast.error(t("تعذر تحميل الاجتماعات")); return; }
     setList((data ?? []) as M[]);
   };
-  useEffect(() => { if (deal || standalone) { if (deal) load(deal.id); else setList([]); setAt(""); setPlace(""); setNotes(""); setTopic(""); } }, [deal, standalone]);
+  useEffect(() => { if (deal || standalone) { if (deal) load(deal.id); else setList([]); setWho([]); setAt(""); setPlace(""); setNotes(""); setTopic(""); } }, [deal, standalone]);
 
   async function add() {
     if (!deal && !standalone) return;
     if (!at) { toast.error(t("حدد موعد الاجتماع")); return; }
     if (!topic.trim()) { toast.error(t("اكتب بيانات الاجتماع")); return; }
-    if (!who.length) { toast.error(t("اختر شخصًا مسؤولًا واحدًا على الأقل")); return; }
     setBusy(true);
     const when = new Date(at);
     if (!Number.isFinite(when.getTime())) { setBusy(false); toast.error(t("حدد موعد الاجتماع")); return; }
-    const payload: TablesInsert<"sales_meetings"> = standalone ? standaloneMeetingInput(topic, when.toISOString(), place, notes, who) : { deal_id: deal?.id ?? null, meeting_at: when.toISOString(), topic, place, notes, attendees: who };
+    const payload: TablesInsert<"sales_meetings"> = { ...standaloneMeetingInput(topic, when.toISOString(), place, notes, who), deal_id: deal?.id ?? null };
     const { error } = await supabase.from("sales_meetings").insert(payload);
     if (error) { setBusy(false); toast.error(`${t("تعذر الحفظ، حاول مرة أخرى")} (${error.message})`); return; }
     // Alerts to attendees are sent by the database right after the meeting is saved.
@@ -76,10 +75,10 @@ export function SalesMeetings({ deal, onClose, standalone = false }: { deal: { i
           <div><Label>{t(standalone ? "محتوى الاجتماع" : "بيانات الاجتماع")}</Label><Textarea aria-label={t(standalone ? "محتوى الاجتماع" : "بيانات الاجتماع")} value={topic} onChange={(e) => setTopic(e.target.value)} /></div>
           <div><Label>{t("الموعد")}</Label><Input aria-label={t("الموعد")} type="datetime-local" value={at} onChange={(e) => setAt(e.target.value)} /></div>
           <div><Label>{t("المكان")}</Label><Input value={place} onChange={(e) => setPlace(e.target.value)} /></div>
-          <div><Label>{t("المسؤول المرافق")}</Label>
+          <div><Label>{t("المسؤول المرافق")} — {t("اختياري")}</Label>
             <div className="mt-1 flex flex-wrap gap-4">{MEETING_PEOPLE.map((p) => (
               <label key={p.email} className="flex items-center gap-2 text-sm">
-                <Checkbox disabled={REQUIRED_MEETING_PEOPLE.some((person) => person.email === p.email)} checked={who.includes(p.email)} onCheckedChange={(c) => setWho((w) => c ? [...w, p.email] : w.filter((x) => x !== p.email))} />{t(p.name)}
+                <Checkbox checked={who.includes(p.email)} onCheckedChange={(c) => setWho((w) => c ? [...w, p.email] : w.filter((x) => x !== p.email))} />{t(p.name)}
               </label>))}</div></div>
           <div><Label>{t("ملاحظات")}</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
           <Button onClick={add} disabled={busy} className="w-full">{t("حفظ الاجتماع وإرسال تنبيه")}</Button>
