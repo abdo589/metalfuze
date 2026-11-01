@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { t, locale, useLanguage } from "@/lib/i18n";
 import { canRespondToMeeting, REQUIRED_MEETING_PEOPLE, responseForPerson } from "@/lib/sales-meetings";
+import { readCache } from "@/lib/read-cache";
 
 type Meeting = Tables<"sales_meetings">;
 export function SalesMeetingAttendance({ meetings, onRefresh }: { meetings: Meeting[]; onRefresh: () => void }) {
@@ -31,6 +32,7 @@ export function SalesMeetingAttendance({ meetings, onRefresh }: { meetings: Meet
     const { error } = await supabase.rpc("sales_meeting_respond", { p_meeting: id, p_response: response, p_note: notes[id] ?? "" });
     setBusy(null);
     if (error) { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); return; }
+    readCache.clearTable("sales_meeting_responses");
     toast.success(t("تم تسجيل ردك وإبلاغ المبيعات")); onRefresh();
   }
   return <div className="space-y-3">{!meetings.length && <p className="text-sm text-muted-foreground">{t("لا توجد اجتماعات")}</p>}{meetings.map((m) => {
