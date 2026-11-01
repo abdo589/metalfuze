@@ -1,5 +1,5 @@
 # Roadmap — deep scan fixes
-- [ ] Optional meeting companions, CEO/Haitham approval only, all meeting updates to Eilaf; verify the flow.
+- [x] Optional meeting companions, CEO/Haitham approval only, all meeting updates to Eilaf; verified creation, both responses and update notification.
 - [x] Create standalone meetings with content/date, without a sales deal; preserve pricing meetings and verify creation/readback.
 - [x] Separate meetings sidebar page while preserving pricing meeting controls.
 - [x] Sales meetings: send details/date to Hisham and Haitham, persist independent attendance responses and verify the flow.
