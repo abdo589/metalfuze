@@ -6,13 +6,20 @@ describe("sales meeting attendance", () => {
     expect(input.deal_id).toBeNull();
     expect(input.topic).toBe("متابعة أعمال الموقع");
     expect(input.meeting_at).toBe("2026-11-04T10:00:00.000Z");
-    expect(input.attendees).toEqual(["hisham@metalfuze.local", "haitham@metalfuze.local"]);
+    expect(input.attendees).toEqual(["ceo@metalfuze.local", "haitham@metalfuze.local", "eilaf@metalfuze.local"]);
   });
-  const attendees: [string, string] = ["hisham@metalfuze.local", "haitham@metalfuze.local"];
-  it("routes meetings to Hisham and Haitham", () => {
+  it("allows creating meetings without any accompanying person", () => {
+    expect(standaloneMeetingInput("اجتماع", "2026-11-04T10:00:00Z", "", "", []).companions).toEqual([]);
+  });
+  it("always includes Eilaf for meeting updates without making her an approver", () => {
+    expect(standaloneMeetingInput("اجتماع", "2026-11-04T10:00:00Z", "", "", []).attendees).toContain("eilaf@metalfuze.local");
+    expect(canRespondToMeeting("eilaf@metalfuze.local", true, ["eilaf@metalfuze.local"])).toBe(false);
+  });
+  const attendees: [string, string] = ["ceo@metalfuze.local", "haitham@metalfuze.local"];
+  it("routes approvals to CEO and Haitham", () => {
     expect(REQUIRED_MEETING_PEOPLE.map((p) => p.email)).toEqual(attendees);
   });
-  it("keeps Hisham acceptance independent of Haitham rejection", () => {
+  it("keeps CEO acceptance independent of Haitham rejection", () => {
     const responses = [
       { attendee_email: attendees[0], response: "accepted", note: "", responded_at: "2026-11-01" },
       { attendee_email: attendees[1], response: "declined", note: "", responded_at: "2026-11-01" },
@@ -21,10 +28,11 @@ describe("sales meeting attendance", () => {
     expect(responseForPerson(responses, attendees[1])).toBe("declined");
     expect(responseForPerson([], attendees[1])).toBe("pending");
   });
-  it("allows only confirmed invited Hisham and Haitham to respond", () => {
+  it("allows only confirmed invited CEO and Haitham to respond", () => {
     for (const email of attendees) expect(canRespondToMeeting(email, true, attendees)).toBe(true);
     expect(canRespondToMeeting(attendees[0], false, attendees)).toBe(false);
     expect(canRespondToMeeting(attendees[0], true, [])).toBe(false);
     expect(canRespondToMeeting("eilaf@metalfuze.local", true, [...attendees, "eilaf@metalfuze.local"])).toBe(false);
+    expect(canRespondToMeeting("hisham@metalfuze.local", true, [...attendees, "hisham@metalfuze.local"])).toBe(false);
   });
 });
