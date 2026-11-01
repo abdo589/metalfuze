@@ -505,6 +505,13 @@
       "when": 1793343906472,
       "tag": "0071_fix_link_employee_on_confirm_type",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1793521343208,
+      "tag": "0072_eilaf_own_sales_deals",
+      "breakpoints": true
     }
   ]
 }
