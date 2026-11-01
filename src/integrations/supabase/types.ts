@@ -1900,7 +1900,7 @@ export type Database = {
           client_name: string
           created_at: string
           created_by: string
-          deal_id: string
+          deal_id: string | null
           id: string
           meeting_at: string
           notes: string
@@ -1913,7 +1913,7 @@ export type Database = {
           client_name?: string
           created_at?: string
           created_by?: string
-          deal_id: string
+          deal_id?: string | null
           id?: string
           meeting_at: string
           notes?: string
@@ -1926,7 +1926,7 @@ export type Database = {
           client_name?: string
           created_at?: string
           created_by?: string
-          deal_id?: string
+          deal_id?: string | null
           id?: string
           meeting_at?: string
           notes?: string
