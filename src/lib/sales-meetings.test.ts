@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { canRespondToMeeting, REQUIRED_MEETING_PEOPLE, responseForPerson } from "./sales-meetings";
 describe("sales meeting attendance", () => {
-  const attendees = ["hisham@metalfuze.local", "haitham@metalfuze.local"];
+  const attendees: [string, string] = ["hisham@metalfuze.local", "haitham@metalfuze.local"];
   it("routes meetings to Hisham and Haitham", () => {
     expect(REQUIRED_MEETING_PEOPLE.map((p) => p.email)).toEqual(attendees);
   });
