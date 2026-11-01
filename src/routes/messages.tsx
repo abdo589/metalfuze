@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { t, useLanguage } from "@/lib/i18n";
+import { SalesMeetingInbox } from "@/components/SalesMeetingAttendance";
 
 export const Route = createFileRoute("/messages")({
   head: () => ({
@@ -116,6 +117,7 @@ function MessagesPage() {
   return (
     <div className="mx-auto flex h-[calc(100vh-6rem)] max-w-6xl flex-col gap-4 p-4">
       <h1 className="font-display text-2xl font-bold">{t("الرسائل")}</h1>
+      <SalesMeetingInbox attendeeOnly />
       <div className="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card">
         <aside className={`${active ? "hidden md:flex" : "flex"} w-full flex-col border-e border-border md:w-72`}>
           <div className="relative p-3">

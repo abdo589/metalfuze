@@ -512,6 +512,13 @@
       "when": 1793521343208,
       "tag": "0072_eilaf_own_sales_deals",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1793536563223,
+      "tag": "0073_sales_meeting_independent_attendance",
+      "breakpoints": true
     }
   ]
 }

@@ -24,6 +24,14 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
+  "هشام": "Hisham", "هيثم": "Haitham", "اجتماعات المبيعات": "Sales meetings",
+  "جدولة اجتماع": "Schedule a meeting", "بيانات الاجتماع": "Meeting details", "اكتب بيانات الاجتماع": "Enter meeting details",
+  "وافق على الحضور": "Accepted attendance", "رفض الحضور": "Declined attendance", "بانتظار الرد": "Awaiting response",
+  "موافقة على الحضور": "Accept attendance", "ملاحظة الحضور": "Attendance note", "تم تسجيل ردك وإبلاغ المبيعات": "Response saved and sales notified",
+  "تعذر تحميل الاجتماعات": "Couldn't load meetings", "تعذر تحميل ردود الاجتماعات": "Couldn't load meeting responses",
+  "الاجتماعات": "Meetings", "لا توجد اجتماعات": "No meetings", "حدد موعد الاجتماع": "Choose a meeting date",
+  "اختر شخصًا مسؤولًا واحدًا على الأقل": "Select at least one responsible person", "تم حفظ الاجتماع وإرسال التنبيه": "Meeting saved and attendees notified",
+  "الموعد": "Date and time", "المسؤول المرافق": "Accompanying person", "حفظ الاجتماع وإرسال تنبيه": "Save meeting and notify attendees",
   "مسؤول قسم المبيعات": "Head of Sales",
   "تسجيل حضور": "Check in", "تسجيل انصراف": "Check out", "تسجيل حضور العمال": "Worker check-in", "جارٍ تحديد موقعك…": "Getting your location…", "جارٍ الإرسال…": "Sending…",
   "سيُطلب منك التقاط صورة سيلفي وتحديد موقعك": "You'll take a selfie and share your location", "الموقع غير متاح على هذا الجهاز": "Location isn't available on this device",

@@ -1852,9 +1852,52 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_meeting_responses: {
+        Row: {
+          attendee_email: string
+          meeting_id: string
+          note: string
+          responded_at: string
+          response: string
+          user_id: string
+        }
+        Insert: {
+          attendee_email: string
+          meeting_id: string
+          note?: string
+          responded_at?: string
+          response: string
+          user_id: string
+        }
+        Update: {
+          attendee_email?: string
+          meeting_id?: string
+          note?: string
+          responded_at?: string
+          response?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_meeting_responses_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "sales_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_meeting_responses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_meetings: {
         Row: {
           attendees: string[]
+          client_name: string
           created_at: string
           created_by: string
           deal_id: string
@@ -1862,9 +1905,12 @@ export type Database = {
           meeting_at: string
           notes: string
           place: string
+          project_name: string
+          topic: string
         }
         Insert: {
           attendees?: string[]
+          client_name?: string
           created_at?: string
           created_by?: string
           deal_id: string
@@ -1872,9 +1918,12 @@ export type Database = {
           meeting_at: string
           notes?: string
           place?: string
+          project_name?: string
+          topic?: string
         }
         Update: {
           attendees?: string[]
+          client_name?: string
           created_at?: string
           created_by?: string
           deal_id?: string
@@ -1882,6 +1931,8 @@ export type Database = {
           meeting_at?: string
           notes?: string
           place?: string
+          project_name?: string
+          topic?: string
         }
         Relationships: [
           {
@@ -2355,6 +2406,10 @@ export type Database = {
           p_price?: number
         }
         Returns: string
+      }
+      sales_meeting_respond: {
+        Args: { p_meeting: string; p_note?: string; p_response: string }
+        Returns: undefined
       }
       sales_step_email: { Args: { _step: string }; Returns: string }
       verified_email: { Args: never; Returns: string }
