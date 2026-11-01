@@ -1,11 +1,11 @@
 type SalesActor = { id: string; email: string; emailConfirmed?: boolean };
 
 /** Display permissions mirror owner-scoped database policies; never substitute for RLS. */
-export function canCreateSalesDeal(role: string | null, actor: SalesActor | null) {
+export function canCreateSalesDeal(role: string | null | undefined, actor: SalesActor | null) {
   return !!actor && (role === "sales" || (actor.emailConfirmed === true && actor.email.toLowerCase() === "eilaf@metalfuze.local"));
 }
 
-export function canEditSalesDeal(role: string | null, actor: SalesActor | null, ownerId: string) {
+export function canEditSalesDeal(role: string | null | undefined, actor: SalesActor | null, ownerId: string) {
   return canCreateSalesDeal(role, actor) && actor?.id === ownerId;
 }
 
