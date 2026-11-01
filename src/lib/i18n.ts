@@ -24,6 +24,7 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
+  "مسؤول قسم المبيعات": "Head of Sales",
   "تسجيل حضور": "Check in", "تسجيل انصراف": "Check out", "تسجيل حضور العمال": "Worker check-in", "جارٍ تحديد موقعك…": "Getting your location…", "جارٍ الإرسال…": "Sending…",
   "سيُطلب منك التقاط صورة سيلفي وتحديد موقعك": "You'll take a selfie and share your location", "الموقع غير متاح على هذا الجهاز": "Location isn't available on this device",
   "اسمح للموقع بالوصول إلى مكانك ثم حاول مرة أخرى": "Allow location access, then try again", "أنت على بعد": "You are", "متر من موقع": "m from", "متر": "m",
