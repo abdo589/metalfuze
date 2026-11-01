@@ -17,7 +17,7 @@ import {
   Users, FolderKanban, MessageSquare, Calculator,
   Radar,
   Mail, Star, FolderOpen, Building2,
-  Car, Wrench,
+  Car, Wrench, CalendarClock,
   Laptop,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,7 @@ export const items = [
   { to: "/settlements", label: "المخالصات", icon: FileText },
   { to: "/assistant", label: "المستشار الذكي", icon: BrainCircuit },
   { to: "/sales", label: "المبيعات", icon: Calculator },
+  { to: "/meetings", label: "الاجتماعات", icon: CalendarClock },
 ];
 
 function useNavItems() {
@@ -73,9 +74,9 @@ function useNavItems() {
   const visible = (isAli ? [{ to: "/project-admin", label: "إدارة مشاريع", icon: FolderKanban }, { to: "/project-admin/projects", label: "المشاريع", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
-    : role === "sales" ? [{ to: "/sales", label: "المبيعات", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
+    : role === "sales" ? [{ to: "/sales", label: "المبيعات", icon: Calculator }, { to: "/meetings", label: "الاجتماعات", icon: CalendarClock }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "mail" ? [{ to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
-    : role === "executive" ? [{ to: "/executive", label: "الملخص التنفيذي", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
+    : role === "executive" ? [{ to: "/executive", label: "الملخص التنفيذي", icon: Calculator }, { to: "/meetings", label: "الاجتماعات", icon: CalendarClock }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "accountant" ? [{ to: "/accounting", label: "المحاسبة", icon: Calculator }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === undefined ? [] : role === "admin" ? items.filter((i) => !["/establishment", "/est-payroll", "/attendance"].includes(i.to)) : items.filter((i) => i.to !== "/my-projects" && !HR_ADMIN_ONLY.includes(i.to)))

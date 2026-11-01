@@ -49,12 +49,12 @@ export const HR_ADMIN_ONLY = ["/payroll", "/attendance", "/attendance-tracking",
 /** Accountant (Aiftkhar) sees only the private accounting space. */
 export const ACCOUNTANT_PATHS = ["/accounting", "/messages", "/mail", "/my-checkin"];
 /** Executive (Hisham) sees only the live summary, read-only. */
-export const EXECUTIVE_PATHS = ["/executive", "/messages", "/mail", "/my-checkin"];
+export const EXECUTIVE_PATHS = ["/executive", "/meetings", "/messages", "/mail", "/my-checkin"];
 export const MANAGER_PATHS = ["/my-projects", "/messages", "/mail", "/my-checkin"];
 /** Mail-only accounts open nothing but their Outlook mailbox. */
 export const MAIL_PATHS = ["/mail", "/messages", "/my-checkin"];
 /** Sales (Hala) only opens her own sales & commission space. */
-export const SALES_PATHS = ["/sales", "/messages", "/mail", "/my-checkin"];
+export const SALES_PATHS = ["/sales", "/meetings", "/messages", "/mail", "/my-checkin"];
 
 /** Who may open the AI advisor (/assistant) — mirrors RoleGuard's allowed lists, so the floating button never links to a blocked page. */
 export function assistantAllowed(role: Role | undefined) {
