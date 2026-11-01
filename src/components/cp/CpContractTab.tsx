@@ -83,7 +83,7 @@ export function CpContractTab({ projectId }: { projectId: string }) {
               ) : <div className="text-xs text-muted-foreground">لا يوجد ملف</div>}
               <label className="flex cursor-pointer items-center justify-center gap-1 rounded-md bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-secondary/80">
                 <Upload className="h-4 w-4" /> {busy === k ? "جارٍ الرفع…" : f[k] ? "استبدال" : "رفع"}
-                <input type="file" className="hidden" disabled={busy !== null} onChange={(e) => { const file = e.target.files?.[0]; if (file) upload(k, file); e.target.value = ""; }} />
+                <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip,.rar,.7z" className="hidden" disabled={busy !== null} onChange={(e) => { const file = e.target.files?.[0]; if (file) upload(k, file); e.target.value = ""; }} />
               </label>
             </div>
           ))}
