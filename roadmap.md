@@ -1,4 +1,5 @@
 # Roadmap — deep scan fixes
+- [ ] Fix Arabic pricing-file uploads and verify Haitham approval without changing existing deals.
 - [x] Sales: Eilaf creates/uploads/edits her own deals only; show Eng Hisham as department responsible person.
 - [x] Phase 1: read-only enforced in database, assistant role check, safe link downloads, sales insert reset + file read scoping
 - [x] Phase 2: real forced sign-out, per-account local storage

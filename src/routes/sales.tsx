@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useRole } from "@/lib/permissions";
 import { canCreateSalesDeal, canEditSalesDeal, commissionDue } from "@/lib/sales";
+import { salesFilePath } from "@/lib/sales-file";
 import { OtherSelect } from "@/components/OtherSelect";
 
 export const Route = createFileRoute("/sales")({
@@ -119,8 +120,8 @@ function SalesPage() {
     setWfBusy(true);
     let path: string | null = null, name: string | null = null;
     if (action === "approve" && wfFile && me) {
-      path = `${me.id}/${Date.now()}_${wfFile.name.replace(/[^\w.\-\u0600-\u06FF]/g, "_")}`; name = wfFile.name;
-      const { error } = await supabase.storage.from("sales-files").upload(path, wfFile);
+      path = salesFilePath(me.id, wfFile.name); name = wfFile.name;
+      const { error } = await supabase.storage.from("sales-files").upload(path, wfFile, { contentType: wfFile.type || "application/octet-stream" });
       if (error) { toast.error(t("تعذر رفع الملف")); setWfBusy(false); return; }
     }
     const { error } = await supabase.rpc("sales_advance", { p_id: d.id, p_action: action, p_note: wfNote, ...(wfPrice ? { p_price: Number(wfPrice) } : {}), ...(path && name ? { p_file_path: path, p_file_name: name } : {}) });
@@ -251,9 +252,8 @@ function SalesPage() {
     try {
       const { data: u } = await supabase.auth.getUser();
       for (const f of list) {
-        const ext = (f.name.match(/\.[A-Za-z0-9]+$/)?.[0] ?? "").toLowerCase();
-        const base = f.name.replace(/\.[A-Za-z0-9]+$/, "").replace(/[^\w.\-]/g, "_").slice(0, 60) || "file";
-        const path = `${u.user?.id}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${base}${ext}`;
+        if (!u.user) break;
+        const path = salesFilePath(u.user.id, f.name);
         const { error } = await supabase.storage.from("sales-files").upload(path, f, { contentType: f.type || "application/octet-stream", upsert: false });
         if (error) toast.error(`${t("تعذر رفع الملف")}: ${f.name}`); else added.push(path);
       }
