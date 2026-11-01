@@ -1,4 +1,5 @@
 # Roadmap — deep scan fixes
+- [ ] Create standalone meetings with content/date, without a sales deal; preserve pricing meetings and verify creation/readback.
 - [x] Separate meetings sidebar page while preserving pricing meeting controls.
 - [x] Sales meetings: send details/date to Hisham and Haitham, persist independent attendance responses and verify the flow.
 - [x] Fix Arabic pricing-file uploads and verify Haitham approval without changing existing deals.
