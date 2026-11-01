@@ -24,6 +24,7 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
+  "إنشاء اجتماع": "Create meeting", "محتوى الاجتماع": "Meeting content",
   "هشام": "Hisham", "هيثم": "Haitham", "اجتماعات المبيعات": "Sales meetings",
   "جدولة اجتماع": "Schedule a meeting", "بيانات الاجتماع": "Meeting details", "اكتب بيانات الاجتماع": "Enter meeting details",
   "وافق على الحضور": "Accepted attendance", "رفض الحضور": "Declined attendance", "بانتظار الرد": "Awaiting response",

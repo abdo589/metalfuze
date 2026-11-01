@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { canRespondToMeeting, REQUIRED_MEETING_PEOPLE, responseForPerson } from "./sales-meetings";
+import { canRespondToMeeting, REQUIRED_MEETING_PEOPLE, responseForPerson, standaloneMeetingInput } from "./sales-meetings";
 describe("sales meeting attendance", () => {
+  it("creates an independent meeting with its content, date and required attendees without a deal", () => {
+    const input = standaloneMeetingInput("متابعة أعمال الموقع", "2026-11-04T10:00:00.000Z", "المكتب", "مراجعة التقدم", []);
+    expect(input.deal_id).toBeNull();
+    expect(input.topic).toBe("متابعة أعمال الموقع");
+    expect(input.meeting_at).toBe("2026-11-04T10:00:00.000Z");
+    expect(input.attendees).toEqual(["hisham@metalfuze.local", "haitham@metalfuze.local"]);
+  });
   const attendees: [string, string] = ["hisham@metalfuze.local", "haitham@metalfuze.local"];
   it("routes meetings to Hisham and Haitham", () => {
     expect(REQUIRED_MEETING_PEOPLE.map((p) => p.email)).toEqual(attendees);

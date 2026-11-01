@@ -36,8 +36,8 @@ export function SalesMeetingAttendance({ meetings, onRefresh }: { meetings: Meet
   return <div className="space-y-3">{!meetings.length && <p className="text-sm text-muted-foreground">{t("لا توجد اجتماعات")}</p>}{meetings.map((m) => {
     const replies = responses.filter((r) => r.meeting_id === m.id);
     return <article key={m.id} className="space-y-2 rounded-md border border-border p-3 text-sm">
-      <div className="flex flex-wrap justify-between gap-2"><b>{m.client_name} — {m.project_name}</b><time dir="ltr">{new Date(m.meeting_at).toLocaleString(locale(), { timeZone: "Asia/Riyadh", dateStyle: "medium", timeStyle: "short" })}</time></div>
-      {m.topic && <p className="whitespace-pre-wrap font-medium">{m.topic}</p>}
+      <div className="flex flex-wrap justify-between gap-2"><b className="min-w-0 whitespace-pre-wrap break-words">{m.deal_id ? `${m.client_name} — ${m.project_name}` : m.topic}</b><time dir="ltr">{new Date(m.meeting_at).toLocaleString(locale(), { timeZone: "Asia/Riyadh", dateStyle: "medium", timeStyle: "short" })}</time></div>
+      {m.deal_id && m.topic && <p className="whitespace-pre-wrap break-words font-medium">{m.topic}</p>}
       {m.place && <p>{t("المكان")}: {m.place}</p>}
       {m.notes && <p className="whitespace-pre-wrap text-muted-foreground">{m.notes}</p>}
       <div className="flex flex-wrap gap-3">{REQUIRED_MEETING_PEOPLE.filter((p) => m.attendees.includes(p.email)).map((p) => {
@@ -52,7 +52,7 @@ export function SalesMeetingAttendance({ meetings, onRefresh }: { meetings: Meet
   })}</div>;
 }
 
-export function SalesMeetingInbox({ attendeeOnly = false }: { attendeeOnly?: boolean }) {
+export function SalesMeetingInbox({ attendeeOnly = false, standaloneOnly = false }: { attendeeOnly?: boolean; standaloneOnly?: boolean }) {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [allowed, setAllowed] = useState(!attendeeOnly);
   const load = useCallback(async () => {
@@ -61,11 +61,12 @@ export function SalesMeetingInbox({ attendeeOnly = false }: { attendeeOnly?: boo
     if (!auth.user || (attendeeOnly && !REQUIRED_MEETING_PEOPLE.some((p) => p.email === email))) return;
     setAllowed(true);
     let query = supabase.from("sales_meetings").select("*").order("meeting_at", { ascending: false });
+    if (standaloneOnly) query = query.is("deal_id", null);
     if (attendeeOnly && email) query = query.contains("attendees", [email]);
     const { data, error } = await query;
     if (error) toast.error(t("تعذر تحميل الاجتماعات")); else setMeetings(data ?? []);
-  }, [attendeeOnly]);
+  }, [attendeeOnly, standaloneOnly]);
   useEffect(() => { load(); const timer = setInterval(load, 30000); return () => clearInterval(timer); }, [load]);
   if (!allowed) return null;
-  return <section className="space-y-3"><div className="flex items-center justify-between"><h2 className="font-display text-lg font-bold">{t("اجتماعات المبيعات")}</h2><Button size="sm" variant="ghost" onClick={load}>{t("تحديث")}</Button></div><div className="max-h-96 overflow-y-auto"><SalesMeetingAttendance meetings={meetings} onRefresh={load} /></div></section>;
+  return <section className="space-y-3"><div className="flex items-center justify-between"><h2 className="font-display text-lg font-bold">{t(standaloneOnly ? "الاجتماعات" : "اجتماعات المبيعات")}</h2><Button size="sm" variant="ghost" onClick={load}>{t("تحديث")}</Button></div><div className="max-h-96 overflow-y-auto"><SalesMeetingAttendance meetings={meetings} onRefresh={load} /></div></section>;
 }
