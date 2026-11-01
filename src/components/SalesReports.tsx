@@ -33,7 +33,7 @@ export function SalesReports({ open, onClose, rows }: { open: boolean; onClose: 
       for (const l of ((d.workflow_log ?? []) as LogE[])) if (l.at && inR(l.at))
         ev.push({ at: l.at, kind: l.action === "reject" ? t("رفض") : t("اعتماد مرحلة"), deal: name(d), detail: [l.by, l.note].filter(Boolean).join(" — ") });
     }
-    for (const m of meetings) if (inR(m.meeting_at)) ev.push({ at: m.meeting_at, kind: t("اجتماع مع عميل"), deal: name(ids.get(m.deal_id)), detail: [m.place, m.notes].filter(Boolean).join(" — ") });
+    for (const m of meetings) if (m.deal_id && inR(m.meeting_at)) ev.push({ at: m.meeting_at, kind: t("اجتماع مع عميل"), deal: name(ids.get(m.deal_id)), detail: [m.place, m.notes].filter(Boolean).join(" — ") });
     ev.sort((x, y) => x.at.localeCompare(y.at));
     const created = rows.filter((d) => inR(d.created_at));
     return {

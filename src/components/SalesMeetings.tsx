@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { t, locale } from "@/lib/i18n";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { REQUIRED_MEETING_PEOPLE, standaloneMeetingInput } from "@/lib/sales-meetings";
 import { SalesMeetingAttendance } from "@/components/SalesMeetingAttendance";
 
@@ -42,7 +42,7 @@ export function SalesMeetings({ deal, onClose, standalone = false }: { deal: { i
     setBusy(true);
     const when = new Date(at);
     if (!Number.isFinite(when.getTime())) { setBusy(false); toast.error(t("حدد موعد الاجتماع")); return; }
-    const payload = standalone ? standaloneMeetingInput(topic, when.toISOString(), place, notes, who) : { deal_id: deal?.id, meeting_at: when.toISOString(), topic, place, notes, attendees: who };
+    const payload: TablesInsert<"sales_meetings"> = standalone ? standaloneMeetingInput(topic, when.toISOString(), place, notes, who) : { deal_id: deal?.id ?? null, meeting_at: when.toISOString(), topic, place, notes, attendees: who };
     const { error } = await supabase.from("sales_meetings").insert(payload);
     if (error) { setBusy(false); toast.error(`${t("تعذر الحفظ، حاول مرة أخرى")} (${error.message})`); return; }
     // Alerts to attendees are sent by the database right after the meeting is saved.
