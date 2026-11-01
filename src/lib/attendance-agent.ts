@@ -10,9 +10,9 @@ export function filterAgentPunches(input: unknown, now = Date.now()): AgentPunch
   const out: AgentPunch[] = [];
   for (const r of input) {
     if (!r || typeof r !== "object") continue;
-    const pin = String((r as Record<string, unknown>).device_user_id ?? "").trim();
-    const at = String((r as Record<string, unknown>).punched_at ?? "");
-    const st = (r as Record<string, unknown>).status;
+    const pin = String((r as Record<string, unknown>)["device_user_id"] ?? "").trim();
+    const at = String((r as Record<string, unknown>)["punched_at"] ?? "");
+    const st = (r as Record<string, unknown>)["status"];
     const t = Date.parse(at);
     if (!/^\d{1,9}$/.test(pin) || !Number.isFinite(t)) continue;
     if (t > now + 10 * 60_000 || t < now - 45 * 86_400_000) continue;
