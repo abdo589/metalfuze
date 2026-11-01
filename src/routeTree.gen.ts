@@ -27,6 +27,7 @@ import { Route as HrFileRouteImport } from './routes/hr-file'
 import { Route as LeavesRouteImport } from './routes/leaves'
 import { Route as MailRouteImport } from './routes/mail'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MeetingsRouteImport } from './routes/meetings'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MyCheckinRouteImport } from './routes/my-checkin'
 import { Route as MyProjectsRouteImport } from './routes/my-projects'
@@ -152,6 +153,11 @@ const MailRoute = MailRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeetingsRoute = MeetingsRouteImport.update({
+  id: '/meetings',
+  path: '/meetings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MessagesRoute = MessagesRouteImport.update({
@@ -357,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/leaves': typeof LeavesRoute
   '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
+  '/meetings': typeof MeetingsRoute
   '/messages': typeof MessagesRoute
   '/my-checkin': typeof MyCheckinRoute
   '/my-projects': typeof MyProjectsRoute
@@ -413,6 +420,7 @@ export interface FileRoutesByTo {
   '/leaves': typeof LeavesRoute
   '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
+  '/meetings': typeof MeetingsRoute
   '/messages': typeof MessagesRoute
   '/my-checkin': typeof MyCheckinRoute
   '/my-projects': typeof MyProjectsRoute
@@ -470,6 +478,7 @@ export interface FileRoutesById {
   '/leaves': typeof LeavesRoute
   '/mail': typeof MailRoute
   '/mcp': typeof McpRoute
+  '/meetings': typeof MeetingsRoute
   '/messages': typeof MessagesRoute
   '/my-checkin': typeof MyCheckinRoute
   '/my-projects': typeof MyProjectsRoute
@@ -528,6 +537,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mail'
     | '/mcp'
+    | '/meetings'
     | '/messages'
     | '/my-checkin'
     | '/my-projects'
@@ -584,6 +594,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mail'
     | '/mcp'
+    | '/meetings'
     | '/messages'
     | '/my-checkin'
     | '/my-projects'
@@ -640,6 +651,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mail'
     | '/mcp'
+    | '/meetings'
     | '/messages'
     | '/my-checkin'
     | '/my-projects'
@@ -697,6 +709,7 @@ export interface RootRouteChildren {
   LeavesRoute: typeof LeavesRoute
   MailRoute: typeof MailRoute
   McpRoute: typeof McpRoute
+  MeetingsRoute: typeof MeetingsRoute
   MessagesRoute: typeof MessagesRoute
   MyCheckinRoute: typeof MyCheckinRoute
   MyProjectsRoute: typeof MyProjectsRoute
@@ -861,6 +874,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meetings': {
+      id: '/meetings'
+      path: '/meetings'
+      fullPath: '/meetings'
+      preLoaderRoute: typeof MeetingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/messages': {
@@ -1137,6 +1157,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeavesRoute: LeavesRoute,
   MailRoute: MailRoute,
   McpRoute: McpRoute,
+  MeetingsRoute: MeetingsRoute,
   MessagesRoute: MessagesRoute,
   MyCheckinRoute: MyCheckinRoute,
   MyProjectsRoute: MyProjectsRoute,

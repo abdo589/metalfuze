@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CalendarClock, Coins, Download, Eye, Link2, Mail, Pencil, Plus, Trash2 } from "lucide-react";
 import { SalesMeetings } from "@/components/SalesMeetings";
-import { SalesMeetingInbox } from "@/components/SalesMeetingAttendance";
 import { SalesReports } from "@/components/SalesReports";
 import { pullLinkFile } from "@/lib/link-file.functions";
 import { toast } from "sonner";
@@ -336,10 +335,6 @@ function SalesPage() {
           </div>))}</div>}
       </section>
 
-      <section className="space-y-3">
-        {canEdit && <Select value="" onValueChange={(id) => setMeet(rows.find((d) => d.id === id) ?? null)}><SelectTrigger className="w-full sm:w-80" aria-label={t("جدولة اجتماع")}><SelectValue placeholder={t("جدولة اجتماع")} /></SelectTrigger><SelectContent>{rows.filter(ownsEditableDeal).map((d) => <SelectItem key={d.id} value={d.id}>{d.client} — {d.project}</SelectItem>)}</SelectContent></Select>}
-        <SalesMeetingInbox />
-      </section>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50"><tr>
