@@ -1,4 +1,5 @@
 # Roadmap — deep scan fixes
+- [ ] Sales meetings: send details/date to Hisham and Haitham, persist independent attendance responses and verify the flow.
 - [x] Fix Arabic pricing-file uploads and verify Haitham approval without changing existing deals.
 - [x] Sales: Eilaf creates/uploads/edits her own deals only; show Eng Hisham as department responsible person.
 - [x] Phase 1: read-only enforced in database, assistant role check, safe link downloads, sales insert reset + file read scoping
