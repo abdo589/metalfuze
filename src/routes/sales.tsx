@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useRole } from "@/lib/permissions";
-import { commissionDue } from "@/lib/sales";
+import { canCreateSalesDeal, canEditSalesDeal, commissionDue } from "@/lib/sales";
 import { OtherSelect } from "@/components/OtherSelect";
 
 export const Route = createFileRoute("/sales")({
@@ -93,7 +93,6 @@ const href = (s: string) => (/^https?:\/\//i.test(s) ? s : `https://${s}`);
 function SalesPage() {
   useLanguage();
   const role = useRole();
-  const canEdit = role === "sales";
   const [rows, setRows] = useState<D[]>([]);
   const [edit, setEdit] = useState<Partial<D> | null>(null);
   const [mode, setMode] = useState<"pricing" | "commission">("pricing");
@@ -106,10 +105,12 @@ function SalesPage() {
     setRows(data ?? []);
   }, []);
   useEffect(() => { load(); }, [load]);
-  const [me, setMe] = useState<{ id: string; email: string } | null>(null);
+  const [me, setMe] = useState<{ id: string; email: string; emailConfirmed: boolean } | null>(null);
+  const canEdit = canCreateSalesDeal(role, me);
+  const ownsEditableDeal = (d: D) => canEditSalesDeal(role, me, d.owner_id);
   useEffect(() => { supabase.auth.getUser().then(({ data }) => {
     if (!data.user) return;
-    setMe({ id: data.user.id, email: data.user.email ?? "" });
+    setMe({ id: data.user.id, email: data.user.email ?? "", emailConfirmed: !!data.user.email_confirmed_at });
     supabase.from("profiles").select("employee_id").eq("id", data.user.id).maybeSingle().then(({ data: p }) => setMyEmp(p?.employee_id ?? null));
   }); }, []);
   const myTurn = (d: D) => !!me && (d.workflow_step === "sales_entry" ? d.owner_id === me.id && canEdit : WF.find((s) => s.k === d.workflow_step)?.email === me.email);
@@ -185,21 +186,21 @@ function SalesPage() {
     try { localStorage.setItem(draftKey(edit.id), JSON.stringify({ request: edit.request ?? {}, client: edit.client ?? "", project: edit.project ?? "" })); } catch { /* storage full */ }
   }, [edit, mode]);
   async function save(): Promise<void> {
-    if (!edit) return;
+    if (!edit || !canEdit || (edit.id && !canEditSalesDeal(role, me, edit.owner_id ?? ""))) return;
     if (mode === "pricing") {
       const miss = missingList(edit);
       if (miss.length) { toast.error(`${t("أكمل الحقول المطلوبة")}: ${miss.map((m) => t(m)).join("، ")}`, { duration: 8000 }); return; }
     }
     const { id, created_at: _c, owner_id: _o, ...rest } = edit as D;
     const req = { ...((rest.request ?? {}) as Req), ...(myEmp ? { owner_emp: myEmp } : {}) };
-    const payload = { ...rest, request: req, updated_at: new Date().toISOString() };
+    const payload = { ...rest, ...(!id && me ? { owner_id: me.id } : {}), request: req, updated_at: new Date().toISOString() };
     const { error } = id ? await supabase.from("sales_deals").update(payload).eq("id", id) : await supabase.from("sales_deals").insert(payload);
     if (error) { console.error("sales save", error); toast.error(`${t("تعذر الحفظ، حاول مرة أخرى")} (${error.message})`); return; }
     try { localStorage.removeItem(draftKey(id)); } catch { /* ignore */ }
     toast.success(t("تم الحفظ")); setEdit(null); load();
   }
   async function remove(d: D) {
-    if (!confirm(t("حذف؟"))) return;
+    if (role !== "sales" || !ownsEditableDeal(d) || !confirm(t("حذف؟"))) return;
     await supabase.from("sales_deals").delete().eq("id", d.id); load();
   }
   const set = <K extends keyof D>(k: K, v: D[K]) => setEdit((e) => ({ ...e, [k]: v }));
@@ -212,7 +213,7 @@ function SalesPage() {
   const field = (f: F) => {
     const r = (edit?.request ?? {}) as Req; const v = r[f.k];
     const lab = <Label>{t(f.l)}{f.req && <span className="text-destructive"> *</span>}</Label>;
-    if (f.multi) return <div key={f.k} className="space-y-1.5 sm:col-span-2">{lab}<div className="flex flex-wrap gap-4">{f.opts!.map((o) => {
+    if (f.multi) return <div key={f.k} className="space-y-1.5 sm:col-span-2">{lab}<div className="flex flex-wrap gap-4">{(f.opts ?? []).map((o) => {
       const arr = Array.isArray(v) ? v : []; return <label key={o} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={arr.includes(o)} onChange={(e) => setR(f.k, e.target.checked ? [...arr, o] : arr.filter((x) => x !== o))} />{t(o)}</label>; })}</div></div>;
     if (f.opts) return <div key={f.k} className="space-y-1.5">{lab}{f.opts.includes("أخرى")
       ? <OtherSelect list={`sales_${f.k}`} base={f.opts} value={String(v ?? "")} onChange={(x) => setR(f.k, x)} />
@@ -241,10 +242,10 @@ function SalesPage() {
     window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
   const [busy, setBusy] = useState(false);
-  const fileName = (p: string) => p.split("/").pop()!.replace(/^\d+_/, "");
+  const fileName = (p: string) => (p.split("/").pop() ?? p).replace(/^\d+_/, "");
   async function upload(files: FileList | File[] | null) {
     const list = files ? Array.from(files) : [];
-    if (!list.length) return;
+    if (!list.length || !edit || !canEdit || (edit.id && !canEditSalesDeal(role, me, edit.owner_id ?? ""))) return;
     setBusy(true);
     const added: string[] = [];
     try {
@@ -300,6 +301,7 @@ function SalesPage() {
           {canEdit && <Button onClick={() => { setMode("pricing"); openDraft(blank()); }}><Plus />{t("طلب تسعيرة مشروع جديد")}</Button>}
         </div>
       </div>
+      <p className="text-sm"><span className="text-muted-foreground">{t("مسؤول قسم المبيعات")}:</span> <span className="font-semibold" dir="ltr">Eng Hisham</span></p>
       <p className="text-sm text-muted-foreground">{t("العمولة 2% من قيمة العقد النهائية قبل الضريبة، مقسومة حسب نسبة المشاركة.")}</p>
 
       <div className="flex gap-2">
@@ -351,10 +353,10 @@ function SalesPage() {
                 <td className="p-2" dir="ltr">{fmt(Number(d.quote_value))}</td><td className="p-2" dir="ltr">{fmt(Number(d.contract_value))}</td>
                 <td className="p-2" dir="ltr">{fmt(Number(d.collected))}</td><td className="p-2 font-semibold" dir="ltr">{fmt(commissionDue(d))}</td>
                 <td className="p-2">{t(d.payout_status)}</td>
-                <td className="p-2 whitespace-nowrap"><Button size="icon" variant="ghost" className="size-7" aria-label={t("التفاصيل")} onClick={() => setView(d)}><Eye className="size-4" /></Button><Button size="icon" variant="ghost" className="size-7" aria-label={t("إرسال للعميل")} title={t("إرسال للعميل")} onClick={() => mailClient(d)}><Mail className="size-4" /></Button><Button size="icon" variant="ghost" className="size-7" aria-label={t("الاجتماعات")} title={t("الاجتماعات")} onClick={() => setMeet(d)}><CalendarClock className="size-4" /></Button>{canEdit && <>
+                <td className="p-2 whitespace-nowrap"><Button size="icon" variant="ghost" className="size-7" aria-label={t("التفاصيل")} onClick={() => setView(d)}><Eye className="size-4" /></Button><Button size="icon" variant="ghost" className="size-7" aria-label={t("إرسال للعميل")} title={t("إرسال للعميل")} onClick={() => mailClient(d)}><Mail className="size-4" /></Button><Button size="icon" variant="ghost" className="size-7" aria-label={t("الاجتماعات")} title={t("الاجتماعات")} onClick={() => setMeet(d)}><CalendarClock className="size-4" /></Button>{ownsEditableDeal(d) && <>
                   <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => { setMode("pricing"); openDraft(d); }}><Pencil className="size-4" /></Button>
-                  <Button size="icon" variant="ghost" className="size-7" aria-label={t("العمولة")} title={t("العمولة")} onClick={() => { setMode("commission"); setEdit(d); }}><Coins className="size-4" /></Button>
-                  <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(d)}><Trash2 className="size-4" /></Button></>}</td>
+                  {role === "sales" && <><Button size="icon" variant="ghost" className="size-7" aria-label={t("العمولة")} title={t("العمولة")} onClick={() => { setMode("commission"); setEdit(d); }}><Coins className="size-4" /></Button>
+                  <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(d)}><Trash2 className="size-4" /></Button></>}</>}</td>
               </tr>
             ))}
           </tbody>
@@ -410,8 +412,8 @@ function SalesPage() {
               <h3 className="font-display font-bold">{t("مراحل الاعتماد")}</h3>
               <ol className="flex flex-wrap gap-1.5">{WF.map((s, i) => { const cur = WF.findIndex((x) => x.k === view.workflow_step); return <li key={s.k} className={`rounded-full px-2 py-0.5 text-xs ${i === cur ? "bg-primary text-primary-foreground" : i < cur ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"}`}>{i + 1}. {t(s.l)}</li>; })}</ol>
               {view.pricing_value != null && <div><span className="text-muted-foreground">{t("التسعير")}:</span> <span dir="ltr">{fmt(Number(view.pricing_value))}</span></div>}
-              {view.pricing_file_path && <div><span className="text-muted-foreground">{t("ملف التسعير")}:</span> <button type="button" className="text-primary underline" onClick={() => openFile(view.pricing_file_path!)}>{view.pricing_file_name}</button></div>}
-              {view.quotation_file_path && <div><span className="text-muted-foreground">{t("عرض السعر (Quotation)")}:</span> <button type="button" className="text-primary underline" onClick={() => openFile(view.quotation_file_path!)}>{view.quotation_file_name}</button></div>}
+              {view.pricing_file_path && <div><span className="text-muted-foreground">{t("ملف التسعير")}:</span> <button type="button" className="text-primary underline" onClick={() => view.pricing_file_path && openFile(view.pricing_file_path)}>{view.pricing_file_name}</button></div>}
+              {view.quotation_file_path && <div><span className="text-muted-foreground">{t("عرض السعر (Quotation)")}:</span> <button type="button" className="text-primary underline" onClick={() => view.quotation_file_path && openFile(view.quotation_file_path)}>{view.quotation_file_name}</button></div>}
               {myTurn(view) && <div className="space-y-2 border-t border-border pt-3">
                 {view.workflow_step === "haitham_pricing" && <div className="space-y-1.5"><Label>{t("قيمة التسعير")} *</Label><Input dir="ltr" inputMode="decimal" value={wfPrice} onChange={(e) => setWfPrice(e.target.value.replace(/[^\d.]/g, ""))} /></div>}
                 {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" onChange={(e) => setWfFile(e.target.files?.[0] ?? null)} /></div>}
