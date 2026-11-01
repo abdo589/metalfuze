@@ -526,6 +526,13 @@
       "when": 1793537209250,
       "tag": "0074_standalone_sales_meetings",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1793537432860,
+      "tag": "0075_meeting_optional_companions_ceo_responses",
+      "breakpoints": true
     }
   ]
 }
