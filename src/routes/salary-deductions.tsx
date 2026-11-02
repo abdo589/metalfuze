@@ -11,6 +11,7 @@ import { useCanEditHr } from '@/lib/permissions';
 import { usePayroll, monthKey, monthLabel } from '@/lib/payroll';
 import { adjMonth, advanceBalance, advanceDeduction, advanceRepayments, type AdjRow } from '@/lib/advances';
 import { fmtMoney } from '@/lib/projects';
+import type { Json } from '@/integrations/supabase/types';
 
 export const Route = createFileRoute('/salary-deductions')({
   head: () => ({ meta: [
@@ -31,7 +32,7 @@ function SalaryDeductions() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [edit, setEdit] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
+  const [edit, setEdit] = useState<{ id: string; data: Record<string, Json | undefined> } | null>(null);
   const load = useCallback(async () => {
     const { data, error } = await supabase.from('hr_records').select('id,sheet,data,sort').eq('sheet', 'advances').order('sort');
     if (error) toast.error(t('تعذر التحميل')); else { setRows((data ?? []) as Row[]); setLoaded(true); }
@@ -65,6 +66,7 @@ function SalaryDeductions() {
     if (error) toast.error(t('تعذر الحفظ')); else { await load(); toast.success(t('تم الحفظ')); }
   }
   const fields = ['رقم السلفة', 'تاريخ السلفة', 'شهر الخصم', 'المبلغ', 'المسدد', 'السبب'];
+  const openRow = (r: Row) => setEdit({ id: r.id, data: r.data as Record<string, Json | undefined> });
   return <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
     <header className="flex flex-wrap items-center justify-between gap-3">
       <h1 className="font-display text-2xl font-bold">{t('خصومات الرواتب والسلف')}</h1>
