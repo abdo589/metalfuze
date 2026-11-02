@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Inbox, Loader2, LogOut, Mail, PenSquare, RefreshCw, Reply, Search, Send } from "lucide-react";
@@ -72,6 +73,7 @@ function MailPage() {
     finally { setBusy(false); }
   }, [list]);
   useEffect(() => { load(folder); }, [folder, load]);
+  useLiveRefresh(["app_user_connections"], async () => { if (state === "ok" && !busy) await load(folder, q); });
 
   async function connect() {
     const popup = window.open("", "outlook-oauth", "width=600,height=720");
