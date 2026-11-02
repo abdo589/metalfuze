@@ -18,6 +18,7 @@ import { useRole } from "@/lib/permissions";
 import { canCreateSalesDeal, canEditSalesDeal, commissionDue } from "@/lib/sales";
 import { pricingAttachments, salesFilePath, type SalesAttachment } from "@/lib/sales-file";
 import { OtherSelect } from "@/components/OtherSelect";
+import { readCache } from "@/lib/read-cache";
 
 export const Route = createFileRoute("/sales")({
   head: () => ({ meta: [
@@ -102,10 +103,24 @@ function SalesPage() {
   const [period, setPeriod] = useState<"month" | "quarter" | "year">("month");
 
   const load = useCallback(async () => {
+    readCache.clearTable("sales_deals");
     const { data } = await supabase.from("sales_deals").select("*").order("created_at", { ascending: false });
-    setRows(data ?? []);
+    if (data) setRows(data);
   }, []);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    void load();
+    const refresh = () => { if (document.visibilityState === "visible") void load(); };
+    const channel = supabase.channel(`sales-live-${crypto.randomUUID()}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "sales_deals" }, refresh)
+      .subscribe((status) => { if (status === "SUBSCRIBED") refresh(); });
+    const timer = window.setInterval(refresh, 10000);
+    window.addEventListener("online", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      void supabase.removeChannel(channel); window.clearInterval(timer);
+      window.removeEventListener("online", refresh); document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [load]);
   const [me, setMe] = useState<{ id: string; email: string; emailConfirmed: boolean } | null>(null);
   const canEdit = canCreateSalesDeal(role, me);
   const ownsEditableDeal = (d: D) => canEditSalesDeal(role, me, d.owner_id);
@@ -240,6 +255,9 @@ function SalesPage() {
       {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
   };
   const [view, setView] = useState<D | null>(null);
+  useEffect(() => {
+    setView((current) => current ? rows.find((row) => row.id === current.id) ?? null : null);
+  }, [rows]);
   useEffect(() => { setWfFiles([]); setWfPrice(""); setWfNote(""); }, [view?.id]);
   const [meet, setMeet] = useState<D | null>(null);
   const [reports, setReports] = useState(false);
