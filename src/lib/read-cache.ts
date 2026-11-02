@@ -60,6 +60,7 @@ export function installReadCache() {
     if (req.method !== "GET") {
       const res = await base(input, init);
       readCache.clearTable(table);
+      if (res.ok) window.dispatchEvent(new CustomEvent("metalfuze:table-written", { detail: table }));
       return res;
     }
     const key = `${req.url}|${req.headers.get("authorization") ?? ""}|${req.headers.get("accept") ?? ""}|${req.headers.get("prefer") ?? ""}|${req.headers.get("range") ?? ""}`;

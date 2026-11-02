@@ -29,6 +29,7 @@ import { AssistantFab } from "@/components/AssistantFab";
 import { BugReportButton } from "@/components/BugReport";
 import { installReadCache } from "@/lib/read-cache";
 import { installAccountScope } from "@/lib/account-scope";
+import { LiveUpdates } from "@/components/LiveUpdates";
 
 function NotFoundComponent() {
   useLanguage();
@@ -171,6 +172,7 @@ function RootComponent() {
       <IdleSignOut />
       <MessageAlerts />
       <ExecSnapshotSync />
+      <LiveUpdates />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AuthGate>
         <div data-report-document>
