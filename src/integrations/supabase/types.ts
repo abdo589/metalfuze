@@ -1789,6 +1789,7 @@ export type Database = {
           project: string
           quotation_file_name: string | null
           quotation_file_path: string | null
+          quotation_files: Json
           quote_value: number
           request: Json
           shared: boolean
@@ -1817,6 +1818,7 @@ export type Database = {
           project?: string
           quotation_file_name?: string | null
           quotation_file_path?: string | null
+          quotation_files?: Json
           quote_value?: number
           request?: Json
           shared?: boolean
@@ -1845,6 +1847,7 @@ export type Database = {
           project?: string
           quotation_file_name?: string | null
           quotation_file_path?: string | null
+          quotation_files?: Json
           quote_value?: number
           request?: Json
           shared?: boolean
