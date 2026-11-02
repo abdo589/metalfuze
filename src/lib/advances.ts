@@ -13,14 +13,33 @@ export const adjMonth = (r: AdjRow) => {
   return m.slice(0, 7);
 };
 
-/** Per-employee payroll adjustments for a month: active advance balances are deducted, non-draft commissions added. */
+export function advanceRepayments(r: AdjRow): Record<string, number> {
+  const value = r.data["سداد شهري"];
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).filter(([month, amount]) => /^\d{4}-\d{2}$/.test(month) && typeof amount === "number" && Number.isFinite(amount) && amount >= 0));
+}
+
+export function advanceBalance(r: AdjRow, month: string): number {
+  const start = adjMonth(r);
+  if (!start || start > month || r.data["الحالة"] === "مغلقة") return 0;
+  const prior = Object.entries(advanceRepayments(r)).filter(([key]) => key < month).reduce((sum, [, amount]) => sum + amount, 0);
+  return Math.max(0, n(r.data["المبلغ"]) - n(r.data["المسدد"]) - prior);
+}
+
+export function advanceDeduction(r: AdjRow, month: string): number {
+  const balance = advanceBalance(r, month);
+  const payment = advanceRepayments(r)[month];
+  return payment === undefined ? balance : Math.min(balance, payment);
+}
+
+/** Unpaid advance balances carry forward; commissions stay exact-month and separate from salary. */
 export function computeAdjustments(rows: AdjRow[], month: string): Map<string, Adj> {
   const out = new Map<string, Adj>();
   for (const r of rows) {
-    if (adjMonth(r) !== month) continue;
+    if (r.sheet !== "advances" && adjMonth(r) !== month) continue;
     const id = String(r.data["رقم الموظف"] ?? "");
     const a = out.get(id) ?? { advances: 0, commissions: 0 };
-    if (r.sheet === "advances" && r.data["الحالة"] !== "مغلقة") a.advances += Math.max(0, n(r.data["المبلغ"]) - n(r.data["المسدد"]));
+    if (r.sheet === "advances") a.advances += advanceDeduction(r, month);
     if (r.sheet === "commissions" && r.data["الحالة"] !== "مسودة") a.commissions += n(r.data["المبلغ"]);
     out.set(id, a);
   }

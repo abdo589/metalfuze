@@ -16,4 +16,19 @@ describe("payroll advances", () => {
     const m = computeAdjustments([{ sheet: "commissions", data: { "رقم الموظف": "17", "المبلغ": 15000, "الحالة": "معتمدة", "شهر الصرف": "2026-10" } }], "2026-10");
     expect(m.get("17")?.commissions).toBe(15000);
   });
+  it("carries Najla's 4763 October balance into November", () => {
+    const rows = [2000, 375, 1000, 413, 375, 600].map((amount) => adv({ "المبلغ": amount, "المسدد": 0, "شهر الخصم": "2026-10" }));
+    expect(computeAdjustments(rows, "2026-11").get("18")?.advances).toBe(4763);
+    expect(computeAdjustments(rows, "2026-09").get("18")?.advances).toBe(0);
+  });
+  it("does not deduct October repayments again in November", () => {
+    const rows = [adv({ "المبلغ": 4763, "شهر الخصم": "2026-10", "سداد شهري": { "2026-10": 4763 } })];
+    expect(computeAdjustments(rows, "2026-10").get("18")?.advances).toBe(4763);
+    expect(computeAdjustments(rows, "2026-11").get("18")?.advances).toBe(0);
+  });
+  it("carries only the unpaid part after a partial monthly repayment", () => {
+    const rows = [adv({ "المبلغ": 4763, "شهر الخصم": "2026-10", "سداد شهري": { "2026-10": 1000 } })];
+    expect(computeAdjustments(rows, "2026-10").get("18")?.advances).toBe(1000);
+    expect(computeAdjustments(rows, "2026-11").get("18")?.advances).toBe(3763);
+  });
 });
