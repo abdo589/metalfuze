@@ -157,7 +157,7 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Personal phone check-in links are opened by employees without accounts.
-  if (pathname.startsWith("/checkin/") || pathname.startsWith("/leave/") || pathname === "/privacy") return (
+  if (pathname.startsWith("/checkin/") || pathname.startsWith("/leave/") || pathname === "/privacy" || pathname === "/terms") return (
     <>
       <AutoTranslate />
       <Outlet />
@@ -187,7 +187,7 @@ function RootComponent() {
         <BugReportButton />
       </AuthGate>
       <footer className="border-t border-border py-3 text-center text-xs text-muted-foreground print:hidden">
-        © Metal Fuze · <Link to="/privacy" className="underline hover:text-foreground">سياسة الخصوصية</Link>
+        © Metal Fuze · <Link to="/privacy" className="underline hover:text-foreground">سياسة الخصوصية</Link> · <Link to="/terms" className="underline hover:text-foreground">شروط الاستخدام</Link>
       </footer>
       <Toaster position="top-center" richColors />
     </QueryClientProvider>

@@ -43,6 +43,7 @@ import { Route as SalaryDeductionsRouteImport } from './routes/salary-deductions
 import { Route as SalesRouteImport } from './routes/sales'
 import { Route as SettlementsRouteImport } from './routes/settlements'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -236,6 +237,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UsersRoute = UsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -385,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/sales': typeof SalesRoute
   '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -443,6 +450,7 @@ export interface FileRoutesByTo {
   '/sales': typeof SalesRoute
   '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -502,6 +510,7 @@ export interface FileRoutesById {
   '/sales': typeof SalesRoute
   '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -562,6 +571,7 @@ export interface FileRouteTypes {
     | '/sales'
     | '/settlements'
     | '/sitemap.xml'
+    | '/terms'
     | '/users'
     | '/workers-checkin'
     | '/.well-known/oauth-protected-resource'
@@ -620,6 +630,7 @@ export interface FileRouteTypes {
     | '/sales'
     | '/settlements'
     | '/sitemap.xml'
+    | '/terms'
     | '/users'
     | '/workers-checkin'
     | '/.well-known/oauth-protected-resource'
@@ -678,6 +689,7 @@ export interface FileRouteTypes {
     | '/sales'
     | '/settlements'
     | '/sitemap.xml'
+    | '/terms'
     | '/users'
     | '/workers-checkin'
     | '/.well-known/oauth-protected-resource'
@@ -737,6 +749,7 @@ export interface RootRouteChildren {
   SalesRoute: typeof SalesRoute
   SettlementsRoute: typeof SettlementsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   UsersRoute: typeof UsersRoute
   WorkersCheckinRoute: typeof WorkersCheckinRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -1001,6 +1014,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/users': {
       id: '/users'
       path: '/users'
@@ -1193,6 +1213,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalesRoute: SalesRoute,
   SettlementsRoute: SettlementsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   UsersRoute: UsersRoute,
   WorkersCheckinRoute: WorkersCheckinRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
