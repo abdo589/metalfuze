@@ -195,7 +195,7 @@ function SubmissionDialog({ projectId, types, initial, history, onClose, onSaved
             {atts.map((a) => <Button key={a.path} variant="outline" size="sm" className="me-2" onClick={() => openFile(a.path)}><FileText className="h-4 w-4" /> {a.name}</Button>)}
             <label className="flex w-max cursor-pointer items-center gap-1 rounded-md bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-secondary/80">
               <Upload className="h-4 w-4" /> رفع مرفق
-              <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip,.rar,.7z" className="hidden" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) upload(file); e.target.value = ""; }} />
+              <input type="file" className="hidden" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) upload(file); e.target.value = ""; }} />
             </label>
           </div>
           {f.created_by_name && <div className="text-xs text-muted-foreground sm:col-span-2">أنشأه: {f.created_by_name}</div>}

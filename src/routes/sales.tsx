@@ -374,7 +374,7 @@ function SalesPage() {
               {sec.fields.map(field)}
               {sec.title === "بيانات طلب التسعير والمستندات" && ((edit.request ?? {}) as Req)["has_docs"] === "نعم" && <div className="space-y-1.5 sm:col-span-2">
                 <Label>{t("مستندات المشروع")}</Label>
-                <Input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip,.rar,.7z" disabled={busy} onChange={(e) => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; upload(fs); }} />
+                <Input type="file" multiple disabled={busy} onChange={(e) => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; upload(fs); }} />
                 {busy && <p className="text-xs text-muted-foreground">{t("جارٍ الرفع...")}</p>}
                 {docsList((((edit.request ?? {}) as Req)["docs"] as string[]) ?? [], true)}
               </div>}
@@ -416,7 +416,7 @@ function SalesPage() {
               {view.quotation_file_path && <div><span className="text-muted-foreground">{t("عرض السعر (Quotation)")}:</span> <button type="button" className="text-primary underline" onClick={() => view.quotation_file_path && openFile(view.quotation_file_path)}>{view.quotation_file_name}</button></div>}
               {myTurn(view) && <div className="space-y-2 border-t border-border pt-3">
                 {view.workflow_step === "haitham_pricing" && <div className="space-y-1.5"><Label>{t("قيمة التسعير")} *</Label><Input dir="ltr" inputMode="decimal" value={wfPrice} onChange={(e) => setWfPrice(e.target.value.replace(/[^\d.]/g, ""))} /></div>}
-                {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip,.rar,.7z" onChange={(e) => setWfFile(e.target.files?.[0] ?? null)} /></div>}
+                {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" onChange={(e) => setWfFile(e.target.files?.[0] ?? null)} /></div>}
                 <div className="space-y-1.5"><Label>{t("ملاحظات")}</Label><Textarea value={wfNote} onChange={(e) => setWfNote(e.target.value)} /></div>
                 <div className="flex gap-2">
                   <Button disabled={wfBusy || (view.workflow_step === "haitham_pricing" && (!wfPrice || !wfFile)) || (view.workflow_step === "eilaf_quotation" && !wfFile)} onClick={() => advance(view, "approve")}>{t(view.workflow_step === "sales_entry" ? "إرسال للمراجعة" : "موافقة وإرسال")}</Button>
