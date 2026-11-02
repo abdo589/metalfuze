@@ -365,3 +365,11 @@ Object.assign(translations, {
   "تم إشعار الموظف ولم يتم السداد بعد": "Employee notified, payment still pending",
   "تم سداد المخالفة وإرفاق الإثبات": "Violation paid with proof attached",
 });
+
+// Custody handover email
+Object.assign(translations, {
+  "إرسال تفاصيل العهدة بالإيميل": "Email custody details",
+  "تم إرسال تفاصيل العهدة بالإيميل": "Custody details sent by email",
+  "لا يوجد بريد مسجل للموظف — أدخل البريد الإلكتروني": "No email on file for this employee — enter their email address",
+  "تعذر إرسال الإيميل": "Couldn't send the email",
+});

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Box, CheckCircle2, ChevronLeft, History, Laptop, Pencil, Plus, RotateCcw, Search, Trash2, Users, Wrench, X } from "lucide-react";
+import { Box, CheckCircle2, ChevronLeft, History, Laptop, Loader2, Mail, Pencil, Plus, RotateCcw, Search, Trash2, Users, Wrench, X } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { EmployeeSignature } from "@/components/EmployeeSignature";
 import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { OtherSelect } from "@/components/OtherSelect";
+import { emailCustodyHandover } from "@/lib/custody.functions";
 
 export const Route = createFileRoute("/custody")({
   head: () => ({
@@ -52,6 +53,7 @@ function CustodyPage() {
   const [edit, setEdit] = useState<ReturnType<typeof empty> | null>(null);
   const [hand, setHand] = useState<{ asset_id: string; emp: string; date: string; note: string } | null>(null);
   const [view, setView] = useState<Asset | null>(null);
+  const [mailing, setMailing] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const [a, m, e] = await Promise.all([
@@ -105,6 +107,25 @@ function CustodyPage() {
   }
   const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString(locale()) : "-");
 
+  async function sendMail(a: Asset, email?: string) {
+    setMailing(a.id);
+    const r = await emailCustodyHandover({ data: { assetId: a.id, email } });
+    setMailing(null);
+    if (r.ok) { toast.success(t("تم إرسال تفاصيل العهدة بالإيميل")); return; }
+    if (r.error === "no_email") {
+      const em = window.prompt(t("لا يوجد بريد مسجل للموظف — أدخل البريد الإلكتروني"));
+      if (em && em.includes("@")) return sendMail(a, em.trim());
+      return;
+    }
+    toast.error(t("تعذر إرسال الإيميل"));
+  }
+  const mailBtn = (a: Asset, small = false) => canEdit && a.status === "مسلم" && a.employee_name ? (
+    <Button size={small ? "icon" : "sm"} variant="outline" disabled={mailing === a.id} title={t("إرسال تفاصيل العهدة بالإيميل")}
+      onClick={(e) => { e.stopPropagation(); void sendMail(a); }}>
+      {mailing === a.id ? <Loader2 className="animate-spin" /> : <Mail />} {!small && t("إرسال تفاصيل العهدة بالإيميل")}
+    </Button>
+  ) : null;
+
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 pb-72 sm:px-6">
       <div className="flex flex-wrap items-start gap-3">
@@ -151,7 +172,7 @@ function CustodyPage() {
                   <td className="p-3">{a.dept || "-"}</td>
                   <td className="p-3">{fmt(a.handover_date)}</td>
                   <td className="p-3"><Badge s={a.status} /></td>
-                  <td className="p-3"><ChevronLeft className="size-4 text-muted-foreground rtl:rotate-0 ltr:rotate-180" /></td>
+                  <td className="p-3"><div className="flex items-center gap-1">{mailBtn(a, true)}<ChevronLeft className="size-4 text-muted-foreground rtl:rotate-0 ltr:rotate-180" /></div></td>
                 </tr>
               ))}
             </tbody>
@@ -200,6 +221,7 @@ function CustodyPage() {
             {view.employee_name && <EmployeeSignature empId={view.employee_no} name={view.employee_name} />}
             <div className="flex flex-col gap-2">
               {canEdit && view.status === "مسلم" && <Button onClick={() => giveBack(view)}><RotateCcw /> {t("تسجيل إرجاع")}</Button>}
+              {mailBtn(view)}
               {canEdit && view.status !== "مسلم" && <Button onClick={() => setHand({ asset_id: view.id, emp: "", date: today(), note: "" })}><Plus /> {t("تسليم عهدة")}</Button>}
               {canEdit && <Button variant="outline" onClick={() => setEdit({ ...view, handover_date: view.handover_date ?? "" })}><Pencil /> {t("تعديل بيانات العهدة")}</Button>}
               <Button variant="outline" onClick={() => setTab("moves")}><History /> {t("عرض سجل الحركات")}</Button>
