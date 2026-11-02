@@ -2,6 +2,7 @@ import { locale } from "./i18n";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useLiveRefresh } from "./live-refresh";
 
 export type Employee = {
   id: string;
@@ -138,6 +139,7 @@ export const payrollStore = {
 };
 
 export function usePayroll() {
+  useLiveRefresh(["employees"], refresh);
   const [list, setList] = useState<Employee[]>(cache);
   useEffect(() => {
     const l = () => setList([...cache]);

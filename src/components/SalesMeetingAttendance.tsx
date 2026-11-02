@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { t, locale, useLanguage } from "@/lib/i18n";
 import { canRespondToMeeting, REQUIRED_MEETING_PEOPLE, responseForPerson } from "@/lib/sales-meetings";
 import { readCache } from "@/lib/read-cache";
+import { useLiveRefresh } from "@/lib/live-refresh";
 
 type Meeting = Tables<"sales_meetings">;
 export function SalesMeetingAttendance({ meetings, onRefresh }: { meetings: Meeting[]; onRefresh: () => void }) {
@@ -16,6 +17,11 @@ export function SalesMeetingAttendance({ meetings, onRefresh }: { meetings: Meet
   const [me, setMe] = useState<{ email: string; confirmed: boolean } | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  useLiveRefresh(["sales_meeting_responses"], async () => {
+    if (!meetings.length) return;
+    const { data } = await supabase.from("sales_meeting_responses").select("*").in("meeting_id", meetings.map((m) => m.id));
+    if (data) setResponses(data);
+  });
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setMe(data.user ? { email: data.user.email ?? "", confirmed: !!data.user.email_confirmed_at } : null)); }, []);
   useEffect(() => {
     if (!meetings.length) { setResponses([]); return; }
@@ -68,7 +74,8 @@ export function SalesMeetingInbox({ attendeeOnly = false, standaloneOnly = false
     const { data, error } = await query;
     if (error) toast.error(t("تعذر تحميل الاجتماعات")); else setMeetings(data ?? []);
   }, [attendeeOnly, standaloneOnly]);
-  useEffect(() => { load(); const timer = setInterval(load, 30000); return () => clearInterval(timer); }, [load]);
+  useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["sales_meetings", "sales_meeting_responses"], load);
   if (!allowed) return null;
   return <section className="space-y-3"><div className="flex items-center justify-between"><h2 className="font-display text-lg font-bold">{t(standaloneOnly ? "الاجتماعات" : "اجتماعات المبيعات")}</h2><Button size="sm" variant="ghost" onClick={load}>{t("تحديث")}</Button></div><div className="max-h-96 overflow-y-auto"><SalesMeetingAttendance meetings={meetings} onRefresh={load} /></div></section>;
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { useLiveRefresh } from "./live-refresh";
 
 export type Residency = Database["public"]["Tables"]["residencies"]["Row"];
 export const DOCS = [
@@ -17,5 +18,6 @@ export function useResidencies() {
     if (data) setRows(data);
   }, []);
   useEffect(() => { reload(); }, [reload]);
+  useLiveRefresh(["residencies"], reload);
   return { rows, reload };
 }

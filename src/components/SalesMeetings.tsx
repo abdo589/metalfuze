@@ -11,6 +11,7 @@ import { t, locale } from "@/lib/i18n";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { REQUIRED_MEETING_PEOPLE, standaloneMeetingInput } from "@/lib/sales-meetings";
 import { SalesMeetingAttendance } from "@/components/SalesMeetingAttendance";
+import { useLiveRefresh } from "@/lib/live-refresh";
 
 // Optional companions are separate from mandatory approval recipients.
 export const MEETING_PEOPLE = [
@@ -33,6 +34,7 @@ export function SalesMeetings({ deal, onClose, standalone = false }: { deal: { i
     setList((data ?? []) as M[]);
   };
   useEffect(() => { if (deal || standalone) { if (deal) load(deal.id); else setList([]); setWho([]); setAt(""); setPlace(""); setNotes(""); setTopic(""); } }, [deal, standalone]);
+  useLiveRefresh(["sales_meetings"], async () => { if (deal) await load(deal.id); });
 
   async function add() {
     if (!deal && !standalone) return;
