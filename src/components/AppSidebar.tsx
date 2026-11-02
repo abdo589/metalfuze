@@ -46,6 +46,7 @@ export const items = [
   { to: "/hr-dashboard", label: "لوحة التحكم", icon: Bell },
   { to: "/hr-file", label: "بيانات الموظفين", icon: IdCard },
   { to: "/payroll", label: "الرواتب", icon: Banknote },
+  { to: "/salary-deductions", label: "خصومات الرواتب والسلف", icon: HandCoins },
   { to: "/attendance", label: "الحضور والانصراف", icon: Fingerprint },
   { to: "/leaves", label: "الإجازات", icon: CalendarOff },
   { to: "/documents", label: "الوثائق", icon: FolderOpen },

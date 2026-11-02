@@ -83,7 +83,8 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
   async function save() {
     if (!edit) return;
     if (!n(edit.d["المبلغ"])) { toast.error("أدخل المبلغ"); return; }
-    const data: Record<string, string | number> = { [ID]: empId };
+    const existing = rows[edit.kind].find((r) => r.id === edit.id);
+    const data = { ...existing?.data, [ID]: empId };
     for (const f of CFG[edit.kind].fields) { const v = (edit.d[f.k] ?? "").trim(); if (v) data[f.k] = f.type === "number" ? n(v) : v; }
     const res = edit.id
       ? await supabase.from("hr_records").update({ data, updated_at: new Date().toISOString() }).eq("id", edit.id)
