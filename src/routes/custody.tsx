@@ -53,6 +53,7 @@ function CustodyPage() {
   const [edit, setEdit] = useState<ReturnType<typeof empty> | null>(null);
   const [hand, setHand] = useState<{ asset_id: string; emp: string; date: string; note: string } | null>(null);
   const [view, setView] = useState<Asset | null>(null);
+  const [mailing, setMailing] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const [a, m, e] = await Promise.all([
@@ -105,6 +106,25 @@ function CustodyPage() {
     await supabase.from("custody_assets").delete().eq("id", a.id); setView(null); void load();
   }
   const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString(locale()) : "-");
+
+  async function sendMail(a: Asset, email?: string) {
+    setMailing(a.id);
+    const r = await emailCustodyHandover({ data: { assetId: a.id, email } });
+    setMailing(null);
+    if (r.ok) { toast.success(t("تم إرسال تفاصيل العهدة بالإيميل")); return; }
+    if (r.error === "no_email") {
+      const em = window.prompt(t("لا يوجد بريد مسجل للموظف — أدخل البريد الإلكتروني"));
+      if (em && em.includes("@")) return sendMail(a, em.trim());
+      return;
+    }
+    toast.error(t("تعذر إرسال الإيميل"));
+  }
+  const mailBtn = (a: Asset, small = false) => canEdit && a.status === "مسلم" && a.employee_name ? (
+    <Button size={small ? "icon" : "sm"} variant="outline" disabled={mailing === a.id} title={t("إرسال تفاصيل العهدة بالإيميل")}
+      onClick={(e) => { e.stopPropagation(); void sendMail(a); }}>
+      {mailing === a.id ? <Loader2 className="animate-spin" /> : <Mail />} {!small && t("إرسال تفاصيل العهدة بالإيميل")}
+    </Button>
+  ) : null;
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 pb-72 sm:px-6">
