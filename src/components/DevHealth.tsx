@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export function DevHealth() {
       device: last == null ? t("لم يتصل أبدًا") : hrs! < 1 ? t("متصل") : `${t("غير متصل منذ")} ${hrs} ${t("ساعة")}`,
     });
   }, [list]);
+  useLiveRefresh(["bug_reports", "login_events", "attendance_devices", "account_audit", "account_flags"], load);
   useEffect(() => { void load(); }, [load]);
   const cards: [string, string | number | undefined][] = [
     ["الأعطال المفتوحة", s?.["open"]], ["أخطاء تلقائية اليوم", s?.["auto"]], ["جهاز البصمة", s?.["device"]],
@@ -64,6 +66,7 @@ export function AccountAudit() {
     const { data } = await supabase.from("account_audit").select("*").order("created_at", { ascending: false }).limit(500);
     setRows((data as Audit[]) ?? []);
   }, []);
+  useLiveRefresh(["bug_reports", "login_events", "attendance_devices", "account_audit", "account_flags"], load);
   useEffect(() => { void load(); }, [load]);
   const shown = useMemo(() => {
     const k = q.trim().toLowerCase();

@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -102,6 +103,7 @@ function LeavesPage() {
     setLoaded(true);
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["leave_requests", "leave_types", "leave_request_events", "leave_balance_adjustments", "leave_notifications", "leave_settings", "department_managers", "employees"], load);
 
   const empById = useMemo(() => new Map(emps.map((e) => [e.id, e])), [emps]);
   const typeById = useMemo(() => new Map(types.map((x) => [x.id, x])), [types]);

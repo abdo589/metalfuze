@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -50,6 +51,7 @@ function UsersPage() {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? ""));
   }, [load]);
 
+  useLiveRefresh(["profiles", "user_roles", "account_flags"], load);
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setMsg(null);

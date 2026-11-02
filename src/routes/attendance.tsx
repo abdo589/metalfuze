@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, ChevronLeft, ChevronRight, Clock, Fingerprint, UserX, Users } from "lucide-react";
@@ -72,6 +73,7 @@ function Attendance() {
     if (data) setExcuses(data);
   };
   useEffect(() => { loadDevices(); loadExcuses(); }, []);
+  useLiveRefresh(["attendance_devices", "late_excuses"], async () => { await Promise.all([loadDevices(), loadExcuses()]); });
 
   const excuseMap = useMemo(() => new Map(excuses.map((x) => [`${x.employee_id}|${x.excuse_date}`, x.reason])), [excuses]);
   const rows = useMemo(() => {

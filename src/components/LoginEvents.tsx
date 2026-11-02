@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function LoginEvents() {
     setRows((data as Row[]) ?? []);
   }, []);
   useEffect(() => { void load(); }, [load]);
+  useLiveRefresh(["login_events"], load);
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
     return (rows ?? []).filter((r) => (!onlySus || r.suspicious) && (!s || [r.user_name, r.ip, r.country, r.city, r.region].join(" ").toLowerCase().includes(s)));

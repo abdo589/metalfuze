@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export function EmployeeLogins() {
     setRows((data as Row[]) ?? []);
   }, []);
   useEffect(() => { void load(); }, [load]);
+  useLiveRefresh(["login_events"], load);
 
   const people = useMemo(() => {
     const m = new Map<string, { name: string; count: number; last: string }>();

@@ -1,3 +1,4 @@
+import { subscribeLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CalendarOff, Clock, FileWarning, IdCard, UserCheck, UserX, Users } from "lucide-react";
@@ -40,11 +41,15 @@ function HrDashboard() {
   const [punches, setPunches] = useState<{ device_user_id: string; punched_at: string }[]>([]);
 
   useEffect(() => {
+    const load = () => {
     const start = new Date(); start.setHours(0, 0, 0, 0);
     supabase.from("hr_records").select("sheet,data").then(({ data }) => setHr((data ?? []) as Rec[]));
     supabase.from("employees").select("name,device_user_id,active").then(({ data }) => setEmps(data ?? []));
     supabase.from("attendance_logs").select("device_user_id,punched_at").gte("punched_at", start.toISOString())
       .then(({ data }) => setPunches(data ?? []));
+    };
+    load();
+    return subscribeLiveRefresh(["hr_records", "employees", "attendance_logs"], load);
   }, []);
 
   const today = localDay();

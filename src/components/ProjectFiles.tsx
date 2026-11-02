@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useCallback, useEffect, useState } from "react";
 import { Download, Eye, FileUp, LoaderCircle, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ export function ProjectFiles({ projectId, editable, defaults = DEFAULT_FILE_CATE
     setAll(data ?? []);
   }, [projectId]);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["project_files"], load);
 
   const HID = "__hidden__:";
   const hidden = new Set(all.filter((f) => f.category.startsWith(HID)).map((f) => f.category.slice(HID.length)));

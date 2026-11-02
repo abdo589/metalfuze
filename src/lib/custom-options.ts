@@ -1,3 +1,4 @@
+import { subscribeLiveRefresh } from "./live-refresh";
 /**
  * Extra values a user typed where a dropdown offered "أخرى".
  * Stored in public.custom_options (one row per list + value) so every account sees them.
@@ -13,15 +14,17 @@ const cache = new Map<string, string[]>();
 export function useCustomOptions(list: string, base: string[]) {
   const [extra, setExtra] = useState<string[]>(() => cache.get(list) ?? []);
   useEffect(() => {
-    if (cache.has(list)) return;
     let alive = true;
-    supabase.from("custom_options").select("value").eq("list_name", list).order("value")
+    const load = async () => { await supabase.from("custom_options").select("value").eq("list_name", list).order("value")
       .then(({ data }) => {
         const vals = (data ?? []).map((r) => String(r.value));
         cache.set(list, vals);
         if (alive) setExtra(vals);
       });
-    return () => { alive = false; };
+    };
+    void load();
+    const stop = subscribeLiveRefresh(["custom_options"], load);
+    return () => { alive = false; stop(); };
   }, [list]);
 
   /** Saves a typed value (re-adding an existing one is fine) and returns it, or null on failure. */
