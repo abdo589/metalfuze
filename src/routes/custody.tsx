@@ -172,7 +172,7 @@ function CustodyPage() {
                   <td className="p-3">{a.dept || "-"}</td>
                   <td className="p-3">{fmt(a.handover_date)}</td>
                   <td className="p-3"><Badge s={a.status} /></td>
-                  <td className="p-3"><ChevronLeft className="size-4 text-muted-foreground rtl:rotate-0 ltr:rotate-180" /></td>
+                  <td className="p-3"><div className="flex items-center gap-1">{mailBtn(a, true)}<ChevronLeft className="size-4 text-muted-foreground rtl:rotate-0 ltr:rotate-180" /></div></td>
                 </tr>
               ))}
             </tbody>
@@ -221,6 +221,7 @@ function CustodyPage() {
             {view.employee_name && <EmployeeSignature empId={view.employee_no} name={view.employee_name} />}
             <div className="flex flex-col gap-2">
               {canEdit && view.status === "مسلم" && <Button onClick={() => giveBack(view)}><RotateCcw /> {t("تسجيل إرجاع")}</Button>}
+              {mailBtn(view)}
               {canEdit && view.status !== "مسلم" && <Button onClick={() => setHand({ asset_id: view.id, emp: "", date: today(), note: "" })}><Plus /> {t("تسليم عهدة")}</Button>}
               {canEdit && <Button variant="outline" onClick={() => setEdit({ ...view, handover_date: view.handover_date ?? "" })}><Pencil /> {t("تعديل بيانات العهدة")}</Button>}
               <Button variant="outline" onClick={() => setTab("moves")}><History /> {t("عرض سجل الحركات")}</Button>
