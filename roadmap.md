@@ -1,4 +1,6 @@
 # Roadmap — deep scan fixes
+- [ ] Enable multiple files in every existing sales upload field; preserve legacy attachments, permissions and approval flow; test authenticated save/readback.
+- [ ] Confirm every existing Haitham file-upload field accepts multiple files.
 - [x] Create Aiftkhar accountant account; password sign-in, project creation/edit readback after reload and HR blocking verified; project-only RLS/sync, nine tests pass, QA projects removed.
 - [x] Make Haitham pricing amount optional; file stays mandatory and blank price preserves quote value. 11 tests and database verification pass; Haitham authenticated approval not exercised (session unavailable).
 - [x] Match custody email message/sending to violations (open employee mail draft); assigned-device button exercised and temporary device deleted. External mail delivery is user-controlled and not verified.

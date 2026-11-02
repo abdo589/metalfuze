@@ -41,7 +41,7 @@
 - Offline support: vite-plugin-pwa generateSW (/sw.js, NetworkFirst pages) registered only via src/lib/pwa-register.ts, which refuses dev/iframe/Lovable preview hosts — keeps previews free of stale caches.
 - ZKTeco pull agent: office PC posts punches to /api/public/attendance-agent with ATTENDANCE_AGENT_TOKEN (shared rules in src/lib/attendance-agent.ts); ATTENDANCE_PUSH_DISABLED=1 stops storing unsigned /iclock pushes — the device protocol has no secret, so only the agent's token proves origin.
 - Sales edits stay owner-only; salesFilePath uses ASCII keys. Meetings separate companions from recipients; DB events notify updates. /meetings uses NULL-deal rows; pricing keeps linked rows.
-- Pricing attachments use atomic sales_advance_files with workflow-locked pricing_files and legacy first-file columns, preserving old clients and owner reads.
+- Pricing and quotation attachments use atomic sales_advance_files with workflow-locked JSON arrays and legacy first-file columns, preserving old clients and owner reads.
 - Account greeting is display-only; active authenticated identity drives permissions and remounts gated pages to clear previous account state.
 - Payroll excludes commissions; hr_records advances carry balances forward with dated repayments in 'سداد شهري'; preserve extra JSON fields on edits.
 - LiveUpdates in root owns a session-scoped channel; table-scoped useLiveRefresh readers refresh data, not screens or drafts, with visible/online polling fallback.
