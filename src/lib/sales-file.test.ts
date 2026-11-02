@@ -4,7 +4,7 @@ import { pricingAttachments, quotationAttachments, salesFilePath } from "./sales
 describe("sales pricing storage paths", () => {
   it("retains every quotation file and preserves the legacy first file", () => {
     const files = [{ path: "eilaf/one.pdf", name: "عرض.pdf" }, { path: "eilaf/two.zip", name: "مرفقات.zip" }, { path: "eilaf/three.dwg", name: "مخطط.dwg" }];
-    expect(quotationAttachments({ quotation_files: files, quotation_file_path: files[0].path })).toEqual(files);
+    expect(quotationAttachments({ quotation_files: files, quotation_file_path: "eilaf/one.pdf" })).toEqual(files);
     expect(quotationAttachments({ quotation_files: [], quotation_file_path: "old/quote.pdf", quotation_file_name: "قديم.pdf" })).toEqual([{ path: "old/quote.pdf", name: "قديم.pdf" }]);
   });
   it("retains all pricing attachments without duplicating the legacy first file", () => {
