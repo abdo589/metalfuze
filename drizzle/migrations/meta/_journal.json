@@ -547,6 +547,13 @@
       "when": 1793609830357,
       "tag": "0077_sales_live_updates",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1793610237819,
+      "tag": "0078_all_sections_live_updates",
+      "breakpoints": true
     }
   ]
 }
