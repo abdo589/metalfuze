@@ -1,6 +1,6 @@
 # Roadmap — deep scan fixes
-- [ ] Make Haitham pricing amount optional without removing mandatory files.
-- [ ] Match custody email message/sending to violations (open employee mail draft).
+- [x] Make Haitham pricing amount optional; file stays mandatory and blank price preserves quote value. 11 tests and database verification pass; Haitham authenticated approval not exercised (session unavailable).
+- [x] Match custody email message/sending to violations (open employee mail draft); assigned-device button exercised and temporary device deleted. External mail delivery is user-controlled and not verified.
 - [x] All-section live updates: root session-scoped realtime, table readers, active queries and online/visible fallback; custody create preserved unsaved draft, fleet create/delete reached second session within 10 seconds, 20 tests passed. QA rows removed; external Outlook/bank delivery not end-to-end tested.
 - [x] Refresh sales changes automatically; verified approval appearing in a second open page without navigation.
 - [x] Keep Eilaf's greeting fixed and identify active account; authenticated identity transition verified. Minted test refresh tokens cannot exercise saved-account refresh switching.
