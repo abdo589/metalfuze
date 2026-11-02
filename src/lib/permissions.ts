@@ -46,8 +46,35 @@ export function useMyAccess() {
 /** HR pages (everything except employee data) that only admins (Eilaf, Abdelrhman) and HR may open; hidden from viewer accounts. */
 export const HR_ADMIN_ONLY = ["/payroll", "/salary-deductions", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance"];
 /** Self-registered project managers (and accounts without a role) only get their own workspace. */
-/** Accountant (Aiftkhar) sees only the private accounting space. */
+/** Accountants keep their private accounting space; the designated account also opens the dashboard. */
 export const ACCOUNTANT_PATHS = ["/accounting", "/messages", "/mail", "/my-checkin"];
+export function isProjectAccountant(role: Role | undefined, email: string | undefined) {
+  return role === "accountant" && email?.toLowerCase() === "aiftkhar@metalfuze.local";
+}
+export function accountantPaths(projectAccountant: boolean) {
+  return projectAccountant ? [...ACCOUNTANT_PATHS, "/"] : ACCOUNTANT_PATHS;
+}
+export function pathAllowed(path: string, allowed: string[]) {
+  return allowed.some((p) => path === p || (p !== "/" && path.startsWith(p + "/")));
+}
+export function useIsProjectAccountant() {
+  const role = useRole();
+  const [email, setEmail] = useState<string | undefined>();
+  useEffect(() => {
+    let alive = true;
+    const check = () => supabase.auth.getUser().then(({ data }) => { if (alive) setEmail(data.user?.email); });
+    check();
+    const { data: sub } = supabase.auth.onAuthStateChange(check);
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
+  return isProjectAccountant(role, email);
+}
+export function useCanEditProjects() {
+  const canEdit = useCanEdit();
+  const accountant = useIsProjectAccountant();
+  const ro = useMyAccess()?.read_only;
+  return !ro && (canEdit || accountant);
+}
 /** Executive (Hisham) sees only the live summary, read-only. */
 export const EXECUTIVE_PATHS = ["/executive", "/meetings", "/messages", "/mail", "/my-checkin"];
 export const MANAGER_PATHS = ["/my-projects", "/messages", "/mail", "/my-checkin"];

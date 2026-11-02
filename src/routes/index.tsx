@@ -1,4 +1,4 @@
-import { useCanEdit } from "@/lib/permissions";
+import { useCanEditProjects } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
@@ -60,7 +60,7 @@ function groupBy(list: Project[], key: (p: Project) => string, val: (p: Project)
 }
 
 function Dashboard() {
-  const canEdit = useCanEdit();
+  const canEdit = useCanEditProjects();
   useLanguage();
   const projects = useProjects();
   const [q, setQ] = useState("");

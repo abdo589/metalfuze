@@ -5,6 +5,7 @@ import { t } from "./i18n";
 import { projectStore, projectChanges, type Project } from "./projects";
 import { txnStore, txnChanges, type Txn } from "./transactions";
 import { subscribeLiveRefresh } from "./live-refresh";
+import { isProjectAccountant } from "./permissions";
 
 type Row = { id: string; data: unknown; version: number; deleted_at: string | null; updated_at: string };
 type Kind = "p" | "t";
@@ -28,7 +29,7 @@ export function mergeRemote<T extends { id: string }>(local: T[], rows: Row[], p
 
 /** Admins and the CEO share projects/payments one row per item, with versions so an older device can't overwrite newer edits. */
 export function ExecSnapshotSync() {
-  const [mode, setMode] = useState<"ceo" | "admin" | null>(null);
+  const [mode, setMode] = useState<"ceo" | "admin" | "projects" | null>(null);
   useEffect(() => {
     const check = async () => {
       const { data } = await supabase.auth.getUser();
@@ -36,7 +37,7 @@ export function ExecSnapshotSync() {
       if (!u) return setMode(null);
       if (u.email === "ceo@metalfuze.local") return setMode("ceo");
       const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", u.id);
-      setMode((r ?? []).some((x) => String(x.role) === "admin") ? "admin" : null);
+      setMode((r ?? []).some((x) => String(x.role) === "admin") ? "admin" : (r ?? []).some((x) => isProjectAccountant(String(x.role) as "accountant", u.email)) ? "projects" : null);
     };
     check();
     const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
@@ -59,12 +60,12 @@ export function ExecSnapshotSync() {
       if (ready) schedulePush();
     };
     const onP = mark("p"), onT = mark("t");
-    projectChanges.add(onP); txnChanges.add(onT);
+    projectChanges.add(onP); if (mode !== "projects") txnChanges.add(onT);
 
     const pull = async () => {
       const [pr, tr] = await Promise.all([
         supabase.from("shared_projects").select("id,data,version,deleted_at,updated_at"),
-        supabase.from("shared_txns").select("id,data,version,deleted_at,updated_at"),
+        mode === "projects" ? Promise.resolve({ data: [], error: null }) : supabase.from("shared_txns").select("id,data,version,deleted_at,updated_at"),
       ]);
       if (!alive || pr.error || tr.error) return;
       const prow = (pr.data ?? []) as Row[], trow = (tr.data ?? []) as Row[];
@@ -86,7 +87,7 @@ export function ExecSnapshotSync() {
       const nextP = uniqByName(mergeRemote(projectStore.all(), prow, pp));
       const nextT = mergeRemote(txnStore.all(), trow, tp);
       if (JSON.stringify(nextP) !== JSON.stringify(projectStore.all())) projectStore.applyRemote(nextP);
-      if (JSON.stringify(nextT) !== JSON.stringify(txnStore.all())) txnStore.applyRemote(nextT);
+      if (mode !== "projects" && JSON.stringify(nextT) !== JSON.stringify(txnStore.all())) txnStore.applyRemote(nextT);
       ready = true;
       if (Object.keys(pending).length) schedulePush();
     };
@@ -98,6 +99,7 @@ export function ExecSnapshotSync() {
       let conflict = false;
       try {
         for (const [key, job] of Object.entries(pending)) {
+          if (mode === "projects" && job.kind !== "p") continue;
           const table = job.kind === "p" ? "shared_projects" : "shared_txns";
           const item = job.kind === "p" ? projectStore.all().find((x) => x.id === job.id) : txnStore.all().find((x) => x.id === job.id);
           const v = "baseVersion" in job ? job.baseVersion : versions[key]; // old queues have no baseVersion
