@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { canCreateSalesDeal, canEditSalesDeal, commissionDue } from "./sales";
+import { canApproveSalesStep, canCreateSalesDeal, canEditSalesDeal, commissionDue } from "./sales";
+
+describe("Haitham optional pricing amount", () => {
+  it("allows approval with one pricing file and no amount", () => {
+    expect(canApproveSalesStep("haitham_pricing", 1)).toBe(true);
+    expect(canApproveSalesStep("haitham_pricing", 0)).toBe(false);
+  });
+});
 
 describe("Eilaf sales permissions", () => {
   const eilaf = { id: "eilaf-id", email: "eilaf@metalfuze.local", emailConfirmed: true };

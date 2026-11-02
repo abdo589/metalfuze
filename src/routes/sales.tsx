@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useRole } from "@/lib/permissions";
-import { canCreateSalesDeal, canEditSalesDeal, commissionDue } from "@/lib/sales";
+import { canApproveSalesStep, canCreateSalesDeal, canEditSalesDeal, commissionDue } from "@/lib/sales";
 import { pricingAttachments, salesFilePath, type SalesAttachment } from "@/lib/sales-file";
 import { OtherSelect } from "@/components/OtherSelect";
 import { readCache } from "@/lib/read-cache";
@@ -442,11 +442,11 @@ function SalesPage() {
               {pricingAttachments(view).length > 0 && <div><span className="text-muted-foreground">{t("ملف التسعير")}:</span><ul className="space-y-1">{pricingAttachments(view).map((f) => <li key={f.path}><Button type="button" variant="link" className="h-auto max-w-full whitespace-normal p-0 text-start" onClick={() => openFile(f.path)}>{f.name}</Button></li>)}</ul></div>}
               {view.quotation_file_path && <div><span className="text-muted-foreground">{t("عرض السعر (Quotation)")}:</span> <button type="button" className="text-primary underline" onClick={() => view.quotation_file_path && openFile(view.quotation_file_path)}>{view.quotation_file_name}</button></div>}
               {myTurn(view) && <div className="space-y-2 border-t border-border pt-3">
-                {view.workflow_step === "haitham_pricing" && <div className="space-y-1.5"><Label>{t("قيمة التسعير")} *</Label><Input dir="ltr" inputMode="decimal" value={wfPrice} onChange={(e) => setWfPrice(e.target.value.replace(/[^\d.]/g, ""))} /></div>}
+                {view.workflow_step === "haitham_pricing" && <div className="space-y-1.5"><Label htmlFor="pricing-amount">{t("قيمة التسعير")} ({t("اختياري")})</Label><Input id="pricing-amount" dir="ltr" inputMode="decimal" value={wfPrice} onChange={(e) => setWfPrice(e.target.value.replace(/[^\d.]/g, ""))} /></div>}
                 {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" aria-label={t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} multiple={view.workflow_step === "haitham_pricing"} disabled={wfBusy} onChange={(e) => { const files = Array.from(e.target.files ?? []); setWfFiles((prev) => view.workflow_step === "haitham_pricing" ? [...prev, ...files] : files.slice(0, 1)); e.target.value = ""; }} /><ul className="space-y-1">{wfFiles.map((f, i) => <li key={`${f.name}-${i}`} className="flex items-center gap-2"><span className="min-w-0 flex-1 break-all">{f.name}</span><Button type="button" size="icon" variant="ghost" disabled={wfBusy} aria-label={t("إزالة")} title={t("إزالة")} onClick={() => setWfFiles((xs) => xs.filter((_, n) => n !== i))}><Trash2 className="size-4" /></Button></li>)}</ul></div>}
                 <div className="space-y-1.5"><Label>{t("ملاحظات")}</Label><Textarea value={wfNote} onChange={(e) => setWfNote(e.target.value)} /></div>
                 <div className="flex gap-2">
-                  <Button disabled={wfBusy || (view.workflow_step === "haitham_pricing" && (!wfPrice || !wfFiles.length)) || (view.workflow_step === "eilaf_quotation" && !wfFiles.length)} onClick={() => advance(view, "approve")}>{t(wfBusy ? "جارٍ الرفع..." : view.workflow_step === "sales_entry" ? "إرسال للمراجعة" : "موافقة وإرسال")}</Button>
+                  <Button disabled={wfBusy || !canApproveSalesStep(view.workflow_step, wfFiles.length)} onClick={() => advance(view, "approve")}>{t(wfBusy ? "جارٍ الرفع..." : view.workflow_step === "sales_entry" ? "إرسال للمراجعة" : "موافقة وإرسال")}</Button>
                   {view.workflow_step !== "sales_entry" && <Button variant="outline" className="text-destructive" disabled={wfBusy} onClick={() => advance(view, "reject")}>{t("رفض وإرجاع")}</Button>}
                 </div>
               </div>}
