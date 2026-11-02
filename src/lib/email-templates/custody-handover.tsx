@@ -14,7 +14,7 @@ interface Props {
   date?: string
 }
 
-const Row = ({ label, value }: { label: string; value?: string }) =>
+const Row = ({ label, value }: { label: string; value?: string | undefined }) =>
   value ? (
     <tr>
       <td style={cellLabel}>{label}</td>
