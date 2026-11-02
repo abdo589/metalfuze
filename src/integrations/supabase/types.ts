@@ -1784,6 +1784,7 @@ export type Database = {
           payout_status: string
           pricing_file_name: string | null
           pricing_file_path: string | null
+          pricing_files: Json
           pricing_value: number | null
           project: string
           quotation_file_name: string | null
@@ -1811,6 +1812,7 @@ export type Database = {
           payout_status?: string
           pricing_file_name?: string | null
           pricing_file_path?: string | null
+          pricing_files?: Json
           pricing_value?: number | null
           project?: string
           quotation_file_name?: string | null
@@ -1838,6 +1840,7 @@ export type Database = {
           payout_status?: string
           pricing_file_name?: string | null
           pricing_file_path?: string | null
+          pricing_files?: Json
           pricing_value?: number | null
           project?: string
           quotation_file_name?: string | null
@@ -2404,6 +2407,16 @@ export type Database = {
           p_action: string
           p_file_name?: string
           p_file_path?: string
+          p_id: string
+          p_note: string
+          p_price?: number
+        }
+        Returns: string
+      }
+      sales_advance_files: {
+        Args: {
+          p_action: string
+          p_files?: Json
           p_id: string
           p_note: string
           p_price?: number

@@ -1,4 +1,6 @@
 # Roadmap — deep scan fixes
+- [ ] Keep Eilaf's greeting fixed while switching saved accounts, with active account clearly identified.
+- [ ] Allow multiple Haitham pricing attachments, preserve old files and verify approval/readback.
 - [x] Add monthly salary deductions/advances page; carry Najla 4763 into November (net 7237), preserve commissions; verified HR create/edit/reload/partial repayment and December remainder, removed test row; 17 tests passed.
 - [x] Compare payroll with September: September 170000, October 161237 (4000 Iftikhar salary decrease plus 4763 Najla advances/fines), November 166000; user confirmed Iftikhar's 4000 is correct, so preserve salary, deductions and paid records unchanged.
 - [x] November verified with all 25 employees; October commissions explained the difference. Salary excludes commissions; employee data retains them (Aisha UI checked).

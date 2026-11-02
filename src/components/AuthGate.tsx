@@ -13,6 +13,7 @@ import { HR_PATHS, HR_ADMIN_ONLY, MANAGER_PATHS, ACCOUNTANT_PATHS, EXECUTIVE_PAT
 import { oauthReturnPath } from "@/lib/oauth-return-path";
 import { signOutTracked, trackLogin } from "@/lib/login-tracking";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
+import { accountGreeting } from "@/lib/account-display";
 
 /** HR-only accounts may open only the HR pages; anything else sends them to payroll. */
 function RoleGuard({ children }: { children: ReactNode }) {
@@ -37,6 +38,14 @@ export const toEmail = (u: string) => `${u.trim().toLowerCase().replace(/[^a-z0-
 export function AuthGate({ children }: { children: ReactNode }) {
   useLanguage();
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [greeting, setGreeting] = useState("");
+  useEffect(() => {
+    if (!session) { setGreeting(""); return; }
+    const name = (session.user.user_metadata?.["display_name"] as string) || session.user.email?.split("@")[0] || "";
+    try {
+      setGreeting(accountGreeting({ id: session.user.id, email: session.user.email, name }, JSON.parse(localStorage.getItem("mf-switch-accounts") || "[]")));
+    } catch { setGreeting(name); }
+  }, [session]);
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
@@ -58,11 +67,12 @@ export function AuthGate({ children }: { children: ReactNode }) {
   return (
     <>
       <div className="flex items-center justify-end gap-2 px-4 pt-3 text-sm text-muted-foreground print:hidden sm:px-6">
-        <span>{t("مرحباً،")}<b className="text-foreground">{name}</b></span>
+        <span>{t("مرحباً،")}<b className="text-foreground">{greeting || name}</b></span>
+        {greeting && greeting !== name && <span className="text-xs">{t("الحساب النشط")}: <b dir="auto">{name}</b></span>}
         <AccountSwitcher session={session} toEmail={toEmail} />
         <Button size="sm" variant="ghost" onClick={() => void signOutTracked()}><LogOut /> {t("خروج")}</Button>
       </div>
-      <RoleGuard>{children}</RoleGuard>
+      <RoleGuard key={session.user.id}>{children}</RoleGuard>
     </>
   );
 }

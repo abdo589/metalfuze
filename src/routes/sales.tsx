@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useRole } from "@/lib/permissions";
 import { canCreateSalesDeal, canEditSalesDeal, commissionDue } from "@/lib/sales";
-import { salesFilePath } from "@/lib/sales-file";
+import { pricingAttachments, salesFilePath, type SalesAttachment } from "@/lib/sales-file";
 import { OtherSelect } from "@/components/OtherSelect";
 
 export const Route = createFileRoute("/sales")({
@@ -115,19 +115,27 @@ function SalesPage() {
     supabase.from("profiles").select("employee_id").eq("id", data.user.id).maybeSingle().then(({ data: p }) => setMyEmp(p?.employee_id ?? null));
   }); }, []);
   const myTurn = (d: D) => !!me && (d.workflow_step === "sales_entry" ? d.owner_id === me.id && canEdit : WF.find((s) => s.k === d.workflow_step)?.email === me.email);
-  const [wfNote, setWfNote] = useState(""); const [wfPrice, setWfPrice] = useState(""); const [wfFile, setWfFile] = useState<File | null>(null); const [wfBusy, setWfBusy] = useState(false);
+  const [wfNote, setWfNote] = useState(""); const [wfPrice, setWfPrice] = useState(""); const [wfFiles, setWfFiles] = useState<File[]>([]); const [wfBusy, setWfBusy] = useState(false);
   async function advance(d: D, action: "approve" | "reject") {
+    if (wfBusy || !me) return;
     setWfBusy(true);
-    let path: string | null = null, name: string | null = null;
-    if (action === "approve" && wfFile && me) {
-      path = salesFilePath(me.id, wfFile.name); name = wfFile.name;
-      const { error } = await supabase.storage.from("sales-files").upload(path, wfFile, { contentType: wfFile.type || "application/octet-stream" });
-      if (error) { toast.error(t("تعذر رفع الملف")); setWfBusy(false); return; }
+    const uploaded: SalesAttachment[] = [];
+    try {
+      if (action === "approve") for (const file of wfFiles) {
+        const path = salesFilePath(me.id, file.name);
+        const { error } = await supabase.storage.from("sales-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
+        if (error) throw new Error(`${t("تعذر رفع الملف")}: ${file.name}`);
+        uploaded.push({ path, name: file.name });
+      }
+      const { error } = await supabase.rpc("sales_advance_files", { p_id: d.id, p_action: action, p_note: wfNote, ...(wfPrice ? { p_price: Number(wfPrice) } : {}), p_files: uploaded });
+      if (error) throw new Error(t("تعذر الحفظ، حاول مرة أخرى"));
+      toast.success(t("تم الإرسال للمرحلة التالية")); setWfNote(""); setWfPrice(""); setWfFiles([]); setView(null); load();
+    } catch (error) {
+      if (uploaded.length) await supabase.storage.from("sales-files").remove(uploaded.map((f) => f.path));
+      toast.error(error instanceof Error ? error.message : t("تعذر الحفظ، حاول مرة أخرى"));
+    } finally {
+      setWfBusy(false);
     }
-    const { error } = await supabase.rpc("sales_advance", { p_id: d.id, p_action: action, p_note: wfNote, ...(wfPrice ? { p_price: Number(wfPrice) } : {}), ...(path && name ? { p_file_path: path, p_file_name: name } : {}) });
-    setWfBusy(false);
-    if (error) { toast.error(t("تعذر الحفظ، حاول مرة أخرى")); return; }
-    toast.success(t("تم الإرسال للمرحلة التالية")); setWfNote(""); setWfPrice(""); setWfFile(null); setView(null); load();
   }
 
   const inPeriod = (d: D) => {
@@ -232,6 +240,7 @@ function SalesPage() {
       {f.long ? <Textarea value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} /> : <Input value={String(v ?? "")} onChange={(e) => setR(f.k, e.target.value)} />}</div>;
   };
   const [view, setView] = useState<D | null>(null);
+  useEffect(() => { setWfFiles([]); setWfPrice(""); setWfNote(""); }, [view?.id]);
   const [meet, setMeet] = useState<D | null>(null);
   const [reports, setReports] = useState(false);
   const mailClient = (d: D) => {
@@ -404,7 +413,7 @@ function SalesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Dialog open={!!view} onOpenChange={(o) => !o && setView(null)}>
+      <Dialog open={!!view} onOpenChange={(o) => !o && !wfBusy && setView(null)}>
         <DialogContent dir={locale() === "en-GB" ? "ltr" : "rtl"} className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader><DialogTitle>{t("طلب تسعيرة مشروع جديد")}</DialogTitle></DialogHeader>
           {view && <div className="space-y-4 text-sm">
@@ -412,14 +421,14 @@ function SalesPage() {
               <h3 className="font-display font-bold">{t("مراحل الاعتماد")}</h3>
               <ol className="flex flex-wrap gap-1.5">{WF.map((s, i) => { const cur = WF.findIndex((x) => x.k === view.workflow_step); return <li key={s.k} className={`rounded-full px-2 py-0.5 text-xs ${i === cur ? "bg-primary text-primary-foreground" : i < cur ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"}`}>{i + 1}. {t(s.l)}</li>; })}</ol>
               {view.pricing_value != null && <div><span className="text-muted-foreground">{t("التسعير")}:</span> <span dir="ltr">{fmt(Number(view.pricing_value))}</span></div>}
-              {view.pricing_file_path && <div><span className="text-muted-foreground">{t("ملف التسعير")}:</span> <button type="button" className="text-primary underline" onClick={() => view.pricing_file_path && openFile(view.pricing_file_path)}>{view.pricing_file_name}</button></div>}
+              {pricingAttachments(view).length > 0 && <div><span className="text-muted-foreground">{t("ملف التسعير")}:</span><ul className="space-y-1">{pricingAttachments(view).map((f) => <li key={f.path}><Button type="button" variant="link" className="h-auto max-w-full whitespace-normal p-0 text-start" onClick={() => openFile(f.path)}>{f.name}</Button></li>)}</ul></div>}
               {view.quotation_file_path && <div><span className="text-muted-foreground">{t("عرض السعر (Quotation)")}:</span> <button type="button" className="text-primary underline" onClick={() => view.quotation_file_path && openFile(view.quotation_file_path)}>{view.quotation_file_name}</button></div>}
               {myTurn(view) && <div className="space-y-2 border-t border-border pt-3">
                 {view.workflow_step === "haitham_pricing" && <div className="space-y-1.5"><Label>{t("قيمة التسعير")} *</Label><Input dir="ltr" inputMode="decimal" value={wfPrice} onChange={(e) => setWfPrice(e.target.value.replace(/[^\d.]/g, ""))} /></div>}
-                {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" onChange={(e) => setWfFile(e.target.files?.[0] ?? null)} /></div>}
+                {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" aria-label={t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} multiple={view.workflow_step === "haitham_pricing"} disabled={wfBusy} onChange={(e) => { const files = Array.from(e.target.files ?? []); setWfFiles((prev) => view.workflow_step === "haitham_pricing" ? [...prev, ...files] : files.slice(0, 1)); e.target.value = ""; }} /><ul className="space-y-1">{wfFiles.map((f, i) => <li key={`${f.name}-${i}`} className="flex items-center gap-2"><span className="min-w-0 flex-1 break-all">{f.name}</span><Button type="button" size="icon" variant="ghost" disabled={wfBusy} aria-label={t("إزالة")} title={t("إزالة")} onClick={() => setWfFiles((xs) => xs.filter((_, n) => n !== i))}><Trash2 className="size-4" /></Button></li>)}</ul></div>}
                 <div className="space-y-1.5"><Label>{t("ملاحظات")}</Label><Textarea value={wfNote} onChange={(e) => setWfNote(e.target.value)} /></div>
                 <div className="flex gap-2">
-                  <Button disabled={wfBusy || (view.workflow_step === "haitham_pricing" && (!wfPrice || !wfFile)) || (view.workflow_step === "eilaf_quotation" && !wfFile)} onClick={() => advance(view, "approve")}>{t(view.workflow_step === "sales_entry" ? "إرسال للمراجعة" : "موافقة وإرسال")}</Button>
+                  <Button disabled={wfBusy || (view.workflow_step === "haitham_pricing" && (!wfPrice || !wfFiles.length)) || (view.workflow_step === "eilaf_quotation" && !wfFiles.length)} onClick={() => advance(view, "approve")}>{t(wfBusy ? "جارٍ الرفع..." : view.workflow_step === "sales_entry" ? "إرسال للمراجعة" : "موافقة وإرسال")}</Button>
                   {view.workflow_step !== "sales_entry" && <Button variant="outline" className="text-destructive" disabled={wfBusy} onClick={() => advance(view, "reject")}>{t("رفض وإرجاع")}</Button>}
                 </div>
               </div>}
