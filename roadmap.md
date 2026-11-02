@@ -1,5 +1,5 @@
 # Roadmap — deep scan fixes
-- [ ] Add monthly salary deductions/advances page; carry unpaid balances (Najla 4763 into November), preserve commissions and verify HR flow.
+- [x] Add monthly salary deductions/advances page; carry Najla 4763 into November (net 7237), preserve commissions; verified HR create/edit/reload/partial repayment and December remainder, removed test row; 17 tests passed.
 - [x] Compare payroll with September: September 170000, October 161237 (4000 Iftikhar salary decrease plus 4763 Najla advances/fines), November 166000; user confirmed Iftikhar's 4000 is correct, so preserve salary, deductions and paid records unchanged.
 - [x] November verified with all 25 employees; October commissions explained the difference. Salary excludes commissions; employee data retains them (Aisha UI checked).
 - [x] Optional meeting companions, CEO/Haitham approval only, all meeting updates to Eilaf; verified creation, both responses and update notification.
