@@ -40,6 +40,13 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
+  --color-stage-1: var(--stage-1);
+  --color-stage-2: var(--stage-2);
+  --color-stage-3: var(--stage-3);
+  --color-stage-4: var(--stage-4);
+  --color-stage-5: var(--stage-5);
+  --color-stage-6: var(--stage-6);
+  --color-stage-7: var(--stage-7);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
@@ -69,6 +76,13 @@
 
 /* ============ Light theme (default) ============ */
 :root {
+  --stage-1: oklch(0.55 0.04 250);
+  --stage-2: oklch(0.55 0.17 255);
+  --stage-3: oklch(0.52 0.2 300);
+  --stage-4: oklch(0.68 0.15 75);
+  --stage-5: oklch(0.6 0.12 210);
+  --stage-6: oklch(0.7 0.15 55);
+  --stage-7: oklch(0.58 0.15 150);
   --radius: 0.75rem;
   color-scheme: light;
   --background: oklch(0.977 0.003 219.5);
@@ -113,6 +127,13 @@
 
 /* ============ Dark theme ============ */
 .dark {
+  --stage-1: oklch(0.7 0.04 250);
+  --stage-2: oklch(0.7 0.15 255);
+  --stage-3: oklch(0.72 0.17 300);
+  --stage-4: oklch(0.8 0.14 80);
+  --stage-5: oklch(0.75 0.11 210);
+  --stage-6: oklch(0.78 0.14 60);
+  --stage-7: oklch(0.72 0.15 150);
   color-scheme: dark;
   --background: oklch(0.205 0.024 218);
   --foreground: oklch(0.96 0.007 190);
