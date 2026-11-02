@@ -1,4 +1,5 @@
 # Roadmap — deep scan fixes
+- [ ] Refresh sales changes automatically while the page remains open.
 - [ ] Keep Eilaf's greeting fixed while switching saved accounts, with active account clearly identified.
 - [ ] Allow multiple Haitham pricing attachments, preserve old files and verify approval/readback.
 - [x] Add monthly salary deductions/advances page; carry Najla 4763 into November (net 7237), preserve commissions; verified HR create/edit/reload/partial repayment and December remainder, removed test row; 17 tests passed.
