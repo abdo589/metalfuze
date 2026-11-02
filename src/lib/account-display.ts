@@ -1,5 +1,5 @@
 export const SWITCH_OWNER = "eilaf@metalfuze.local";
-type Identity = { id: string; email?: string | null; name: string };
+type Identity = { id: string; email?: string | null | undefined; name: string };
 
 /** Display only: never use saved identities to determine permissions. */
 export function accountGreeting(active: Identity, saved: Identity[]): string {

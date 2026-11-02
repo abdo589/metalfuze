@@ -4,7 +4,7 @@ import { pricingAttachments, salesFilePath } from "./sales-file";
 describe("sales pricing storage paths", () => {
   it("retains all pricing attachments without duplicating the legacy first file", () => {
     const files = [{ path: "haitham/one.xlsx", name: "تسعير.xlsx" }, { path: "haitham/two.dwg", name: "مخطط.dwg" }];
-    expect(pricingAttachments({ pricing_files: files, pricing_file_path: files[0].path })).toEqual(files);
+    expect(pricingAttachments({ pricing_files: files, pricing_file_path: "haitham/one.xlsx" })).toEqual(files);
   });
   it("still reads the original single pricing file", () => {
     expect(pricingAttachments({ pricing_file_path: "old/file.zip", pricing_file_name: "تسعير.zip", pricing_files: [] })).toEqual([{ path: "old/file.zip", name: "تسعير.zip" }]);

@@ -24,6 +24,7 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
+  "الحساب النشط": "Active account", "تبديل الحساب": "Switch account", "الحسابات": "Accounts", "الحالي": "Current", "إضافة حساب": "Add account", "إزالة": "Remove", "تمت إضافة الحساب": "Account added", "انتهت جلسة هذا الحساب، أضفه مرة أخرى": "This account's session expired; add it again",
   "خصومات الرواتب والسلف": "Salary deductions & advances", "إضافة سلفة أو خصم": "Add advance or deduction",
   "خصومات الشهر": "Monthly deductions", "المسدد سابقًا": "Previously repaid", "المتبقي أول الشهر": "Opening monthly balance",
   "السداد المسجل للشهر": "Recorded monthly repayment", "تسجيل سداد الشهر": "Record monthly repayment",
