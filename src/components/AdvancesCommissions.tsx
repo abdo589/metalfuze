@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useCallback, useEffect, useState } from "react";
 import { Coins, Eye, Pencil, Plus, Save, Trash2, TrendingUp, X } from "lucide-react";
 import { toast } from "sonner";
@@ -67,6 +68,7 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
     setRows({ advances: list.filter((r) => r.sheet === "advances"), commissions: list.filter((r) => r.sheet === "commissions") });
   }, [empId, canEdit]);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["hr_records", "sales_deals"], load);
 
   function openNew(kind: Kind) {
     const c = CFG[kind];

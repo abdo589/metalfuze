@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Clock, DollarSign, Eye, FileText, Plus, Search, Trash2 } from "lucide-react";
@@ -73,6 +74,7 @@ function SettlementsPage() {
     if (b.data) setBalances(Object.fromEntries((b.data as { employee_id: string; remaining: number }[]).map((x) => [x.employee_id, Number(x.remaining) || 0])));
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["settlements", "employees", "hr_records", "leave_requests", "leave_balance_adjustments"], load);
 
   const filtered = useMemo(() => rows.filter((r) =>
     (!q || r.employee_name.includes(q) || r.employee_id.includes(q)) && (!reason || r.reason === reason) &&

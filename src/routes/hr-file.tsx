@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Download, Eye, FileUp, FileText, Pencil, Plus, Save, Search, Trash2, UserRound, X } from "lucide-react";
@@ -65,6 +66,7 @@ function HrFilePage() {
     setRecs((data ?? []) as unknown as Rec[]);
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["hr_records"], load);
   useEffect(() => {
     if (recs && !recs.length && canEdit) importHrFile().then((r) => { if (r.imported) load(); }).catch(() => {});
   }, [recs, canEdit, load]);

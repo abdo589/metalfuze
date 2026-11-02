@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Building2, Pencil, Plus, Search, Trash2, Users, Banknote, FileText, Star } from "lucide-react";
@@ -69,6 +70,7 @@ function EstablishmentPage() {
     setRows((data ?? []) as Rec[]);
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["est_records"], load);
 
   const of = (k: Key) => rows.filter((r) => r.sheet === k);
   const list = useMemo(() => of(tab).filter((r) => !q || Object.values(r.data).join(" ").includes(q)), [rows, tab, q]);

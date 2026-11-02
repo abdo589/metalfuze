@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Plus, Save, Trash2, FileDown, Pencil, X } from "lucide-react";
@@ -40,6 +41,7 @@ function Accounting() {
     setActive((a) => a || list[0]?.id || "");
   };
   useEffect(() => { setLanguage("ar"); load(); }, []);
+  useLiveRefresh(["acct_sheets"], load);
 
   const sheet = sheets.find((s) => s.id === active);
   const rows = draft ?? sheet?.rows ?? [];

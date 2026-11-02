@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Car, CheckCircle2, Clock, Eye, FileSpreadsheet, LoaderCircle, Mail, Pencil, Plus, Search, Trash2, Wrench } from "lucide-react";
@@ -70,6 +71,7 @@ function FleetPage() {
       .filter((x) => x.name && !seen.has(x.no + x.name) && seen.add(x.no + x.name)));
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["fleet_cars", "traffic_violations", "hr_records"], load);
 
   const match = (s: string) => !q || s.toLowerCase().includes(q.toLowerCase());
   const carList = cars.filter((c) => match(`${c.plate} ${c.car_type} ${c.employee_name} ${c.employee_no}`));

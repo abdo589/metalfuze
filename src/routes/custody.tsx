@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Box, CheckCircle2, ChevronLeft, History, Laptop, Loader2, Mail, Pencil, Plus, RotateCcw, Search, Trash2, Users, Wrench, X } from "lucide-react";
@@ -69,6 +70,7 @@ function CustodyPage() {
       .filter((x) => x.name && !seen.has(x.no + x.name) && seen.add(x.no + x.name)));
   }, []);
   useEffect(() => { void load(); }, [load]);
+  useLiveRefresh(["custody_assets", "custody_moves", "hr_records"], load);
 
   const depts = [...new Set(assets.map((a) => a.dept).filter(Boolean))];
   const list = assets.filter((a) => (tab !== "current" || a.status === "مسلم") && (!fs || a.status === fs) && (!fd || a.dept === fd) &&
