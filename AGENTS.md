@@ -45,3 +45,4 @@
 - Account greeting is display-only; active authenticated identity drives permissions and remounts gated pages to clear previous account state.
 - Payroll excludes commissions; hr_records advances carry balances forward with dated repayments in 'سداد شهري'; preserve extra JSON fields on edits.
 - LiveUpdates in root owns a session-scoped channel; table-scoped useLiveRefresh readers refresh data, not screens or drafts, with visible/online polling fallback.
+- Custody handover email opens a mailto draft using HR employee contact data; unused managed email templates remain available but are not invoked by this page.

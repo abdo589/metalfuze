@@ -1,7 +1,7 @@
 import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Box, CheckCircle2, ChevronLeft, History, Laptop, Loader2, Mail, Pencil, Plus, RotateCcw, Search, Trash2, Users, Wrench, X } from "lucide-react";
+import { Box, CheckCircle2, ChevronLeft, History, Laptop, Mail, Pencil, Plus, RotateCcw, Search, Trash2, Users, Wrench, X } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { EmployeeSignature } from "@/components/EmployeeSignature";
 import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { OtherSelect } from "@/components/OtherSelect";
-import { emailCustodyHandover } from "@/lib/custody.functions";
 
 export const Route = createFileRoute("/custody")({
   head: () => ({
@@ -30,7 +29,7 @@ export const Route = createFileRoute("/custody")({
 
 type Asset = { id: string; name: string; brand: string; model: string; category: string; serial_no: string; asset_no: string; specs: string; status: string; employee_no: string; employee_name: string; dept: string; handover_date: string | null; confirmed: boolean; notes: string };
 type Move = { id: string; asset_id: string; action: string; employee_name: string; employee_no: string; note: string; move_date: string; created_at: string };
-type Emp = { no: string; name: string; dept: string };
+type Emp = { no: string; name: string; dept: string; email: string };
 
 const STATUSES = ["مسلم", "متاح", "صيانة", "خارج الخدمة"];
 const CATS = ["لابتوب", "جوال", "شاشة", "طابعة", "تابلت", "أخرى"];
@@ -54,7 +53,6 @@ function CustodyPage() {
   const [edit, setEdit] = useState<ReturnType<typeof empty> | null>(null);
   const [hand, setHand] = useState<{ asset_id: string; emp: string; date: string; note: string } | null>(null);
   const [view, setView] = useState<Asset | null>(null);
-  const [mailing, setMailing] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const [a, m, e] = await Promise.all([
@@ -66,7 +64,7 @@ function CustodyPage() {
     setAssets(list); setMoves((m.data ?? []) as Move[]);
     setView((v) => (v ? list.find((x) => x.id === v.id) ?? null : v));
     const seen = new Set<string>();
-    setEmps(((e.data ?? []) as { data: Record<string, unknown> }[]).map(({ data: d }) => ({ no: String(d["رقم الموظف"] ?? "").trim(), name: String(d["اسم الموظف"] ?? "").trim(), dept: String(d["القسم"] ?? d["الإدارة"] ?? "").trim() }))
+    setEmps(((e.data ?? []) as { data: Record<string, unknown> }[]).map(({ data: d }) => ({ no: String(d["رقم الموظف"] ?? "").trim(), name: String(d["اسم الموظف"] ?? "").trim(), dept: String(d["القسم"] ?? d["الإدارة"] ?? "").trim(), email: String(d["البريد الإلكتروني"] ?? "").trim() }))
       .filter((x) => x.name && !seen.has(x.no + x.name) && seen.add(x.no + x.name)));
   }, []);
   useEffect(() => { void load(); }, [load]);
@@ -109,22 +107,16 @@ function CustodyPage() {
   }
   const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString(locale()) : "-");
 
-  async function sendMail(a: Asset, email?: string) {
-    setMailing(a.id);
-    const r = await emailCustodyHandover({ data: { assetId: a.id, email } });
-    setMailing(null);
-    if (r.ok) { toast.success(t("تم إرسال تفاصيل العهدة بالإيميل")); return; }
-    if (r.error === "no_email") {
-      const em = window.prompt(t("لا يوجد بريد مسجل للموظف — أدخل البريد الإلكتروني"));
-      if (em && em.includes("@")) return sendMail(a, em.trim());
-      return;
-    }
-    toast.error(t("تعذر إرسال الإيميل"));
+  function sendMail(a: Asset) {
+    const email = emps.find((e) => e.no === a.employee_no && e.name === a.employee_name)?.email ?? emps.find((e) => e.name === a.employee_name)?.email ?? "";
+    const subject = `${t("إشعار استلام عهدة جهاز")} - ${a.name}`;
+    const body = `${t("مرحبًا")} ${a.employee_name}،\n\n${t("تم تسجيل استلامك للجهاز التالي كعهدة شخصية تحت مسؤوليتك:")}\n${t("الجهاز")}: ${a.name}\n${t("الشركة المصنعة")}: ${a.brand}\n${t("الموديل")}: ${a.model}\n${t("الرقم التسلسلي")}: ${a.serial_no}\n${t("رقم الأصل")}: ${a.asset_no}\n${t("المواصفات")}: ${a.specs}\n${t("القسم")}: ${a.dept}\n${t("تاريخ التسليم")}: ${a.handover_date ?? ""}\n\n${t("يرجى الحفاظ على الجهاز وإبلاغ الإدارة فورًا في حال حدوث أي عطل أو فقدان.")}\n\n${t("مع تحيات،")}\nMetal Fuze - ${t("قسم الموارد البشرية")}`;
+    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
   const mailBtn = (a: Asset, small = false) => canEdit && a.status === "مسلم" && a.employee_name ? (
-    <Button size={small ? "icon" : "sm"} variant="outline" disabled={mailing === a.id} title={t("إرسال تفاصيل العهدة بالإيميل")}
+    <Button size={small ? "icon" : "sm"} variant="outline" aria-label={t("إرسال تفاصيل العهدة بالإيميل")} title={t("إرسال تفاصيل العهدة بالإيميل")}
       onClick={(e) => { e.stopPropagation(); void sendMail(a); }}>
-      {mailing === a.id ? <Loader2 className="animate-spin" /> : <Mail />} {!small && t("إرسال تفاصيل العهدة بالإيميل")}
+      <Mail /> {!small && t("إرسال تفاصيل العهدة بالإيميل")}
     </Button>
   ) : null;
 
