@@ -1,0 +1,5 @@
+CREATE OR REPLACE FUNCTION public.can_edit_project_dashboard() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $$ SELECT public.can_edit_shared() OR (public.has_role(auth.uid(), 'accountant') AND public.verified_email() = 'aiftkhar@metalfuze.local'); $$;
+GRANT EXECUTE ON FUNCTION public.can_edit_project_dashboard() TO authenticated, service_role;
+CREATE POLICY sp_accountant_read ON public.shared_projects FOR SELECT TO authenticated USING (public.can_edit_project_dashboard());
+CREATE POLICY sp_accountant_insert ON public.shared_projects FOR INSERT TO authenticated WITH CHECK (public.can_edit_project_dashboard() AND public.can_write(auth.uid()));
+CREATE POLICY sp_accountant_update ON public.shared_projects FOR UPDATE TO authenticated USING (public.can_edit_project_dashboard() AND public.can_write(auth.uid())) WITH CHECK (public.can_edit_project_dashboard() AND public.can_write(auth.uid()));
