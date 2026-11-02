@@ -1,5 +1,5 @@
 # Roadmap — deep scan fixes
-- [ ] Match payroll to September: confirmed September 170000, October 161237 (4000 salary decrease for Iftikhar plus 4763 Najla advances/fines), November 166000; awaiting confirmation whether to restore Iftikhar salary to 8000 without changing paid amounts or legitimate deductions.
+- [x] Compare payroll with September: September 170000, October 161237 (4000 Iftikhar salary decrease plus 4763 Najla advances/fines), November 166000; user confirmed Iftikhar's 4000 is correct, so preserve salary, deductions and paid records unchanged.
 - [x] November verified with all 25 employees; October commissions explained the difference. Salary excludes commissions; employee data retains them (Aisha UI checked).
 - [x] Optional meeting companions, CEO/Haitham approval only, all meeting updates to Eilaf; verified creation, both responses and update notification.
 - [x] Create standalone meetings with content/date, without a sales deal; preserve pricing meetings and verify creation/readback.
