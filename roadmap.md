@@ -1,7 +1,7 @@
 # Roadmap — deep scan fixes
-- [ ] Refresh sales changes automatically while the page remains open.
-- [ ] Keep Eilaf's greeting fixed while switching saved accounts, with active account clearly identified.
-- [ ] Allow multiple Haitham pricing attachments, preserve old files and verify approval/readback.
+- [x] Refresh sales changes automatically; verified approval appearing in a second open page without navigation.
+- [x] Keep Eilaf's greeting fixed and identify active account; authenticated identity transition verified. Minted test refresh tokens cannot exercise saved-account refresh switching.
+- [x] Multiple Haitham pricing attachments; two files approved and read back after reload, legacy files preserved; 12 tests pass, QA rows/files removed.
 - [x] Add monthly salary deductions/advances page; carry Najla 4763 into November (net 7237), preserve commissions; verified HR create/edit/reload/partial repayment and December remainder, removed test row; 17 tests passed.
 - [x] Compare payroll with September: September 170000, October 161237 (4000 Iftikhar salary decrease plus 4763 Najla advances/fines), November 166000; user confirmed Iftikhar's 4000 is correct, so preserve salary, deductions and paid records unchanged.
 - [x] November verified with all 25 employees; October commissions explained the difference. Salary excludes commissions; employee data retains them (Aisha UI checked).
