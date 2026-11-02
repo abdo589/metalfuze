@@ -37,7 +37,7 @@ export function ExecSnapshotSync() {
       if (!u) return setMode(null);
       if (u.email === "ceo@metalfuze.local") return setMode("ceo");
       const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", u.id);
-      setMode((r ?? []).some((x) => String(x.role) === "admin") ? "admin" : (r ?? []).some((x) => isProjectAccountant(String(x.role) as "accountant", u.email)) ? "projects" : null);
+      setMode((r ?? []).some((x) => String(x.role) === "admin") ? "admin" : isProjectAccountant((r ?? []).some((x) => String(x.role) === "accountant") ? "accountant" : null, u.email) ? "projects" : null);
     };
     check();
     const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
