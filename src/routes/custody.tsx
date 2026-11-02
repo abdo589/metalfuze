@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Box, CheckCircle2, ChevronLeft, History, Laptop, Pencil, Plus, RotateCcw, Search, Trash2, Users, Wrench, X } from "lucide-react";
+import { Box, CheckCircle2, ChevronLeft, History, Laptop, Loader2, Mail, Pencil, Plus, RotateCcw, Search, Trash2, Users, Wrench, X } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { EmployeeSignature } from "@/components/EmployeeSignature";
 import { useCanEdit } from "@/lib/permissions";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { OtherSelect } from "@/components/OtherSelect";
+import { emailCustodyHandover } from "@/lib/custody.functions";
 
 export const Route = createFileRoute("/custody")({
   head: () => ({
