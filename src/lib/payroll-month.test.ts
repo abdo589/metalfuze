@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { availableMonths, forMonth, type Employee } from "./payroll";
+import { availableMonths, forMonth, payrollNet, type Employee } from "./payroll";
 
 const e: Employee = {
   id: "x", name: "A", role: "", dept: "", project: "", base: 5000, allowances: 500, deductions: 0,
@@ -8,9 +8,22 @@ const e: Employee = {
 };
 
 describe("forMonth", () => {
+  it("carries October salary into November without requiring a new record", () => {
+    const november = forMonth(e, "2026-11");
+    expect([november.base, november.allowances, november.deductions]).toEqual([6000, 700, 100]);
+  });
   it("uses default salary before any monthly change", () => expect(forMonth(e, "2026-09").base).toBe(5000));
   it("uses the month's own salary", () => expect(forMonth(e, "2026-10").base).toBe(6000));
   it("carries the change forward to later months", () => expect(forMonth(e, "2026-12").allowances).toBe(700));
+});
+
+describe("payroll excludes separate commissions", () => {
+  it("never adds a commission to salary", () => {
+    expect(payrollNet(e, 0, { advances: 0, commissions: 15000 })).toBe(5500);
+  });
+  it("still deducts advances and unpaid leave", () => {
+    expect(payrollNet(e, 200, { advances: 1500, commissions: 15000 })).toBe(3800);
+  });
 });
 
 describe("availableMonths", () => {

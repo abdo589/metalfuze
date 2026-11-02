@@ -380,7 +380,7 @@ function SalesPage() {
               </div>}
             </div>)}
             {mode === "commission" && <>
-            <p className="text-xs text-muted-foreground sm:col-span-2">{t("تُحسب العمولة تلقائيًا وتُضاف لعمولات الموظف عند الموارد البشرية لتُصرف مع الراتب.")}</p>
+            <p className="text-xs text-muted-foreground sm:col-span-2">{locale() === "en-GB" ? "Commission is calculated automatically and recorded in employee data, paid separately from salary." : "تُحسب العمولة تلقائيًا وتُسجّل في بيانات الموظف، وتُصرف منفصلة عن الراتب."}</p>
             {pick("client_type", t("عميل جديد ولا سابق"), ["جديد", "سابق"])}
             {pick("stage", t("المرحلة"), STAGES)}
             <div className="space-y-1.5"><Label>{t("هل شارك موظف مبيعات آخر؟")}</Label>
