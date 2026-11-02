@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -78,6 +79,7 @@ function Bugs() {
     const { data } = await supabase.from("bug_reports").select("*").order("created_at", { ascending: false }).limit(300);
     setRows((data ?? []) as Bug[]);
   }, []);
+  useLiveRefresh(["bug_reports", "profiles", "user_roles", "account_flags"], load);
   useEffect(() => { load(); }, [load]);
 
   const update = async (id: string, patch: Partial<Bug>) => {
@@ -146,6 +148,7 @@ function Accounts() {
   const load = useCallback(async () => {
     try { setUsers(await list()); } catch (e) { setMsg({ ok: false, text: (e as Error).message || t("تعذر تحميل المستخدمين") }); }
   }, [list]);
+  useLiveRefresh(["bug_reports", "profiles", "user_roles", "account_flags"], load);
   useEffect(() => { load(); supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? "")); }, [load]);
 
   const mainRole = (u: AppUser) => (u.roles.includes("developer") ? "developer" : u.roles[0] ?? "manager");

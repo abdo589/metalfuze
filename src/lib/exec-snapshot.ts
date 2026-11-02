@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { t } from "./i18n";
 import { projectStore, projectChanges, type Project } from "./projects";
 import { txnStore, txnChanges, type Txn } from "./transactions";
+import { subscribeLiveRefresh } from "./live-refresh";
 
 type Row = { id: string; data: unknown; version: number; deleted_at: string | null; updated_at: string };
 type Kind = "p" | "t";
@@ -141,12 +142,8 @@ export function ExecSnapshotSync() {
     const schedulePush = () => { clearTimeout(timer); timer = setTimeout(push, 800); };
 
     pull();
-    const ch = supabase.channel(`sync-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "shared_projects" }, () => { pull(); })
-      .on("postgres_changes", { event: "*", schema: "public", table: "shared_txns" }, () => { pull(); })
-      .subscribe();
-    const iv = setInterval(pull, 60000);
-    return () => { alive = false; clearTimeout(timer); clearInterval(iv); supabase.removeChannel(ch); projectChanges.delete(onP); txnChanges.delete(onT); };
+    const stop = subscribeLiveRefresh(["shared_projects", "shared_txns"], pull);
+    return () => { alive = false; clearTimeout(timer); stop(); projectChanges.delete(onP); txnChanges.delete(onT); };
   }, [mode]);
   return null;
 }
@@ -165,11 +162,8 @@ export function useExecSnapshot() {
       setState({ projects: (p.data ?? []).map((r) => r.data as Project), txns: (t.data ?? []).map((r) => r.data as Txn), updated, loading: false });
     };
     load();
-    const ch = supabase.channel(`exec-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "shared_projects" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "shared_txns" }, load).subscribe();
-    const iv = setInterval(load, 60000);
-    return () => { alive = false; clearInterval(iv); supabase.removeChannel(ch); };
+    const stop = subscribeLiveRefresh(["shared_projects", "shared_txns"], load);
+    return () => { alive = false; stop(); };
   }, []);
   return state;
 }

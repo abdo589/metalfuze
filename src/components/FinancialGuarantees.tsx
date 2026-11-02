@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useEffect, useState } from "react";
 import { Eye, Landmark, LoaderCircle, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
@@ -53,6 +54,7 @@ export function FinancialGuarantees({ projectId, delivered }: { projectId: strin
 
   const load = () => supabase.from("financial_guarantees").select("*").eq("project_id", projectId).order("created_at").then(({ data }) => setRows(data ?? []));
   useEffect(() => { load(); }, [projectId]);
+  useLiveRefresh(["financial_guarantees"], async () => { await load(); });
 
   async function save() {
     if (!edit) return;

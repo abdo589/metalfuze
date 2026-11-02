@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Eye, Pencil, Plus, Search, Star, Trash2 } from "lucide-react";
@@ -66,6 +67,7 @@ function PerformancePage() {
     setRows((r.data ?? []) as unknown as Review[]);
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["performance_reviews", "hr_records"], load);
 
   const empMap = useMemo(() => new Map(emps.map((e) => [e.id, e])), [emps]);
   const depts = useMemo(() => [...new Set(emps.map((e) => e.dept).filter(Boolean))], [emps]);

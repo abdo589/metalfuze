@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { subscribeLiveRefresh } from "./live-refresh";
 
 export type AdjRow = { sheet: string; data: Record<string, unknown> };
 export type Adj = { advances: number; commissions: number };
@@ -52,9 +53,7 @@ export function useAdjustments(month: string) {
     const load = () => supabase.from("hr_records").select("sheet,data").in("sheet", ["advances", "commissions"])
       .then(({ data }) => setRows((data ?? []) as AdjRow[]));
     load();
-    const ch = supabase.channel(`adj-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "hr_records" }, load).subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return subscribeLiveRefresh(["hr_records"], async () => { await load(); });
   }, []);
   return computeAdjustments(rows, month);
 }

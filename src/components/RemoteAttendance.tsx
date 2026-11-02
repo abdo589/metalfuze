@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useEffect, useState } from "react";
 import { Copy, Crosshair, MapPin, MessageCircle, RefreshCw, Smartphone, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ export function useSites() {
     if (data) setSites(data);
   };
   useEffect(() => { load(); }, []);
+  useLiveRefresh(["work_sites"], load);
   return { sites, reload: load };
 }
 

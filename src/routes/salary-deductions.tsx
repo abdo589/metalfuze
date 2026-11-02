@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, Pencil, CheckCircle2, Banknote } from 'lucide-react';
@@ -38,6 +39,7 @@ function SalaryDeductions() {
     if (error) toast.error(t('تعذر التحميل')); else { setRows((data ?? []) as Row[]); setLoaded(true); }
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["hr_records"], load);
   const visible = rows.filter(r => (!employee || String(r.data['رقم الموظف']) === employee) && adjMonth(r) && adjMonth(r) <= month);
   const total = visible.reduce((sum, r) => sum + advanceDeduction(r, month), 0);
   const name = (r: Row) => employees.find(e => e.id === String(r.data['رقم الموظف']))?.name ?? String(r.data['رقم الموظف']);

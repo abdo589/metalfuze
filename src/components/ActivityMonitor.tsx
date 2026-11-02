@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
@@ -46,6 +47,7 @@ export function ActivityMonitor() {
     setBugs((b.data as { reporter_name: string }[]) ?? []);
   }, [list, period]);
   useEffect(() => { void load(); }, [load]);
+  useLiveRefresh(["activity_log", "login_events", "bug_reports"], load);
 
   const acts = rows ?? [];
   const byTable = useMemo(() => {

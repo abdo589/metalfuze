@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CalendarClock, CheckCircle2, Download, Eye, FileText, FolderOpen, Loader2, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
@@ -65,6 +66,7 @@ function DocumentsPage() {
     setRows((data ?? []) as Doc[]);
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["company_documents", "project_files"], load);
 
   const list = useMemo(() => rows.map((r) => ({ ...r, days: r.expiry_date ? daysLeft(r.expiry_date) : null }))
     .map((r) => ({ ...r, s: statusOf(r.days) }))

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FileText, Upload } from "lucide-react";
@@ -33,12 +33,15 @@ export function CpContractTab({ projectId }: { projectId: string }) {
   });
   const [f, setF] = useState<CpContract>(empty(projectId));
   const [busy, setBusy] = useState<string | null>(null);
-  useEffect(() => { setF(data ?? empty(projectId)); }, [data, projectId]);
+  const dirty = useRef(false);
+  useEffect(() => { dirty.current = false; }, [projectId]);
+  useEffect(() => { if (!dirty.current) setF(data ?? empty(projectId)); }, [data, projectId]);
 
   const persist = async (next: CpContract) => {
     const { updated_at: _u, ...row } = next;
     const { error } = await supabase.from("project_contracts").upsert({ ...row, updated_at: new Date().toISOString() });
     if (error) { toast.error("تعذر الحفظ: " + error.message); return false; }
+    dirty.current = false;
     qc.invalidateQueries({ queryKey: cpKeys.contract(projectId) });
     return true;
   };
@@ -63,7 +66,7 @@ export function CpContractTab({ projectId }: { projectId: string }) {
   if (isLoading) return <p className="p-4 text-muted-foreground">…</p>;
   return (
     <div className="space-y-4">
-      <Card><CardContent className="grid gap-3 p-5 sm:grid-cols-2">
+      <Card><CardContent className="grid gap-3 p-5 sm:grid-cols-2" onChangeCapture={() => { dirty.current = true; }}>
         <Fld l="رقم العقد"><Input value={f.contract_no} onChange={(e) => setF({ ...f, contract_no: e.target.value })} /></Fld>
         <Fld l="قيمة العقد (ر.س)"><Input type="number" inputMode="decimal" value={f.value} onChange={(e) => setF({ ...f, value: Number(e.target.value) || 0 })} /></Fld>
         <Fld l="تاريخ التوقيع"><Input type="date" value={f.signed_date ?? ""} onChange={(e) => setF({ ...f, signed_date: e.target.value || null })} /></Fld>

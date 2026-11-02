@@ -1,3 +1,4 @@
+import { subscribeLiveRefresh } from "@/lib/live-refresh";
 import { useEffect, useState } from "react";
 import { Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +10,7 @@ type Review = { id: string; year: number; quarter: number; review_date: string |
 export function EmployeeReviews({ empNo, name }: { empNo: string; name: string }) {
   const [rows, setRows] = useState<Review[] | null>(null);
   useEffect(() => {
-    (async () => {
+    const load = async () => {
       // Reviews are stored under the employee's HR number (رقم الموظف), so match
       // on it directly; also include payroll ids for legacy rows saved that way.
       const or = `employee_id.eq.${empNo}`;
@@ -26,7 +27,9 @@ export function EmployeeReviews({ empNo, name }: { empNo: string; name: string }
         .order("year", { ascending: false }).order("quarter", { ascending: false });
       const seen = new Set<string>();
       setRows(((data ?? []) as Review[]).filter((r) => !seen.has(r.id) && seen.add(r.id)));
-    })();
+    };
+    void load();
+    return subscribeLiveRefresh(["employees", "performance_reviews"], load);
   }, [empNo, name]);
 
   const st = (k: string) => REVIEW_STATUSES.find((s) => s.key === k)?.ar ?? k;

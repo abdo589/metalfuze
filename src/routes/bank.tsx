@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -59,6 +60,8 @@ function Bank() {
     for (const s of (data ?? []) as unknown as Snap[]) if (!latest.has(s.account_name)) latest.set(s.account_name, s);
     setSnaps([...latest.values()]);
   }, []);
+
+  useLiveRefresh(["bank_connections", "bank_snapshots"], load);
 
   const refresh = useCallback(async (silent = false) => {
     setBusy(true);

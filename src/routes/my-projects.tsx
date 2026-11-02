@@ -11,6 +11,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { t, useLanguage } from "@/lib/i18n";
 import { useRole } from "@/lib/permissions";
 import { fmtMoney, fmtPct, STATUSES } from "@/lib/projects";
+import { useLiveRefresh } from "@/lib/live-refresh";
 
 export const Route = createFileRoute("/my-projects")({
   head: () => ({
@@ -45,6 +46,7 @@ function MyProjects() {
     setProjects(data ?? []);
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["mgr_projects"], load);
 
   async function add() {
     const name = newName.trim();
@@ -79,7 +81,7 @@ function MyProjects() {
 
 function ProjectCard({ p, mine, expanded, onToggle, reload, showOwner }: { p: P; mine: boolean; expanded: boolean; onToggle: () => void; reload: () => void; showOwner: boolean }) {
   const [form, setForm] = useState(p);
-  useEffect(() => setForm(p), [p]);
+  useEffect(() => { if (!expanded) setForm(p); }, [p, expanded]);
   const remaining = Number(p.contract) - Number(p.paid);
 
   async function save() {
@@ -147,6 +149,7 @@ function Reports({ project, mine, reload }: { project: P; mine: boolean; reload:
     setList(data ?? []);
   }, [project.id]);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["mgr_reports"], load);
 
   async function submit() {
     setBusy(true);

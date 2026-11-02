@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Punch } from "./attendance";
+import { subscribeLiveRefresh } from "./live-refresh";
 
 /** Punches for a YYYY-MM month (Riyadh time), refreshed live when the device pushes new ones. */
 export function useMonthPunches(month: string, tick = 0) {
@@ -16,8 +17,8 @@ export function useMonthPunches(month: string, tick = 0) {
       if (alive && data) setPunches(data);
     };
     load();
-    const id = setInterval(load, 30_000);
-    return () => { alive = false; clearInterval(id); };
+    const stop = subscribeLiveRefresh(["attendance_logs"], load);
+    return () => { alive = false; stop(); };
   }, [month, tick]);
   return punches;
 }

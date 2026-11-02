@@ -1,3 +1,4 @@
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Banknote, CheckCircle2, Clock, Pencil, Plus, Trash2, Users, Wallet } from "lucide-react";
@@ -45,6 +46,7 @@ function EstPayrollPage() {
     setRows((data ?? []) as Rec[]);
   }, []);
   useEffect(() => { load(); }, [load]);
+  useLiveRefresh(["est_records"], load);
 
   const emps = rows.filter((r) => r.sheet === "employees");
   const pay = rows.filter((r) => r.sheet === "payroll");
