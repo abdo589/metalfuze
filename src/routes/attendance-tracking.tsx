@@ -11,6 +11,7 @@ import { riyadh, type Punch } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
 import { SelfieThumb, useSites } from "@/components/RemoteAttendance";
 import type { LivePoint } from "@/components/LiveTrackMap";
+import { useLiveRefresh } from "@/lib/live-refresh";
 
 const LiveTrackMap = lazy(() => import("@/components/LiveTrackMap"));
 
@@ -46,6 +47,14 @@ function Tracking() {
 
   const keyOf = (e: { id: string; deviceUserId?: string }) => e.deviceUserId || e.id;
   const nameOf = (uid: string) => empRef.current.find((e) => keyOf(e) === uid || e.id === uid)?.name ?? uid;
+  useLiveRefresh(["location_pings"], async () => {
+    const { data } = await supabase.from("location_pings").select("employee_id,lat,lng,distance_m,pinged_at").gte("pinged_at", todayStart()).order("pinged_at").limit(5000);
+    if (data) setPings(data);
+    if (sel) {
+      const { data: points } = await supabase.from("location_pings").select("employee_id,lat,lng,distance_m,pinged_at").eq("employee_id", sel).gte("pinged_at", todayStart()).order("pinged_at").limit(1000);
+      if (points) setTrail(points);
+    }
+  });
 
   // Today's latest location of everyone, then live inserts for punches and pings.
   useEffect(() => {

@@ -28,4 +28,11 @@ describe("read cache", () => {
     await c.get("a", async () => entry(500));
     expect(c.size()).toBe(0);
   });
+  it("a global refresh prevents an older in-flight read from being cached", async () => {
+    const c = createReadCache(15000, () => 0);
+    let resolve: ((value: ReturnType<typeof entry>) => void) | undefined;
+    const pending = c.get("https://x/rest/v1/employees?select=*|token", () => new Promise(r => { resolve = r; }));
+    c.clearAll(); resolve?.(entry()); await pending;
+    expect(c.size()).toBe(0);
+  });
 });

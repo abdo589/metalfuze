@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLiveRefresh } from "@/lib/live-refresh";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
@@ -23,6 +24,9 @@ export function AccessControl() {
   const [row, setRow] = useState<Row | null>(null);
   const [ips, setIps] = useState("");
   const [busy, setBusy] = useState(false);
+  const dirty = useRef(false);
+  useEffect(() => { dirty.current = false; }, [sel]);
+  useLiveRefresh(["profiles", "user_roles", "account_flags"], async () => { setUsers(await list()); });
 
   useEffect(() => { list().then(setUsers).catch(() => toast.error(t("تعذر تحميل المستخدمين"))); }, [list]);
   const load = useCallback(async (id: string) => {
@@ -31,6 +35,7 @@ export function AccessControl() {
     setRow(r); setIps(r.allowed_ips.join("\n"));
   }, []);
   useEffect(() => { if (sel) load(sel); else setRow(null); }, [sel, load]);
+  useLiveRefresh(["account_access"], async () => { if (sel && !dirty.current) await load(sel); });
 
   const toggle = <K extends "blocked_paths" | "days" | "devices">(k: K, v: Row[K][number]) =>
     setRow((r) => r && ({ ...r, [k]: (r[k] as unknown[]).includes(v) ? (r[k] as unknown[]).filter((x) => x !== v) : [...(r[k] as unknown[]), v] }));
@@ -51,7 +56,7 @@ export function AccessControl() {
         {users.map((u) => <option key={u.id} value={u.id}>{u.name} — {u.username}</option>)}
       </select>
       {row && (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2" onChangeCapture={() => { dirty.current = true; }}>
           <section className="space-y-2 rounded-2xl border bg-card p-4">
             <h3 className="font-bold">{t("الصفحات المسموحة")}</h3>
             <p className="text-xs text-muted-foreground">{t("شيل العلامة عن أي صفحة عشان تتقفل على الحساب ده (فوق صلاحيات دوره).")}</p>
