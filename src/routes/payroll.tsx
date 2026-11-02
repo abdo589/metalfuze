@@ -150,6 +150,7 @@ function Payroll() {
           <Button variant="outline" onClick={onExport}>
             <FileDown /> {t("تصدير مسير Excel")}</Button>
           <PdfButton />
+          <Button variant="outline" asChild><Link to="/salary-deductions"><Wallet /> {t("خصومات الرواتب والسلف")}</Link></Button>
           {canEdit && <Button onClick={() => { setEditing(null); setOpen(true); }}>
             <Plus /> {t("إضافة موظف")}</Button>}
         </div>

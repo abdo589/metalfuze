@@ -39,6 +39,7 @@ import { Route as ProjectAdminRouteImport } from './routes/project-admin'
 import { Route as ProjectReportsRouteImport } from './routes/project-reports'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as ResidenciesRouteImport } from './routes/residencies'
+import { Route as SalaryDeductionsRouteImport } from './routes/salary-deductions'
 import { Route as SalesRouteImport } from './routes/sales'
 import { Route as SettlementsRouteImport } from './routes/settlements'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -215,6 +216,11 @@ const ResidenciesRoute = ResidenciesRouteImport.update({
   path: '/residencies',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SalaryDeductionsRoute = SalaryDeductionsRouteImport.update({
+  id: '/salary-deductions',
+  path: '/salary-deductions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SalesRoute = SalesRouteImport.update({
   id: '/sales',
   path: '/sales',
@@ -375,6 +381,7 @@ export interface FileRoutesByFullPath {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/residencies': typeof ResidenciesRoute
+  '/salary-deductions': typeof SalaryDeductionsRoute
   '/sales': typeof SalesRoute
   '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -432,6 +439,7 @@ export interface FileRoutesByTo {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/residencies': typeof ResidenciesRoute
+  '/salary-deductions': typeof SalaryDeductionsRoute
   '/sales': typeof SalesRoute
   '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -490,6 +498,7 @@ export interface FileRoutesById {
   '/project-reports': typeof ProjectReportsRoute
   '/report': typeof ReportRoute
   '/residencies': typeof ResidenciesRoute
+  '/salary-deductions': typeof SalaryDeductionsRoute
   '/sales': typeof SalesRoute
   '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -549,6 +558,7 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/residencies'
+    | '/salary-deductions'
     | '/sales'
     | '/settlements'
     | '/sitemap.xml'
@@ -606,6 +616,7 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/residencies'
+    | '/salary-deductions'
     | '/sales'
     | '/settlements'
     | '/sitemap.xml'
@@ -663,6 +674,7 @@ export interface FileRouteTypes {
     | '/project-reports'
     | '/report'
     | '/residencies'
+    | '/salary-deductions'
     | '/sales'
     | '/settlements'
     | '/sitemap.xml'
@@ -721,6 +733,7 @@ export interface RootRouteChildren {
   ProjectReportsRoute: typeof ProjectReportsRoute
   ReportRoute: typeof ReportRoute
   ResidenciesRoute: typeof ResidenciesRoute
+  SalaryDeductionsRoute: typeof SalaryDeductionsRoute
   SalesRoute: typeof SalesRoute
   SettlementsRoute: typeof SettlementsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -960,6 +973,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResidenciesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/salary-deductions': {
+      id: '/salary-deductions'
+      path: '/salary-deductions'
+      fullPath: '/salary-deductions'
+      preLoaderRoute: typeof SalaryDeductionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sales': {
       id: '/sales'
       path: '/sales'
@@ -1169,6 +1189,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectReportsRoute: ProjectReportsRoute,
   ReportRoute: ReportRoute,
   ResidenciesRoute: ResidenciesRoute,
+  SalaryDeductionsRoute: SalaryDeductionsRoute,
   SalesRoute: SalesRoute,
   SettlementsRoute: SettlementsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
