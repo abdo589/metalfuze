@@ -1,14 +1,22 @@
 /** Storage keys must be ASCII; the original filename is stored separately for display. */
 export type SalesAttachment = { path: string; name: string };
 
-export function pricingAttachments(deal: { pricing_files?: unknown; pricing_file_path?: string | null; pricing_file_name?: string | null }): SalesAttachment[] {
-  const files: SalesAttachment[] = Array.isArray(deal.pricing_files)
-    ? deal.pricing_files.filter((f): f is SalesAttachment => !!f && typeof f === "object" && typeof f.path === "string" && typeof f.name === "string")
+function attachments(value: unknown, path?: string | null, name?: string | null): SalesAttachment[] {
+  const files: SalesAttachment[] = Array.isArray(value)
+    ? value.filter((f): f is SalesAttachment => !!f && typeof f === "object" && typeof f.path === "string" && typeof f.name === "string")
     : [];
-  if (deal.pricing_file_path && !files.some((f) => f.path === deal.pricing_file_path)) {
-    return [{ path: deal.pricing_file_path, name: deal.pricing_file_name || deal.pricing_file_path }, ...files];
+  if (path && !files.some((f) => f.path === path)) {
+    return [{ path, name: name || path }, ...files];
   }
   return files;
+}
+
+export function pricingAttachments(deal: { pricing_files?: unknown; pricing_file_path?: string | null; pricing_file_name?: string | null }): SalesAttachment[] {
+  return attachments(deal.pricing_files, deal.pricing_file_path, deal.pricing_file_name);
+}
+
+export function quotationAttachments(deal: { quotation_files?: unknown; quotation_file_path?: string | null; quotation_file_name?: string | null }): SalesAttachment[] {
+  return attachments(deal.quotation_files, deal.quotation_file_path, deal.quotation_file_name);
 }
 
 export function salesFilePath(userId: string, name: string): string {
