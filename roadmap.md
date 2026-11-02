@@ -1,4 +1,5 @@
 # Roadmap — deep scan fixes
+- [ ] Investigate November payroll completeness; separate commissions from payroll and preserve them in employee data.
 - [x] Optional meeting companions, CEO/Haitham approval only, all meeting updates to Eilaf; verified creation, both responses and update notification.
 - [x] Create standalone meetings with content/date, without a sales deal; preserve pricing meetings and verify creation/readback.
 - [x] Separate meetings sidebar page while preserving pricing meeting controls.

@@ -32,6 +32,10 @@ export function forMonth(e: Employee, month: string): Employee {
 
 export const netSalary = (e: Employee) => (e.base || 0) + (e.allowances || 0) - (e.deductions || 0);
 
+/** Commissions are paid separately in employee data, never as part of salary. */
+export const payrollNet = (e: Employee, unpaidLeave = 0, adjustments?: { advances: number; commissions: number }) =>
+  netSalary(e) - unpaidLeave - (adjustments?.advances ?? 0);
+
 export const monthKey = (d = new Date()) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 

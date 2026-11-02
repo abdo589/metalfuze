@@ -15,7 +15,7 @@ import { PdfButton } from "@/components/PdfButton";
 import { fmtMoney } from "@/lib/projects";
 import { summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
-import { availableMonths, forMonth, paidFor, withPaid, monthKey, monthLabel, netSalary, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
+import { availableMonths, forMonth, paidFor, withPaid, monthKey, monthLabel, netSalary, payrollNet, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
 import { supabase } from "@/integrations/supabase/client";
 import { useApprovedLeaves } from "@/lib/leave-data";
 import { unpaidDaysInMonth, unpaidDeduction } from "@/lib/leave-engine";
@@ -59,8 +59,8 @@ function Payroll() {
   /** Unpaid-leave deduction for this month (gross / 30 per day). */
   const unpaid = (e: Employee) => { const d = unpaidDaysInMonth(leaves.reqs, leaves.types, e.id, month); return { days: d, amount: unpaidDeduction((e.base || 0) + (e.allowances || 0), d) }; };
   const adj = useAdjustments(month);
-  /** Net after unpaid leave, advances (deducted) and commissions (added) for this month. */
-  const finalNet = (e: Employee) => netSalary(e) - unpaid(e).amount - (adj.get(e.id)?.advances ?? 0) + (adj.get(e.id)?.commissions ?? 0);
+  /** Salary excludes commissions, which remain separate in employee data. */
+  const finalNet = (e: Employee) => payrollNet(e, unpaid(e).amount, adj.get(e.id));
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
@@ -253,8 +253,7 @@ function Payroll() {
                     <td className="p-3 text-destructive">{fmtMoney(e.deductions)}</td>
                     <td className="p-3 font-bold">{fmtMoney(finalNet(e))}
                       {unpaid(e).days > 0 && <div className="text-xs font-normal text-destructive">{t("بدون راتب")}: {unpaid(e).days} − {fmtMoney(unpaid(e).amount)}</div>}
-                      {(adj.get(e.id)?.advances ?? 0) > 0 && <div className="text-xs font-normal text-destructive">{t("سلف")}: − {fmtMoney(adj.get(e.id)!.advances)}</div>}
-                      {(adj.get(e.id)?.commissions ?? 0) > 0 && <div className="text-xs font-normal text-success">{t("عمولات")}: + {fmtMoney(adj.get(e.id)!.commissions)}</div>}
+                      {(adj.get(e.id)?.advances ?? 0) > 0 && <div className="text-xs font-normal text-destructive">{t("سلف")}: − {fmtMoney(adj.get(e.id)?.advances ?? 0)}</div>}
                     </td>
                     <td className="p-3 text-xs">{(() => { const a = att(e); return a.linked ? (
                       <div className="space-y-0.5"><div>{t("حضور")}: <b>{a.present}</b></div>
