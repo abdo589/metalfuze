@@ -43,6 +43,8 @@ const WF: { k: string; l: string; email?: string }[] = [
   { k: "ceo_approval", l: "موافقة وتعميد CEO", email: "ceo@metalfuze.local" },
   { k: "done", l: "مكتمل — المبيعات و Eilaf" },
 ];
+const STAGE_C = ["bg-stage-1","bg-stage-2","bg-stage-3","bg-stage-4","bg-stage-5","bg-stage-6","bg-stage-7"];
+const stageC = (k: string) => STAGE_C[Math.max(0, WF.findIndex((s) => s.k === k))];
 const wfLabel = (k: string) => WF.find((s) => s.k === k)?.l ?? k;
 type LogE = { at: string; by: string; from: string; to: string; action: string; note: string };
 type D = Tables<"sales_deals">;
@@ -373,7 +375,7 @@ function SalesPage() {
               <tr key={d.id} className="border-t border-border">
                 <td className="p-2" dir="ltr">{new Date(d.created_at).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" })}</td>
                 <td className="p-2">{d.client}</td><td className="p-2">{d.project}</td>
-                <td className="p-2 whitespace-nowrap"><span className={`rounded-full px-2 py-0.5 text-xs ${myTurn(d) ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{t(wfLabel(d.workflow_step))}</span>{myTurn(d) && <button type="button" className="ms-1 text-xs text-primary underline" onClick={() => setView(d)}>{t("بانتظارك")}</button>}</td>
+                <td className="p-2 whitespace-nowrap"><span className={`rounded-full px-2 py-0.5 text-xs text-background ${stageC(d.workflow_step)} ${myTurn(d) ? "ring-2 ring-primary ring-offset-1" : ""}`}>{t(wfLabel(d.workflow_step))}</span>{myTurn(d) && <button type="button" className="ms-1 text-xs text-primary underline" onClick={() => setView(d)}>{t("بانتظارك")}</button>}</td>
                 <td className="p-2">{t(d.client_type)}</td>
                 <td className="p-2">{d.shared ? `${d.partner_name} (${d.my_share}/${100 - Number(d.my_share)})` : "—"}</td>
                 <td className="p-2">{t(d.stage)}</td>
@@ -437,7 +439,7 @@ function SalesPage() {
           {view && <div className="space-y-4 text-sm">
             <div className="rounded-lg border border-border p-3 space-y-3">
               <h3 className="font-display font-bold">{t("مراحل الاعتماد")}</h3>
-              <ol className="flex flex-wrap gap-1.5">{WF.map((s, i) => { const cur = WF.findIndex((x) => x.k === view.workflow_step); return <li key={s.k} className={`rounded-full px-2 py-0.5 text-xs ${i === cur ? "bg-primary text-primary-foreground" : i < cur ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"}`}>{i + 1}. {t(s.l)}</li>; })}</ol>
+              <ol className="flex flex-wrap gap-1.5">{WF.map((s, i) => { const cur = WF.findIndex((x) => x.k === view.workflow_step); return <li key={s.k} className={`rounded-full px-2 py-0.5 text-xs text-background ${STAGE_C[i]} ${i === cur ? "ring-2 ring-foreground ring-offset-1 font-semibold" : i < cur ? "opacity-80" : "opacity-40"}`}>{i + 1}. {t(s.l)}</li>; })}</ol>
               {view.pricing_value != null && <div><span className="text-muted-foreground">{t("التسعير")}:</span> <span dir="ltr">{fmt(Number(view.pricing_value))}</span></div>}
               {pricingAttachments(view).length > 0 && <div><span className="text-muted-foreground">{t("ملف التسعير")}:</span><ul className="space-y-1">{pricingAttachments(view).map((f) => <li key={f.path}><Button type="button" variant="link" className="h-auto max-w-full whitespace-normal p-0 text-start" onClick={() => openFile(f.path)}>{f.name}</Button></li>)}</ul></div>}
               {view.quotation_file_path && <div><span className="text-muted-foreground">{t("عرض السعر (Quotation)")}:</span> <button type="button" className="text-primary underline" onClick={() => view.quotation_file_path && openFile(view.quotation_file_path)}>{view.quotation_file_name}</button></div>}
