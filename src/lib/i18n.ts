@@ -227,6 +227,12 @@ Object.assign(translations, {
   "الانحراف بالأيام": "Deviation (days)", "نسبة الانحراف": "Deviation %", "تقديم": "Early", "انتهى في الميعاد": "Finished on time", "حتى الآن": "so far",
 });
 
+// 404 page labels
+Object.assign(translations, {
+  "الصفحة غير موجودة": "Page not found",
+  "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.": "The page you're looking for doesn't exist or has been moved.",
+  "العودة للرئيسية": "Back to home",
+});
 /** UI labels only: never translate or mutate user-entered names, notes or credentials. */
 export function t(text: string): string {
   if (text === "لوحة متابعة المشاريع" || text === "تقرير متابعة المشاريع") return "METAL FUZE PROJECTS";
