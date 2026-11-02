@@ -1,6 +1,6 @@
 import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays, CalendarOff, CheckCircle2, ChevronLeft, ChevronRight, Clock, FileSpreadsheet,
   Link2, Paperclip, Plus, Save, Search, Settings2, Trash2, XCircle,
@@ -587,9 +587,10 @@ function SettingsTab({ types, settings, mgrs, emps, onDone }: { types: LeaveType
   const [tiers, setTiers] = useState<Tier[]>(settings.tiers);
   const [accrual, setAccrual] = useState(settings.accrual_from);
   const [list, setList] = useState<LeaveType[]>(types);
+  const dirty = useRef(false);
   useEffect(() => { listUserNames().then(setUsers).catch(() => {}); }, []);
-  useEffect(() => setList(types), [types]);
-  useEffect(() => { setTiers(settings.tiers); setAccrual(settings.accrual_from); }, [settings]);
+  useEffect(() => { if (!dirty.current) setList(types); }, [types]);
+  useEffect(() => { if (!dirty.current) { setTiers(settings.tiers); setAccrual(settings.accrual_from); } }, [settings]);
   const depts = [...new Set(emps.map((e) => e.dept).filter(Boolean))].sort();
 
   async function savePolicy() {
@@ -609,7 +610,7 @@ function SettingsTab({ types, settings, mgrs, emps, onDone }: { types: LeaveType
   const upd = (id: string, p: Partial<LeaveType>) => setList(list.map((x) => (x.id === id ? { ...x, ...p } : x)));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" onChangeCapture={() => { dirty.current = true; }}>
       <Panel title={t("مدير كل إدارة")}>
         <div className="grid gap-2 sm:grid-cols-2">
           {depts.map((d) => (

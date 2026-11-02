@@ -343,7 +343,7 @@ function TxnDialog({ open, onOpenChange, txn, managers, projects }: {
   const blank = (): Txn => ({ id: newId(), number: "", type: "collect", date: new Date().toISOString().slice(0, 10),
     manager: managers[0] ?? "", project: "", party: "", amount: 0, method: t("تحويل بنكي"), notes: "" });
   const [f, setF] = useState<Txn>(blank());
-  useEffect(() => { if (open) setF(txn ?? blank()); }, [open, txn]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (open) setF(txn ?? blank()); }, [open, txn?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const set = <K extends keyof Txn>(k: K, v: Txn[K]) => setF((p) => ({ ...p, [k]: v }));
   const mine = projects.filter((p) => p.manager === f.manager);
   return (

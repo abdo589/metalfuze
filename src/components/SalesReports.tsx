@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { PdfButton } from "@/components/PdfButton";
 import { t, locale } from "@/lib/i18n";
 import { commissionDue } from "@/lib/sales";
+import { useLiveRefresh } from "@/lib/live-refresh";
 
 type D = Tables<"sales_deals">;
 type LogE = { at: string; by: string; action: string; note: string; to?: string };
@@ -20,6 +21,11 @@ export function SalesReports({ open, onClose, rows }: { open: boolean; onClose: 
   const [to, setTo] = useState(iso(today));
   const [meetings, setMeetings] = useState<Tables<"sales_meetings">[]>([]);
   useEffect(() => { if (open) supabase.from("sales_meetings").select("*").then(({ data }) => setMeetings(data ?? [])); }, [open]);
+  useLiveRefresh(["sales_meetings"], async () => {
+    if (!open) return;
+    const { data } = await supabase.from("sales_meetings").select("*");
+    if (data) setMeetings(data);
+  });
   const quick = (days: number) => { const s = new Date(); s.setDate(s.getDate() - days); setFrom(iso(s)); setTo(iso(new Date())); };
 
   const r = useMemo(() => {
