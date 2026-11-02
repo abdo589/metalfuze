@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { t, useLanguage } from "@/lib/i18n";
 import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import { DocBar, StatCard } from "@/components/ResidenciesPanel";
+import { useLiveRefresh } from "@/lib/live-refresh";
 
 type Row = { data: Record<string, unknown> };
 
@@ -12,6 +13,15 @@ export function DocsOverview({ rows: given }: { rows?: Row[] }) {
   useLanguage();
   const [fetched, setFetched] = useState<Row[]>([]);
   const [extra, setExtra] = useState<{ type: string; days: number | null; who: string }[]>([]);
+  useLiveRefresh(["hr_records", "residencies"], async () => {
+    if (!given) {
+      const { data } = await supabase.from("hr_records").select("data").eq("sheet", "documents");
+      if (data) setFetched(data as Row[]);
+    }
+    const { data } = await supabase.from("residencies").select("name,permit_expiry,insurance_expiry,contract_expiry");
+    const kinds = [["permit_expiry", "رخصة العمل"], ["insurance_expiry", "التأمين الصحي"], ["contract_expiry", "العقد"]] as const;
+    if (data) setExtra(data.flatMap(r => kinds.map(([k, type]) => ({ type, days: r[k] ? daysLeft(String(r[k]).slice(0, 10)) : null, who: r.name }))));
+  });
   useEffect(() => {
     if (given) return;
     supabase.from("hr_records").select("data").eq("sheet", "documents").then(({ data }) => setFetched((data ?? []) as never));

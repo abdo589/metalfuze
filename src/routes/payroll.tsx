@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApprovedLeaves } from "@/lib/leave-data";
 import { unpaidDaysInMonth, unpaidDeduction } from "@/lib/leave-engine";
 import { useAdjustments } from "@/lib/advances";
+import { useLiveRefresh } from "@/lib/live-refresh";
 
 export const Route = createFileRoute("/payroll")({
   head: () => ({
@@ -45,6 +46,10 @@ function Payroll() {
   const monthsList = useMemo(() => availableMonths(rawEmployees), [rawEmployees]);
   const punches = useMonthPunches(month);
   const [excuses, setExcuses] = useState<{ employee_id: string; excuse_date: string }[]>([]);
+  useLiveRefresh(["late_excuses"], async () => {
+    const { data } = await supabase.from("late_excuses").select("employee_id,excuse_date");
+    if (data) setExcuses(data);
+  });
   useEffect(() => {
     supabase.from("late_excuses").select("employee_id,excuse_date").then(({ data }) => { if (data) setExcuses(data); });
   }, []);

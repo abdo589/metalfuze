@@ -24,7 +24,7 @@ export function createReadCache(ttl = READ_TTL_MS, now = () => Date.now()) {
       const started = gen.get(tk) ?? 0;
       // A read that began before a write to its table is returned but never cached.
       const p = load().then((e) => { if (e.status >= 200 && e.status < 300 && (gen.get(tk) ?? 0) === started) done.set(key, e); return e; })
-        .finally(() => inflight.delete(key));
+        .finally(() => { if (inflight.get(key) === p) inflight.delete(key); });
       inflight.set(key, p);
       return p;
     },
@@ -33,7 +33,11 @@ export function createReadCache(ttl = READ_TTL_MS, now = () => Date.now()) {
       for (const k of inflight.keys()) if (tableKey(k) === table) inflight.delete(k);
       for (const k of done.keys()) if (k.includes(`/rest/v1/${table}?`) || k.includes(`/rest/v1/${table}|`)) done.delete(k);
     },
-    clearAll() { done.clear(); },
+    clearAll() {
+      const tables = new Set([...done.keys(), ...inflight.keys()].map(tableKey));
+      for (const table of tables) gen.set(table, (gen.get(table) ?? 0) + 1);
+      done.clear(); inflight.clear();
+    },
     size: () => done.size,
   };
 }

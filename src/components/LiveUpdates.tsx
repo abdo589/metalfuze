@@ -15,6 +15,7 @@ export function LiveUpdates() {
     const changed = new Set<string>();
     const flush = () => {
       if (!alive || document.visibilityState !== "visible" || !navigator.onLine || !userId) return;
+      readCache.clearAll();
       for (const table of changed) { readCache.clearTable(table); refreshLiveReaders(table); }
       changed.clear();
       void queries.invalidateQueries({ refetchType: "active" });

@@ -4,12 +4,18 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { t } from "@/lib/i18n";
+import { useLiveRefresh } from "@/lib/live-refresh";
 
 const FONT = "'Aref Ruqaa', serif";
 
 /** Handwritten-style Arabic signature (Ruqaa) of the employee's name, looked up by number, else by name. */
 export function EmployeeSignature({ empId, name }: { empId?: string | null | undefined; name?: string | null | undefined }) {
   const [full, setFull] = useState<string | null>(name || null);
+  useLiveRefresh(["employees"], async () => {
+    if (!empId) return;
+    const { data } = await supabase.from("employees").select("name").eq("id", empId).maybeSingle();
+    if (data) setFull(data.name || name || null);
+  });
   useEffect(() => {
     let off = false;
     if (!empId) { setFull(name || null); return; }
