@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { t } from "@/lib/i18n";
-import { SWITCH_OWNER } from "@/lib/account-display";
+import { SWITCH_OWNER, canSwitch } from "@/lib/account-display";
 
 /** Only this account may keep several accounts signed in on one device and switch between them. */
 export { SWITCH_OWNER } from "@/lib/account-display";
@@ -29,10 +29,10 @@ export function AccountSwitcher({ session, toEmail }: { session: Session; toEmai
   const [pass, setPass] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const isOwner = session.user.email === SWITCH_OWNER;
+  const isOwner = canSwitch(session.user.email);
   useEffect(() => {
     const xs = read();
-    const ownerSaved = xs.some((x) => x.email === SWITCH_OWNER);
+    const ownerSaved = xs.some((x) => canSwitch(x.email));
     if (isOwner || (ownerSaved && xs.some((x) => x.id === session.user.id))) { remember(session); setList(read()); }
     else { localStorage.removeItem(KEY); setList([]); }
   }, [session, isOwner]);

@@ -11,3 +11,9 @@ describe("Eilaf account display", () => {
     expect(accountGreeting(haitham, [owner])).toBe("Haitham");
   });
 });
+import { canSwitch } from "./account-display";
+test("Hisham and CEO accounts can switch between each other", () => {
+  expect(canSwitch("hisham@metalfuze.local")).toBe(true);
+  expect(canSwitch("ceo@metalfuze.local")).toBe(true);
+  expect(canSwitch("aisha@metalfuze.local")).toBe(false);
+});
