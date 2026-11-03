@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "./auth-session";
 import { useLiveRefresh } from "./live-refresh";
@@ -21,10 +21,15 @@ function unreadCount(userId: string) {
 // updates the moment a message arrives or is marked as read.
 export function useUnreadMessages() {
   const userId = useAuthSession()?.user.id;
+  const activeUser = useRef(userId);
+  activeUser.current = userId;
   const [result, setResult] = useState<{ userId: string; count: number } | null>(null);
   const refresh = async () => {
     if (!userId) return;
-    try { setResult({ userId, count: await unreadCount(userId) }); } catch { /* Keep last successful count. */ }
+    try {
+      const count = await unreadCount(userId);
+      if (activeUser.current === userId) setResult({ userId, count });
+    } catch { /* Keep last successful count. */ }
   };
   useLiveRefresh(["direct_messages"], refresh);
 

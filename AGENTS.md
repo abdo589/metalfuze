@@ -12,7 +12,7 @@
 - Import uploaded brand imagery through Lovable Assets pointers; keep only the resized favicon in public so branding stays lightweight and tab icons remain directly accessible.
 - Light and dark mode are both driven by the CSS variables in `src/styles.css` (`:root` = light, `.dark` = dark); never hardcode colors in components so both modes stay correct.
 - Preserve the pre-paint theme script, localStorage mode and html suppressHydrationWarning.
-- AI: /api/chat uses src/server/ai and caller-scoped system-context.ts (never admin). Local threads strip attachment bytes; AssistantChat reads files with FileReader under CSP. AssistantFab visibility follows assistantAllowed and RoleGuard.
+- AI: /api/chat uses src/server/ai and caller-scoped system-context.ts (never admin). Threads strip attachment bytes; chat uses FileReader under CSP and loads on open. FAB access follows assistantAllowed/RoleGuard.
 - Company PDFs use the shared browser export helper, paginated at row boundaries without browser footers.
 - Use the shared i18n store and translation function for labels, dates, dialogs and export headings. In English mode, src/components/AutoTranslate.tsx translates remaining on-screen Arabic (incl. names/notes) display-only via /api/translate with a device cache; never write translations back to stored data, inputs or credentials.
 - Period project reports select projects whose scheduled dates overlap the calendar period (Monday-start weeks); undated projects remain included, and financial/progress figures are explicitly current cumulative snapshots, not fabricated historical movements.
@@ -42,7 +42,7 @@
 - ZKTeco pull agent: office PC posts punches to /api/public/attendance-agent with ATTENDANCE_AGENT_TOKEN (shared rules in src/lib/attendance-agent.ts); ATTENDANCE_PUSH_DISABLED=1 stops storing unsigned /iclock pushes — the device protocol has no secret, so only the agent's token proves origin.
 - Sales edits stay owner-only; salesFilePath uses ASCII keys. Meetings separate companions from recipients; DB events notify updates. /meetings uses NULL-deal rows; pricing keeps linked rows.
 - Pricing and quotation attachments use atomic sales_advance_files with workflow-locked JSON arrays and legacy first-file columns, preserving old clients and owner reads.
-- Greeting is display-only; active identity drives permissions and remounts pages. UI readers share auth-session.ts and session-keyed permissions; database/server checks remain authoritative.
+- Greeting is display-only; active identity drives permissions/remounts. UI, sync and alerts share auth-session.ts and session-keyed permissions; unread counts coalesce via root live refresh. Database/server checks stay authoritative.
 - Payroll excludes commissions; hr_records advances carry balances forward with dated repayments in 'سداد شهري'; preserve extra JSON fields on edits.
 - LiveUpdates in root owns a session-scoped channel; table-scoped useLiveRefresh readers refresh data, not screens or drafts, with visible/online polling fallback.
 - Custody email opens an HR-contact mailto draft; managed templates remain unused.
