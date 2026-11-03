@@ -16,6 +16,7 @@ import { Route as AttendanceTrackingRouteImport } from './routes/attendance-trac
 import { Route as BankRouteImport } from './routes/bank'
 import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as CustodyRouteImport } from './routes/custody'
+import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as DevRouteImport } from './routes/dev'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as EstPayrollRouteImport } from './routes/est-payroll'
@@ -100,6 +101,11 @@ const BudgetRoute = BudgetRouteImport.update({
 const CustodyRoute = CustodyRouteImport.update({
   id: '/custody',
   path: '/custody',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignSystemRoute = DesignSystemRouteImport.update({
+  id: '/design-system',
+  path: '/design-system',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevRoute = DevRouteImport.update({
@@ -364,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
   '/custody': typeof CustodyRoute
+  '/design-system': typeof DesignSystemRoute
   '/dev': typeof DevRoute
   '/documents': typeof DocumentsRoute
   '/est-payroll': typeof EstPayrollRoute
@@ -423,6 +430,7 @@ export interface FileRoutesByTo {
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
   '/custody': typeof CustodyRoute
+  '/design-system': typeof DesignSystemRoute
   '/dev': typeof DevRoute
   '/documents': typeof DocumentsRoute
   '/est-payroll': typeof EstPayrollRoute
@@ -483,6 +491,7 @@ export interface FileRoutesById {
   '/bank': typeof BankRoute
   '/budget': typeof BudgetRoute
   '/custody': typeof CustodyRoute
+  '/design-system': typeof DesignSystemRoute
   '/dev': typeof DevRoute
   '/documents': typeof DocumentsRoute
   '/est-payroll': typeof EstPayrollRoute
@@ -544,6 +553,7 @@ export interface FileRouteTypes {
     | '/bank'
     | '/budget'
     | '/custody'
+    | '/design-system'
     | '/dev'
     | '/documents'
     | '/est-payroll'
@@ -603,6 +613,7 @@ export interface FileRouteTypes {
     | '/bank'
     | '/budget'
     | '/custody'
+    | '/design-system'
     | '/dev'
     | '/documents'
     | '/est-payroll'
@@ -662,6 +673,7 @@ export interface FileRouteTypes {
     | '/bank'
     | '/budget'
     | '/custody'
+    | '/design-system'
     | '/dev'
     | '/documents'
     | '/est-payroll'
@@ -722,6 +734,7 @@ export interface RootRouteChildren {
   BankRoute: typeof BankRoute
   BudgetRoute: typeof BudgetRoute
   CustodyRoute: typeof CustodyRoute
+  DesignSystemRoute: typeof DesignSystemRoute
   DevRoute: typeof DevRoute
   DocumentsRoute: typeof DocumentsRoute
   EstPayrollRoute: typeof EstPayrollRoute
@@ -823,6 +836,13 @@ declare module '@tanstack/react-router' {
       path: '/custody'
       fullPath: '/custody'
       preLoaderRoute: typeof CustodyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/design-system': {
+      id: '/design-system'
+      path: '/design-system'
+      fullPath: '/design-system'
+      preLoaderRoute: typeof DesignSystemRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev': {
@@ -1186,6 +1206,7 @@ const rootRouteChildren: RootRouteChildren = {
   BankRoute: BankRoute,
   BudgetRoute: BudgetRoute,
   CustodyRoute: CustodyRoute,
+  DesignSystemRoute: DesignSystemRoute,
   DevRoute: DevRoute,
   DocumentsRoute: DocumentsRoute,
   EstPayrollRoute: EstPayrollRoute,
