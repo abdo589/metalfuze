@@ -1,6 +1,5 @@
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useEffect, useState, type ReactNode } from "react";
-import type { Session } from "@supabase/supabase-js";
 import { Eye, EyeOff, LogOut } from "lucide-react";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
@@ -14,6 +13,7 @@ import { oauthReturnPath } from "@/lib/oauth-return-path";
 import { signOutTracked, trackLogin } from "@/lib/login-tracking";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { accountGreeting } from "@/lib/account-display";
+import { useAuthSession } from "@/lib/auth-session";
 
 /** HR-only accounts may open only the HR pages; anything else sends them to payroll. */
 function RoleGuard({ children, pending }: { children: ReactNode; pending: boolean }) {
@@ -52,7 +52,7 @@ export const toEmail = (u: string) => u.includes("@") ? loginEmail(u) : `${u.tri
 
 export function AuthGate({ children }: { children: ReactNode }) {
   useLanguage();
-  const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const session = useAuthSession();
   const [greeting, setGreeting] = useState("");
   useEffect(() => {
     if (!session) { setGreeting(""); return; }
@@ -61,16 +61,6 @@ export function AuthGate({ children }: { children: ReactNode }) {
       setGreeting(accountGreeting({ id: session.user.id, email: session.user.email, name }, JSON.parse(localStorage.getItem("mf-switch-accounts") || "[]")));
     } catch { setGreeting(name); }
   }, [session]);
-
-  useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    supabase.auth.getUser().then(async ({ data: u }) => {
-      if (!u.user) return setSession(null);
-      const { data: s } = await supabase.auth.getSession();
-      setSession(s.session);
-    });
-    return () => data.subscription.unsubscribe();
-  }, []);
 
   const uid = session?.user.id;
   useEffect(() => { if (uid) setTimeout(() => void trackLogin(uid), 0); }, [uid]);
