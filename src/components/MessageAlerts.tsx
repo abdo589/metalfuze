@@ -4,6 +4,7 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnreadMessages } from "@/lib/unread-messages";
 import { t } from "@/lib/i18n";
+import { notificationPermission, requestNotificationPermission } from "@/lib/notification-permission";
 
 // Pops an alert (in-app + browser notification) when a new direct message arrives,
 // and shows the unread count in the browser tab title.
@@ -27,7 +28,7 @@ export function MessageAlerts() {
   }, [unread]);
 
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().catch(() => {});
+    if (notificationPermission() === "default") void requestNotificationPermission();
     let me: string | null = null;
     supabase.auth.getUser().then(({ data }) => { me = data.user?.id ?? null; });
     const ch = supabase.channel(`dm-alert-${Math.random().toString(36).slice(2)}`)

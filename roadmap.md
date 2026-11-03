@@ -1,4 +1,6 @@
 # Roadmap — deep scan fixes
+- [x] Guard all three notification permission call sites; five regression tests pass, original failure reproduced and current root opens without errors under partial support. Signed-in checks unavailable (session mint failed).
+- [ ] Advance repayment integration: confirmed payroll payments do not write monthly advance repayments; awaiting approval of a data-safe atomic payment/repayment plan, preserving unpaid carryover and historical amounts.
 - [x] Multiple files in all existing sales upload fields; quotations saved atomically with legacy compatibility. Eilaf two-file approval/readback after reload verified; 12 tests pass.
 - [x] Haitham pricing two-file approval without an amount and readback after reload verified; existing upload fields audited. QA attachments, request and notifications removed.
 - [x] Create Aiftkhar accountant account; password sign-in, project creation/edit readback after reload and HR blocking verified; project-only RLS/sync, nine tests pass, QA projects removed.
