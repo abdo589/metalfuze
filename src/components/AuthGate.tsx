@@ -16,7 +16,7 @@ import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { accountGreeting } from "@/lib/account-display";
 
 /** HR-only accounts may open only the HR pages; anything else sends them to payroll. */
-function RoleGuard({ children }: { children: ReactNode }) {
+function RoleGuard({ children, pending }: { children: ReactNode; pending: boolean }) {
   const role = useRole();
   const hidden = useHiddenPaths();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -30,11 +30,25 @@ function RoleGuard({ children }: { children: ReactNode }) {
   const home = isAli ? "/project-admin" : role === "developer" ? "/dev" : role === "sales" ? "/sales" : role === "mail" ? "/mail" : role === "executive" ? "/executive" : role === "accountant" ? "/accounting" : role === "manager" ? "/my-projects" : role === "viewer" ? "/" : "/payroll";
   useEffect(() => { if (blocked) navigate({ to: home, replace: true }); }, [blocked, home, navigate]);
   if (role === undefined || isAli === undefined || blocked) return <div className="min-h-screen" />;
+  if (pending && role === "manager") return <div className="mx-auto max-w-md p-10 text-center"><h1 className="font-display text-xl font-bold">{t("حسابك جاهز")}</h1><p className="mt-2 text-sm text-muted-foreground">{t("لم تُحدد صلاحياتك بعد. تواصل مع الإدارة لتفعيل الصفحات الخاصة بك.")}</p></div>;
   return <>{children}</>;
 }
 
 const DOMAIN = "metalfuze.local";
-export const toEmail = (u: string) => `${u.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "")}@${DOMAIN}`;
+/** Company Microsoft 365 emails that sign in to an older username account (old username still works). */
+export const COMPANY_EMAIL_ALIASES: Record<string, string> = {
+  "abdulrahman@metalfuze.com": "abdelrhman@metalfuze.local",
+  "aishah.shaya@metalfuze.com": "aisha@metalfuze.local",
+  "eilaf@metalfuze.com": "eilaf@metalfuze.local",
+  "haitham@metalfuze.com": "haitham@metalfuze.local",
+  "hala@metalfuze.com": "hala.alkhamisy@metalfuze.local",
+  "eng.hisham@metalfuze.com": "hisham@metalfuze.local",
+  "iftikharali@metalfuze.com": "aiftkhar@metalfuze.local",
+  "najla.a@metalfuze.com": "nagla@metalfuze.local",
+  "eng.a.alkhalil@metalfuze.com": "ali@metalfuze.local",
+};
+export const loginEmail = (id: string) => { const v = id.trim().toLowerCase(); return COMPANY_EMAIL_ALIASES[v] ?? v; };
+export const toEmail = (u: string) => u.includes("@") ? loginEmail(u) : `${u.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "")}@${DOMAIN}`;
 
 export function AuthGate({ children }: { children: ReactNode }) {
   useLanguage();
@@ -73,8 +87,41 @@ export function AuthGate({ children }: { children: ReactNode }) {
         <AccountSwitcher session={session} toEmail={toEmail} />
         <Button size="sm" variant="ghost" onClick={() => void signOutTracked()}><LogOut /> {t("خروج")}</Button>
       </div>
-      <RoleGuard key={session.user.id}>{children}</RoleGuard>
+      {session.user.user_metadata?.["must_change_password"] ? <ChangeFirstPassword /> : <RoleGuard key={session.user.id} pending={!!session.user.user_metadata?.["pending_access"]}>{children}</RoleGuard>}
     </>
+  );
+}
+
+/** First sign-in: the shared starting password must be replaced before anything opens. */
+function ChangeFirstPassword() {
+  useLanguage();
+  const [current, setCurrent] = useState("");
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault(); setError("");
+    if (pw.length < 8) return setError(t("كلمة السر 8 أحرف على الأقل"));
+    if (pw !== pw2) return setError(t("كلمتا السر غير متطابقتين"));
+    if (pw === current) return setError(t("اختر كلمة سر مختلفة عن الحالية"));
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: pw, current_password: current, data: { must_change_password: false } } as Parameters<typeof supabase.auth.updateUser>[0]);
+    setBusy(false);
+    if (error) setError(error.message.includes("weak") || error.message.includes("pwned") ? t("كلمة السر ضعيفة أو مسربة، اختر غيرها") : error.message.toLowerCase().includes("current") ? t("كلمة السر الحالية غير صحيحة") : t("تعذر تغيير كلمة السر"));
+  }
+  return (
+    <div className="flex min-h-[70vh] items-center justify-center px-4">
+      <form onSubmit={submit} className="w-full max-w-sm space-y-3 rounded-2xl border border-border bg-card p-6 shadow-lg">
+        <h1 className="font-display text-xl font-bold">{t("غيّر كلمة السر")}</h1>
+        <p className="text-sm text-muted-foreground">{t("هذا أول دخول لك. اختر كلمة سر جديدة للمتابعة.")}</p>
+        <Input type="password" dir="ltr" autoComplete="current-password" placeholder={t("كلمة السر الحالية")} value={current} onChange={(e) => setCurrent(e.target.value)} required />
+        <Input type="password" dir="ltr" autoComplete="new-password" placeholder={t("كلمة السر الجديدة")} value={pw} onChange={(e) => setPw(e.target.value)} required />
+        <Input type="password" dir="ltr" autoComplete="new-password" placeholder={t("تأكيد كلمة السر الجديدة")} value={pw2} onChange={(e) => setPw2(e.target.value)} required />
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <Button type="submit" className="w-full" disabled={busy}>{busy ? t("جارٍ الحفظ...") : t("حفظ والمتابعة")}</Button>
+      </form>
+    </div>
   );
 }
 
@@ -109,7 +156,7 @@ function Login() {
       return;
     }
     const id = username.trim().toLowerCase().replace(/\s+/g, ".");
-    const mail = id.includes("@") ? id : toEmail(id);
+    const mail = toEmail(id);
     const { error } = await supabase.auth.signInWithPassword({ email: mail, password });
     setBusy(false);
     if (error) return setError(t("اسم المستخدم أو كلمة المرور غير صحيحة"));
