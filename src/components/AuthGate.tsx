@@ -1,6 +1,5 @@
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useEffect, useState, type ReactNode } from "react";
-import type { Session } from "@supabase/supabase-js";
 import { Eye, EyeOff, LogOut } from "lucide-react";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";

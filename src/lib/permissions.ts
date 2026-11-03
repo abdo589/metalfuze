@@ -93,11 +93,11 @@ export function useRole() {
     if (!uid) { roleCache = null; return; }
     if (!roleCache || roleCache.uid !== uid) {
       roleCache = { uid, p: Promise.resolve(supabase.from("user_roles").select("role").eq("user_id", uid)).then(({ data, error }) => {
-      if (error) return null;
+      if (error) return "manager";
       const roles = (data ?? []).map((r) => String(r.role));
       const r: Role = roles.includes("developer") ? "developer" : roles.includes("admin") ? "admin" : roles.includes("hr") ? "hr" : roles.includes("viewer") ? "viewer" : roles.includes("accountant") ? "accountant" : roles.includes("executive") ? "executive" : roles.includes("mail") ? "mail" : roles.includes("sales") ? "sales" : "manager";
       return r;
-      }, () => null) };
+      }, () => "manager") };
     }
     roleCache.p.then((role) => { if (alive) setResult({ uid, role }); });
     return () => { alive = false; };
