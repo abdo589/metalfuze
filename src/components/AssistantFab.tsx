@@ -1,11 +1,12 @@
 import { t, useLanguage } from "@/lib/i18n";
 import { useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { BrainCircuit, MessageSquarePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AssistantChat } from "@/components/AssistantChat";
 import { threadStore } from "@/lib/threads";
 import { assistantAllowed, useRole } from "@/lib/permissions";
+
+const AssistantChat = lazy(() => import("@/components/AssistantChat").then((m) => ({ default: m.AssistantChat })));
 
 /**
  * Floating advisor button: opens the smart advisor as a side panel from any page
@@ -49,7 +50,7 @@ export function AssistantFab() {
             </div>
           </header>
           <div className="flex min-h-0 flex-1 flex-col p-2">
-            {threadId && <AssistantChat key={threadId} threadId={threadId} />}
+            {threadId && <Suspense fallback={<div role="status" aria-label={t("المستشار الذكي")} className="m-auto size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />}><AssistantChat key={threadId} threadId={threadId} /></Suspense>}
           </div>
         </div>
       )}

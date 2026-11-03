@@ -1,4 +1,5 @@
 # Roadmap — deep scan fixes
+- [ ] Speed up first open: defer assistant dependencies, remove redundant sync identity requests, and verify startup loading and existing session/permission tests.
 - [x] Reduce login startup fan-out with shared UI session and per-account permission reads; eight tests cover coalescing, switching and stale responses; signed-out browser opens without errors. Authenticated timing not measured (self session mint unavailable).
 - [ ] Eilaf login: account confirmed, unbanned and alias intact; service errors no longer mislabeled as bad passwords. Awaiting a fresh retry with username eilaf to distinguish alias/published-version issues from credentials; no password reset performed.
 - [x] Guard all three notification permission call sites; five regression tests pass, original failure reproduced and current root opens without errors under partial support. Signed-in checks unavailable (session mint failed).
