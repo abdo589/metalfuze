@@ -34,6 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
 import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
+import { notificationPermission, requestNotificationPermission } from "@/lib/notification-permission";
 
 export const items = [
   { to: "/", label: "لوحة المشاريع", icon: LayoutDashboard },
@@ -125,16 +126,17 @@ function Logo({ className = "w-36" }: { className?: string }) {
 
 function NotifyButton() {
   const [perm, setPerm] = useState<string>("unsupported");
-  useEffect(() => { if ("Notification" in window) setPerm(Notification.permission); }, []);
+  useEffect(() => { setPerm(notificationPermission()); }, []);
   if (perm === "unsupported" || perm === "granted") return null;
   return (
     <Button variant="outline" size="sm" onClick={async () => {
       if (window.top !== window.self) { toast.info(t("افتح التطبيق المثبت أو الموقع في نافذة مستقلة لتفعيل التنبيهات")); return; }
-      const p = await Notification.requestPermission();
+      const p = await requestNotificationPermission();
       setPerm(p);
+      if (p === "unsupported") return;
       if (p === "granted") {
         sessionStorage.removeItem("res-alert");
-        new Notification("Metal Fuze", { body: t("تم تفعيل تنبيهات الإقامات على الجهاز"), icon: "/icon-192.png" });
+        try { new Notification("Metal Fuze", { body: t("تم تفعيل تنبيهات الإقامات على الجهاز"), icon: "/icon-192.png" }); } catch { /* unsupported */ }
       } else toast.error(t("التنبيهات مرفوضة — فعّلها من إعدادات الموقع في المتصفح"));
     }}>🔔 {t("تفعيل تنبيهات الجهاز")}</Button>
   );

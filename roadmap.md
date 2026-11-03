@@ -1,4 +1,6 @@
 # Roadmap — deep scan fixes
+- [ ] Verify and fix notification permission failures on partially supported browsers.
+- [ ] Verify repeated advance deductions while preserving unpaid balance carryover; plan if safe repayment integration requires broader changes.
 - [x] Multiple files in all existing sales upload fields; quotations saved atomically with legacy compatibility. Eilaf two-file approval/readback after reload verified; 12 tests pass.
 - [x] Haitham pricing two-file approval without an amount and readback after reload verified; existing upload fields audited. QA attachments, request and notifications removed.
 - [x] Create Aiftkhar accountant account; password sign-in, project creation/edit readback after reload and HR blocking verified; project-only RLS/sync, nine tests pass, QA projects removed.

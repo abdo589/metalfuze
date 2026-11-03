@@ -12,6 +12,7 @@ import { useMonthPunches } from "@/lib/attendance-data";
 import { SelfieThumb, useSites } from "@/components/RemoteAttendance";
 import type { LivePoint } from "@/components/LiveTrackMap";
 import { useLiveRefresh } from "@/lib/live-refresh";
+import { notificationPermission, requestNotificationPermission } from "@/lib/notification-permission";
 
 const LiveTrackMap = lazy(() => import("@/components/LiveTrackMap"));
 
@@ -102,8 +103,8 @@ function Tracking() {
   const selEmp = employees.find((e) => e.id === sel);
   const history = selEmp ? all.filter((p) => p.device_user_id === keyOf(selEmp)).sort((a, b) => b.punched_at.localeCompare(a.punched_at)) : [];
   const present = rows.filter((r) => r.onShift).length, left = rows.filter((r) => r.out).length;
-  const [perm, setPerm] = useState<string>("default");
-  useEffect(() => { if ("Notification" in window) setPerm(Notification.permission); }, []);
+  const [perm, setPerm] = useState<string>("unsupported");
+  useEffect(() => { setPerm(notificationPermission()); }, []);
 
   return (
     <div className="space-y-5 p-4 md:p-8">
@@ -112,8 +113,8 @@ function Tracking() {
           <h1 className="flex items-center gap-2 font-display text-2xl font-bold"><Radar className="size-6" /> {t("تتبع الحضور")}</h1>
           <p className="text-sm text-muted-foreground">{t("متابعة لحظية لكل موظف: الحضور والانصراف ومكانه أثناء الدوام")}</p>
         </div>
-        {perm !== "granted" && (
-          <Button variant="outline" onClick={async () => setPerm(await Notification.requestPermission())}><Bell className="size-4" /> {t("تفعيل التنبيهات على الجهاز")}</Button>
+        {perm !== "granted" && perm !== "unsupported" && (
+          <Button variant="outline" onClick={async () => setPerm(await requestNotificationPermission())}><Bell className="size-4" /> {t("تفعيل التنبيهات على الجهاز")}</Button>
         )}
       </header>
 
