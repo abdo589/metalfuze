@@ -5,10 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUnreadMessages } from "@/lib/unread-messages";
 import { t } from "@/lib/i18n";
 import { notificationPermission, requestNotificationPermission } from "@/lib/notification-permission";
+import { useAuthSession } from "@/lib/auth-session";
 
 // Pops an alert (in-app + browser notification) when a new direct message arrives,
 // and shows the unread count in the browser tab title.
 export function MessageAlerts() {
+  const userId = useAuthSession()?.user.id;
   const unread = useUnreadMessages();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -28,9 +30,9 @@ export function MessageAlerts() {
   }, [unread]);
 
   useEffect(() => {
+    if (!userId) return;
     if (notificationPermission() === "default") void requestNotificationPermission();
-    let me: string | null = null;
-    supabase.auth.getUser().then(({ data }) => { me = data.user?.id ?? null; });
+    const me = userId;
     const ch = supabase.channel(`dm-alert-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "direct_messages" }, async (payload) => {
         const row = payload.new as { recipient_id: string; body: string; attachment_name?: string | null };
@@ -58,7 +60,7 @@ export function MessageAlerts() {
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [navigate]);
+  }, [navigate, userId]);
 
   return null;
 }

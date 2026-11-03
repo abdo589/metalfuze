@@ -5,7 +5,8 @@ import { t } from "./i18n";
 import { projectStore, projectChanges, type Project } from "./projects";
 import { txnStore, txnChanges, type Txn } from "./transactions";
 import { subscribeLiveRefresh } from "./live-refresh";
-import { isProjectAccountant } from "./permissions";
+import { isProjectAccountant, useRole } from "./permissions";
+import { useAuthSession } from "./auth-session";
 
 type Row = { id: string; data: unknown; version: number; deleted_at: string | null; updated_at: string };
 type Kind = "p" | "t";
@@ -29,20 +30,10 @@ export function mergeRemote<T extends { id: string }>(local: T[], rows: Row[], p
 
 /** Admins and the CEO share projects/payments one row per item, with versions so an older device can't overwrite newer edits. */
 export function ExecSnapshotSync() {
-  const [mode, setMode] = useState<"ceo" | "admin" | "projects" | null>(null);
-  useEffect(() => {
-    const check = async () => {
-      const { data } = await supabase.auth.getUser();
-      const u = data.user;
-      if (!u) return setMode(null);
-      if (u.email === "ceo@metalfuze.local") return setMode("ceo");
-      const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", u.id);
-      setMode((r ?? []).some((x) => String(x.role) === "admin") ? "admin" : isProjectAccountant((r ?? []).some((x) => String(x.role) === "accountant") ? "accountant" : null, u.email) ? "projects" : null);
-    };
-    check();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
-    return () => sub.subscription.unsubscribe();
-  }, []);
+  const session = useAuthSession();
+  const role = useRole();
+  const userId = session?.user.id;
+  const mode = !userId ? null : session?.user.email === "ceo@metalfuze.local" ? "ceo" : role === "admin" ? "admin" : isProjectAccountant(role, session?.user.email) ? "projects" : null;
 
   useEffect(() => {
     if (!mode) return;
@@ -146,7 +137,7 @@ export function ExecSnapshotSync() {
     pull();
     const stop = subscribeLiveRefresh(["shared_projects", "shared_txns"], pull);
     return () => { alive = false; clearTimeout(timer); stop(); projectChanges.delete(onP); txnChanges.delete(onT); };
-  }, [mode]);
+  }, [mode, userId]);
   return null;
 }
 
