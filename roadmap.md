@@ -1,4 +1,5 @@
 # Roadmap — deep scan fixes
+- [ ] Reduce login startup fan-out with shared session/permission reads; verify account switching and stale-response protection.
 - [x] Guard all three notification permission call sites; five regression tests pass, original failure reproduced and current root opens without errors under partial support. Signed-in checks unavailable (session mint failed).
 - [ ] Advance repayment integration: confirmed payroll payments do not write monthly advance repayments; awaiting approval of a data-safe atomic payment/repayment plan, preserving unpaid carryover and historical amounts.
 - [x] Multiple files in all existing sales upload fields; quotations saved atomically with legacy compatibility. Eilaf two-file approval/readback after reload verified; 12 tests pass.
