@@ -75,7 +75,7 @@ function useNavItems() {
   const isAli = useIsAli();
   const projectAccountant = useIsProjectAccountant();
   const visible = (isAli ? [{ to: "/project-admin", label: "إدارة مشاريع", icon: FolderKanban }, { to: "/project-admin/projects", label: "المشاريع", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
-    : role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
+    : role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }, { to: "/design-system", label: "دليل التصميم", icon: Wrench }]
     : role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
     : role === "sales" ? [{ to: "/sales", label: "المبيعات", icon: Calculator }, { to: "/meetings", label: "الاجتماعات", icon: CalendarClock }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "mail" ? [{ to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]

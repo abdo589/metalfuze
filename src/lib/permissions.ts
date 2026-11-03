@@ -5,7 +5,7 @@ import { useAuthSession } from "./auth-session";
 export type Role = "developer" | "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | "sales" | null;
 
 /** The developer (Eng Abdelrhman) only sees the faults inbox, account settings and his Outlook mailbox. */
-export const DEV_PATHS = ["/dev", "/mail", "/messages", "/my-checkin"];
+export const DEV_PATHS = ["/dev", "/mail", "/messages", "/my-checkin", "/design-system"];
 
 /** Pages an HR-only account may open; everything else is hidden from them. */
 export const HR_PATHS = ["/payroll", "/salary-deductions", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail", "/sales", "/my-checkin"];
