@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthSession } from "./auth-session";
 
 export type Role = "developer" | "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | "sales" | null;
 
@@ -14,13 +15,9 @@ const ACCOUNT_HIDDEN_PATHS: Record<string, string[]> = {
 };
 /** Paths hidden from the current signed-in account (empty for everyone else). */
 export function useHiddenPaths() {
-  const [hidden, setHidden] = useState<string[]>([]);
+  const session = useAuthSession();
+  const hidden = ACCOUNT_HIDDEN_PATHS[session?.user.email?.toLowerCase() ?? ""] ?? [];
   const access = useMyAccess();
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setHidden(data.user ? (ACCOUNT_HIDDEN_PATHS[data.user.email?.toLowerCase() ?? ""] ?? []) : []);
-    });
-  }, []);
   return access?.blocked_paths?.length ? [...hidden, ...access.blocked_paths] : hidden;
 }
 
@@ -28,20 +25,19 @@ export function useHiddenPaths() {
 type MyAccess = { blocked_paths: string[]; read_only: boolean } | null;
 let accessCache: { uid: string; p: Promise<MyAccess> } | null = null;
 export function useMyAccess() {
-  const [a, setA] = useState<MyAccess>(null);
+  const session = useAuthSession();
+  const uid = session?.user.id;
+  const [a, setA] = useState<{ uid: string; value: MyAccess } | null>(null);
   useEffect(() => {
     let alive = true;
-    supabase.auth.getUser().then(({ data }) => {
-      const uid = data.user?.id;
-      if (!uid) return;
+      if (!uid) { accessCache = null; return; }
       if (!accessCache || accessCache.uid !== uid) {
         accessCache = { uid, p: Promise.resolve(supabase.from("account_access").select("blocked_paths,read_only").eq("user_id", uid).maybeSingle()).then((r) => (r.data as MyAccess) ?? null, () => null) };
       }
-      accessCache.p.then((v) => alive && setA(v));
-    });
+      accessCache.p.then((value) => { if (alive) setA({ uid, value }); });
     return () => { alive = false; };
-  }, []);
-  return a;
+  }, [uid]);
+  return a?.uid === uid ? a?.value ?? null : null;
 }
 /** HR pages (everything except employee data) that only admins (Eilaf, Abdelrhman) and HR may open; hidden from viewer accounts. */
 export const HR_ADMIN_ONLY = ["/payroll", "/salary-deductions", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance"];
@@ -59,15 +55,7 @@ export function pathAllowed(path: string, allowed: string[]) {
 }
 export function useIsProjectAccountant() {
   const role = useRole();
-  const [email, setEmail] = useState<string | undefined>();
-  useEffect(() => {
-    let alive = true;
-    const check = () => supabase.auth.getUser().then(({ data }) => { if (alive) setEmail(data.user?.email); });
-    check();
-    const { data: sub } = supabase.auth.onAuthStateChange(check);
-    return () => { alive = false; sub.subscription.unsubscribe(); };
-  }, []);
-  return isProjectAccountant(role, email);
+  return isProjectAccountant(role, useAuthSession()?.user.email);
 }
 export function useCanEditProjects() {
   const canEdit = useCanEdit();
@@ -95,23 +83,28 @@ export function assistantAllowed(role: Role | undefined) {
 }
 
 /** Current user's strongest role (admin > hr > viewer > manager). Accounts without a role are treated as manager. undefined while loading. */
+let roleCache: { uid: string; p: Promise<Role> } | null = null;
 export function useRole() {
-  const [role, setRole] = useState<Role | undefined>(undefined);
+  const session = useAuthSession();
+  const uid = session?.user.id;
+  const [result, setResult] = useState<{ uid: string; role: Role } | null>(null);
   useEffect(() => {
     let alive = true;
-    const check = async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return alive && setRole(null);
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id);
+    if (!uid) { roleCache = null; return; }
+    if (!roleCache || roleCache.uid !== uid) {
+      roleCache = { uid, p: Promise.resolve(supabase.from("user_roles").select("role").eq("user_id", uid)).then(({ data, error }) => {
+      if (error) return null;
       const roles = (data ?? []).map((r) => String(r.role));
       const r: Role = roles.includes("developer") ? "developer" : roles.includes("admin") ? "admin" : roles.includes("hr") ? "hr" : roles.includes("viewer") ? "viewer" : roles.includes("accountant") ? "accountant" : roles.includes("executive") ? "executive" : roles.includes("mail") ? "mail" : roles.includes("sales") ? "sales" : "manager";
-      if (alive) setRole(r);
-    };
-    check();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
-    return () => { alive = false; sub.subscription.unsubscribe(); };
-  }, []);
-  return role;
+      return r;
+      }, () => null) };
+    }
+    roleCache.p.then((role) => { if (alive) setResult({ uid, role }); });
+    return () => { alive = false; };
+  }, [uid]);
+  if (session === undefined) return undefined;
+  if (!uid) return null;
+  return result?.uid === uid ? result.role : undefined;
 }
 
 /** Admins edit everything; HR edits only within the HR pages (the only ones they can open). */
@@ -131,8 +124,7 @@ export function useCanEditHr() {
 /** Payments & collections: admins plus the CEO account (its records feed Hisham's summary). */
 export function useCanEditPayments() {
   const role = useRole();
-  const [isCeo, setIsCeo] = useState(false);
-  useEffect(() => { supabase.auth.getUser().then(({ data }) => setIsCeo(data.user?.email === "ceo@metalfuze.local")); }, []);
+  const isCeo = useAuthSession()?.user.email === "ceo@metalfuze.local";
   const ro = useMyAccess()?.read_only;
   return !ro && (role === "admin" || isCeo);
 }
@@ -141,12 +133,6 @@ export function useCanEditPayments() {
 export const ALI_EMAIL = "ali@metalfuze.local";
 export const ALI_PATHS = ["/project-admin", "/messages", "/mail", "/my-checkin"];
 export function useIsAli() {
-  const [isAli, setIsAli] = useState<boolean | undefined>(undefined);
-  useEffect(() => {
-    const check = () => supabase.auth.getUser().then(({ data }) => setIsAli(data.user?.email === ALI_EMAIL));
-    check();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => { check(); });
-    return () => sub.subscription.unsubscribe();
-  }, []);
-  return isAli;
+  const session = useAuthSession();
+  return session === undefined ? undefined : session?.user.email === ALI_EMAIL;
 }
