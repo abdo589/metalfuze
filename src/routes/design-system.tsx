@@ -55,7 +55,7 @@ function DesignSystemPage() {
     const el = document.documentElement;
     const dark = !el.classList.contains("dark");
     el.classList.toggle("dark", dark);
-    try { localStorage.setItem("theme", dark ? "dark" : "light"); } catch { /* ignore */ }
+    try { localStorage.setItem("metalfuze.theme", dark ? "dark" : "light"); } catch { /* ignore */ }
     setTick((n) => n + 1);
   };
   return (
