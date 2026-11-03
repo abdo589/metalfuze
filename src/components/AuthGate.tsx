@@ -14,6 +14,7 @@ import { signOutTracked, trackLogin } from "@/lib/login-tracking";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { accountGreeting } from "@/lib/account-display";
 import { useAuthSession } from "@/lib/auth-session";
+import { loginErrorMessage } from "@/lib/login-error";
 
 /** HR-only accounts may open only the HR pages; anything else sends them to payroll. */
 function RoleGuard({ children, pending }: { children: ReactNode; pending: boolean }) {
@@ -149,7 +150,7 @@ function Login() {
     const mail = toEmail(id);
     const { error } = await supabase.auth.signInWithPassword({ email: mail, password });
     setBusy(false);
-    if (error) return setError(t("اسم المستخدم أو كلمة المرور غير صحيحة"));
+    if (error) return setError(t(loginErrorMessage(error)));
     // Ask the browser to offer saving the password (SPA login has no page navigation).
     try {
       const PC = (window as unknown as { PasswordCredential?: new (d: { id: string; password: string; name?: string }) => Credential }).PasswordCredential;

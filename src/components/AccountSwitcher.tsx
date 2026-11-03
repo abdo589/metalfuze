@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { t } from "@/lib/i18n";
 import { SWITCH_OWNER, canSwitch } from "@/lib/account-display";
+import { loginErrorMessage } from "@/lib/login-error";
 
 /** Only this account may keep several accounts signed in on one device and switch between them. */
 export { SWITCH_OWNER } from "@/lib/account-display";
@@ -57,7 +58,7 @@ export function AccountSwitcher({ session, toEmail }: { session: Session; toEmai
     const id = user.trim().toLowerCase().replace(/\s+/g, ".");
     const { data, error } = await supabase.auth.signInWithPassword({ email: toEmail(id), password: pass });
     setBusy(false);
-    if (error || !data.session) { toast.error(t("اسم المستخدم أو كلمة المرور غير صحيحة")); return; }
+    if (error || !data.session) { toast.error(t(error ? loginErrorMessage(error) : "اسم المستخدم أو كلمة المرور غير صحيحة")); return; }
     remember(data.session); setUser(""); setPass(""); setOpen(false);
     toast.success(t("تمت إضافة الحساب"));
   }
