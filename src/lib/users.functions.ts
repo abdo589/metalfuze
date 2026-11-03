@@ -68,7 +68,7 @@ export const createUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { username: string; name: string; password: string }) => {
     const username = String(d.username ?? "").trim().toLowerCase();
-    if (!/^[a-z0-9._-]{3,30}$/.test(username)) throw new Error("اسم المستخدم: 3-30 حرف إنجليزي/أرقام");
+    if (!/^[a-z0-9._-]{2,40}(@metalfuze\.com)?$/.test(username) || username.length < 3) throw new Error("اسم المستخدم: 3-30 حرف إنجليزي/أرقام أو بريد الشركة");
     const name = String(d.name ?? "").trim().slice(0, 80);
     if (!name) throw new Error("الاسم مطلوب");
     const password = String(d.password ?? "");
@@ -79,10 +79,11 @@ export const createUser = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: made, error } = await supabaseAdmin.auth.admin.createUser({
-      email: `${data.username}@${DOMAIN}`,
+      email: data.username.includes("@") ? data.username : `${data.username}@${DOMAIN}`,
       password: data.password,
       email_confirm: true,
-      user_metadata: { display_name: data.name },
+      // New accounts open nothing until a role is assigned and must replace the first password.
+      user_metadata: { display_name: data.name, pending_access: true, must_change_password: true },
     });
     if (!error) await audit(context, made.user?.id ?? null, "create", data.username);
     if (error) return { ok: false as const, error: error.message.includes("already") ? "اسم المستخدم مستخدم بالفعل" : error.message.includes("weak") || error.message.includes("pwned") ? "كلمة السر ضعيفة أو مسربة، اختر غيرها" : "تعذر إنشاء الحساب" };
@@ -135,6 +136,8 @@ export const setUserRole = createServerFn({ method: "POST" })
     const rows = data.role === "developer" ? ["developer", "admin"] : [data.role];
     const { error } = await supabaseAdmin.from("user_roles").insert(rows.map((role) => ({ user_id: data.id, role: role as AssignableRole })));
     if (error) return { ok: false as const, error: "تعذر حفظ الصلاحية" };
+    const { data: tu } = await supabaseAdmin.auth.admin.getUserById(data.id);
+    if (tu.user?.user_metadata?.["pending_access"]) await supabaseAdmin.auth.admin.updateUserById(data.id, { user_metadata: { ...tu.user.user_metadata, pending_access: false } });
     await audit(context, data.id, "role", `${(old ?? []).map((r) => r.role).join("+") || "—"} → ${data.role}`);
     return { ok: true as const };
   });

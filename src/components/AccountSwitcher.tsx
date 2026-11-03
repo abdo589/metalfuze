@@ -55,7 +55,7 @@ export function AccountSwitcher({ session, toEmail }: { session: Session; toEmai
     e.preventDefault(); setBusy(true);
     remember(session);
     const id = user.trim().toLowerCase().replace(/\s+/g, ".");
-    const { data, error } = await supabase.auth.signInWithPassword({ email: id.includes("@") ? id : toEmail(id), password: pass });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: toEmail(id), password: pass });
     setBusy(false);
     if (error || !data.session) { toast.error(t("اسم المستخدم أو كلمة المرور غير صحيحة")); return; }
     remember(data.session); setUser(""); setPass(""); setOpen(false);
