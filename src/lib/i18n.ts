@@ -29,6 +29,7 @@ export const translations: Record<string, string> = {
   "خصومات الشهر": "Monthly deductions", "المسدد سابقًا": "Previously repaid", "المتبقي أول الشهر": "Opening monthly balance",
   "السداد المسجل للشهر": "Recorded monthly repayment", "تسجيل سداد الشهر": "Record monthly repayment",
   "المبلغ المسدد من راتب هذا الشهر": "Amount repaid from this month's salary", "راجع الموظف والشهر والمبالغ": "Check employee, month and amounts",
+  "المبلغ المسدد بشكل منفصل هذا الشهر": "Amount repaid separately this month",
   "رقم السلفة": "Advance number", "تاريخ السلفة": "Advance date", "شهر الخصم": "Deduction start month", "المسدد": "Repaid",
   "السبب": "Reason", "سلفة": "Advance", "مخالفة": "Fine", "خصم راتب": "Salary deduction",
   "إنشاء اجتماع": "Create meeting", "محتوى الاجتماع": "Meeting content", "اختياري": "Optional",

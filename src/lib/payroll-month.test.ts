@@ -21,8 +21,11 @@ describe("payroll excludes separate commissions", () => {
   it("never adds a commission to salary", () => {
     expect(payrollNet(e, 0, { advances: 0, commissions: 15000 })).toBe(5500);
   });
-  it("still deducts advances and unpaid leave", () => {
-    expect(payrollNet(e, 200, { advances: 1500, commissions: 15000 })).toBe(3800);
+  it("keeps Najla's 4763 advances and fines outside her 12000 salary", () => {
+    expect(payrollNet({ ...e, base: 12000, allowances: 0 }, 0, { advances: 4763, commissions: 0 })).toBe(12000);
+  });
+  it("still applies unpaid leave independently of separate balances", () => {
+    expect(payrollNet(e, 200, { advances: 1500, commissions: 15000 })).toBe(5300);
   });
 });
 
