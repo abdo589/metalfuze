@@ -43,7 +43,7 @@
 - Sales edits stay owner-only; salesFilePath uses ASCII keys. Meetings separate companions from recipients; DB events notify updates. /meetings uses NULL-deal rows; pricing keeps linked rows.
 - Pricing and quotation attachments use atomic sales_advance_files with workflow-locked JSON arrays and legacy first-file columns, preserving old clients and owner reads.
 - Greeting is display-only; active identity drives permissions/remounts. UI, sync and alerts share auth-session.ts and session-keyed permissions; unread counts coalesce via root live refresh. Database/server checks stay authoritative.
-- Payroll excludes commissions; hr_records advances carry balances forward with dated repayments in 'سداد شهري'; preserve extra JSON fields on edits.
+- Use payrollNet for salary UI/totals/exports; keep hr_records advances and 'سداد شهري' repayments independent of salary payments; preserve extra JSON fields.
 - LiveUpdates in root owns a session-scoped channel; table-scoped useLiveRefresh readers refresh data, not screens or drafts, with visible/online polling fallback.
 - Custody email opens an HR-contact mailto draft; managed templates remain unused.
 - Notification permission calls use notification-permission guards and catch failures to protect the app shell on partial-support browsers.
