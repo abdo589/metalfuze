@@ -19,7 +19,6 @@ import { availableMonths, forMonth, paidFor, withPaid, monthKey, monthLabel, net
 import { supabase } from "@/integrations/supabase/client";
 import { useApprovedLeaves } from "@/lib/leave-data";
 import { unpaidDaysInMonth, unpaidDeduction } from "@/lib/leave-engine";
-import { useAdjustments } from "@/lib/advances";
 import { useLiveRefresh } from "@/lib/live-refresh";
 
 export const Route = createFileRoute("/payroll")({
@@ -63,9 +62,8 @@ function Payroll() {
   const att = (e: Employee) => summarize(e, punches, month, excuseSets.get(e.id), leaves.dates.get(e.id));
   /** Unpaid-leave deduction for this month (gross / 30 per day). */
   const unpaid = (e: Employee) => { const d = unpaidDaysInMonth(leaves.reqs, leaves.types, e.id, month); return { days: d, amount: unpaidDeduction((e.base || 0) + (e.allowances || 0), d) }; };
-  const adj = useAdjustments(month);
-  /** Salary excludes commissions, which remain separate in employee data. */
-  const finalNet = (e: Employee) => payrollNet(e, unpaid(e).amount, adj.get(e.id));
+  /** Separate advance/fine balances and commissions never reduce salary. */
+  const finalNet = (e: Employee) => payrollNet(e, unpaid(e).amount);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
@@ -83,7 +81,7 @@ function Payroll() {
     const paidSum = active.reduce((a, e) => a + paidOf(e), 0);
     const paidCount = active.filter((e) => paidOf(e) > 0).length;
     return { total, paidCount, paidSum, remaining: total - paidSum };
-  }, [active, month, adj]);
+  }, [active, month, leaves.reqs, leaves.types]);
 
   const filtered = employees.filter((e) =>
     [e.name, e.role, e.dept, e.project].join(" ").toLowerCase().includes(q.toLowerCase()),
@@ -118,7 +116,7 @@ function Payroll() {
           rows: employees.map((e) => {
             const a = att(e);
             return [e.id, e.name, e.role || "—", e.dept || "—", e.project || "—", e.deviceUserId || "—",
-              e.base, e.allowances, e.deductions + (adj.get(e.id)?.advances ?? 0), finalNet(e),
+              e.base, e.allowances, e.deductions, finalNet(e),
               e.joined ? new Date(e.joined).toLocaleDateString(locale()) : "—",
               e.paidMonths.includes(month) ? t("مدفوع") : t("غير مدفوع"),
               e.active ? t("نشط") : t("غير نشط"),
@@ -259,7 +257,6 @@ function Payroll() {
                     <td className="p-3 text-destructive">{fmtMoney(e.deductions)}</td>
                     <td className="p-3 font-bold">{fmtMoney(finalNet(e))}
                       {unpaid(e).days > 0 && <div className="text-xs font-normal text-destructive">{t("بدون راتب")}: {unpaid(e).days} − {fmtMoney(unpaid(e).amount)}</div>}
-                      {(adj.get(e.id)?.advances ?? 0) > 0 && <div className="text-xs font-normal text-destructive">{t("سلف")}: − {fmtMoney(adj.get(e.id)?.advances ?? 0)}</div>}
                     </td>
                     <td className="p-3 text-xs">{(() => { const a = att(e); return a.linked ? (
                       <div className="space-y-0.5"><div>{t("حضور")}: <b>{a.present}</b></div>

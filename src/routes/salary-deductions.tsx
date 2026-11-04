@@ -58,7 +58,7 @@ function SalaryDeductions() {
   }
   async function settle(r: Row) {
     if (!canEdit || saving) return;
-    const value = window.prompt(t('المبلغ المسدد من راتب هذا الشهر'), String(advanceDeduction(r, month)));
+    const value = window.prompt(t('المبلغ المسدد بشكل منفصل هذا الشهر'), String(advanceDeduction(r, month)));
     if (value === null) return;
     const amount = Number(value);
     if (!Number.isFinite(amount) || amount < 0 || amount > advanceBalance(r, month)) { toast.error(t('راجع الموظف والشهر والمبالغ')); return; }
