@@ -4,7 +4,7 @@
 - [ ] Eilaf login: account confirmed, unbanned and alias intact; service errors no longer mislabeled as bad passwords. Awaiting a fresh retry with username eilaf to distinguish alias/published-version issues from credentials; no password reset performed.
 - [x] Guard all three notification permission call sites; five regression tests pass, original failure reproduced and current root opens without errors under partial support. Signed-in checks unavailable (session mint failed).
 - [x] Advance repayment integration superseded by user's choice: salary payments remain independent of advance/fine settlements; no automatic repayment integration.
-- [ ] Separate advances/fines from salary net, payment totals and exports; preserve balances and past transfers; verify tests and October payroll.
+- [x] Separate advances/fines from salary net, payment totals and exports; preserve balances and past transfers; 25 tests pass. October salary is 166000 before unrelated salary deductions. Signed-in UI verification blocked: requesting user has no matching app account.
 - [x] Multiple files in all existing sales upload fields; quotations saved atomically with legacy compatibility. Eilaf two-file approval/readback after reload verified; 12 tests pass.
 - [x] Haitham pricing two-file approval without an amount and readback after reload verified; existing upload fields audited. QA attachments, request and notifications removed.
 - [x] Create Aiftkhar accountant account; password sign-in, project creation/edit readback after reload and HR blocking verified; project-only RLS/sync, nine tests pass, QA projects removed.

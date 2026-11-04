@@ -81,7 +81,7 @@ function Payroll() {
     const paidSum = active.reduce((a, e) => a + paidOf(e), 0);
     const paidCount = active.filter((e) => paidOf(e) > 0).length;
     return { total, paidCount, paidSum, remaining: total - paidSum };
-  }, [active, month, adj]);
+  }, [active, month, leaves.reqs, leaves.types]);
 
   const filtered = employees.filter((e) =>
     [e.name, e.role, e.dept, e.project].join(" ").toLowerCase().includes(q.toLowerCase()),
