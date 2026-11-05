@@ -152,7 +152,7 @@ function Accounts() {
   useLiveRefresh(["bug_reports", "profiles", "user_roles", "account_flags"], load);
   useEffect(() => { load(); supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? "")); }, [load]);
 
-  const mainRole = (u: AppUser) => assignedAccountRole(u.roles);
+  const mainRole = (u: AppUser) => assignedAccountRole(u.roles, u.pendingAccess);
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setMsg(null);

@@ -27,7 +27,7 @@ async function audit(ctx: { userId: string; claims: unknown }, targetId: string 
 export const ASSIGNABLE_ROLES = ["admin", "hr", "viewer", "manager", "accountant", "executive", "mail", "sales", "developer"] as const;
 export type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
 
-export type AppUser = { id: string; username: string; name: string; createdAt: string; lastSignIn: string | null; roles: string[]; banned: boolean };
+export type AppUser = { id: string; username: string; name: string; createdAt: string; lastSignIn: string | null; roles: string[]; banned: boolean; pendingAccess?: boolean };
 
 export const listUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -40,6 +40,7 @@ export const listUsers = createServerFn({ method: "GET" })
     return data.users.map((u) => ({
       roles: (roleRows ?? []).filter((r) => r.user_id === u.id).map((r) => String(r.role)),
       id: u.id,
+      pendingAccess: !!u.user_metadata?.["pending_access"],
       username: (u.email ?? "").split("@")[0] ?? "",
       name: (u.user_metadata?.["display_name"] as string) || (u.email ?? ""),
       createdAt: u.created_at,

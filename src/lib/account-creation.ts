@@ -16,4 +16,4 @@ export async function createAccountWithRole(
 }
 
 /** Role-less accounts must not appear to have an assigned manager role. */
-export const assignedAccountRole = (roles: string[]) => roles.includes("developer") ? "developer" : roles[0] ?? "";
+export const assignedAccountRole = (roles: string[], pendingAccess = false) => pendingAccess ? "" : roles.includes("developer") ? "developer" : roles[0] ?? "";

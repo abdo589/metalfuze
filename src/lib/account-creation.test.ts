@@ -25,6 +25,7 @@ describe("account creation role assignment", () => {
   it("leaves role-less accounts unselected so manager can be explicitly assigned", () => {
     expect(assignedAccountRole([])).toBe("");
     expect(assignedAccountRole(["manager"])).toBe("manager");
+    expect(assignedAccountRole(["manager"], true)).toBe("");
     expect(assignedAccountRole(["admin", "developer"])).toBe("developer");
   });
 });
