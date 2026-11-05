@@ -1,5 +1,5 @@
 # Roadmap — deep scan fixes
-- [ ] Notify the CEO inside and outside the app when sales reaches CEO approval; verify Firebase web-push configuration and preserve existing handoff recipients.
+- [ ] Notify the CEO inside and outside the app when sales reaches CEO approval. Live sales_advance already inserts the CEO's in-app message; 11 existing sales/permission tests pass. Firebase linked and reconnected, but configuration still omits Include web push/API key/app ID/VAPID. Outside-app implementation and delivery verification await those connection fields; no extra duplicate messages added.
 - [x] Pin Haitham and CEO in Eilaf's account switcher; ten tests verify fixed entries, saved-session switching and reauthentication on expiry. Real-account switching remains unverified because no authorized Eilaf session is available.
 - [ ] Push notifications for all current alerts on Android, iPhone and desktop; Firebase linked, but Include web push/public web API key, app ID and VAPID configuration are missing. Awaiting connection update before implementation.
 - [x] Company-email creation assigns selected role by returned auth ID, reports role/activation errors, and pending/role-less accounts can explicitly select manager. Six regression tests pass; authenticated end-to-end blocked because self session mint finds no matching account. Existing permissions unchanged.
