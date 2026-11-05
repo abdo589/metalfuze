@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { t } from "@/lib/i18n";
-import { SWITCH_OWNER, canSwitch } from "@/lib/account-display";
+import { canSwitch, isPinnedAccount, switchAccounts } from "@/lib/account-display";
 import { loginErrorMessage } from "@/lib/login-error";
 
 /** Only this account may keep several accounts signed in on one device and switch between them. */
@@ -40,14 +40,21 @@ export function AccountSwitcher({ session, toEmail }: { session: Session; toEmai
 
   if (!list.length) return null;
 
+  function authenticate(a: Saved) {
+    setUser(a.email); setPass(""); setOpen(true);
+  }
   async function switchTo(a: Saved) {
     if (busy) return;
+    if (!a.refresh) { authenticate(a); return; }
     setBusy(true);
     remember(session);
     const { data, error } = await supabase.auth.refreshSession({ refresh_token: a.refresh });
     if (error || !data.session) {
-      write(read().filter((x) => x.id !== a.id)); setList(read());
       setBusy(false);
+      if (isPinnedAccount(a.email, read())) {
+        write(read().map((x) => x.id === a.id ? { ...x, refresh: "" } : x));
+        setList(read()); authenticate(a);
+      } else { write(read().filter((x) => x.id !== a.id)); setList(read()); }
       toast.error(t("انتهت جلسة هذا الحساب، أضفه مرة أخرى")); return;
     }
     remember(data.session); setBusy(false); setOpen(false);
@@ -71,14 +78,14 @@ export function AccountSwitcher({ session, toEmail }: { session: Session; toEmai
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>{t("الحسابات")}</DialogTitle></DialogHeader>
           <div className="space-y-2">
-            {list.map((a) => (
+            {switchAccounts(list).map((a) => (
               <div key={a.id} className="flex items-center gap-2 rounded-lg border border-border p-2">
                 <Button type="button" variant="ghost" disabled={busy || a.id === session.user.id} onClick={() => void switchTo(a)}
                   className="h-auto min-w-0 flex-1 flex-col items-start whitespace-normal text-start text-sm disabled:opacity-100">
                   <b>{a.name}</b>{a.id === session.user.id && <span className="ms-2 text-xs text-primary">{t("الحالي")}</span>}
                   <div className="text-xs text-muted-foreground" dir="ltr">{a.email}</div>
                 </Button>
-                {a.id !== session.user.id && a.email !== SWITCH_OWNER &&
+                {a.id !== session.user.id && !isPinnedAccount(a.email, list) &&
                   <Button size="icon" variant="ghost" aria-label={t("إزالة")} onClick={() => forget(a)}><X /></Button>}
               </div>
             ))}
