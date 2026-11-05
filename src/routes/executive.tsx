@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { fmtMoney, fmtPct } from "@/lib/projects";
 import { summarize, useExecSnapshot } from "@/lib/exec-snapshot";
-import { forMonth, monthKey, netSalary, usePayroll } from "@/lib/payroll";
+import { forMonth, monthKey, payrollNet, usePayroll } from "@/lib/payroll";
+import { t } from "@/lib/i18n";
 import { useAdjustments } from "@/lib/advances";
 import { ExecCharts } from "@/components/ExecCharts";
 import { ProjectDetails } from "@/components/ProjectDetails";
@@ -48,7 +49,7 @@ function Executive() {
   const emps = usePayroll().filter((e) => e.active).map((e) => forMonth(e, month));
   const adj = useAdjustments(month);
   let adv = 0, com = 0; adj.forEach((a) => { adv += a.advances; com += a.commissions; });
-  const gross = emps.reduce((a, e) => a + netSalary(e), 0);
+  const gross = emps.reduce((a, e) => a + payrollNet(e), 0);
   const paidCount = emps.filter((e) => e.paidMonths?.includes(month)).length;
   const t0 = new Date(); t0.setHours(0, 0, 0, 0);
   const remainingList = projects.filter((p) => (p.progress || 0) < 1)
@@ -62,7 +63,7 @@ function Executive() {
     top && top.contract - top.paid > 0 ? `أكبر مبلغ متبقٍ للتحصيل في مشروع «${top.name}»: ${fmtMoney(top.contract - top.paid)}.` : "",
     s.overdue.length ? `${s.overdue.length} مشروع تجاوز موعد التسليم: ${s.overdue.map((p) => p.name).join("، ")}.` : "لا توجد مشاريع متجاوزة لموعد التسليم.",
     txns.length ? `صافي حركة الدفع والتحصيل ${fmtMoney(s.balance)}${s.balance < 0 ? " (المدفوع أكبر من المحصّل)" : ""}.` : "لم تُسجّل حركات دفع أو تحصيل بعد.",
-    gross ? `تكلفة الرواتب هذا الشهر ${fmtMoney(gross - adv)}${s.monthCollected ? `، تعادل ${fmtPct((gross - adv) / s.monthCollected)} من تحصيل الشهر` : ""}.` : "",
+    gross ? `تكلفة الرواتب هذا الشهر ${fmtMoney(gross)}${s.monthCollected ? `، تعادل ${fmtPct(gross / s.monthCollected)} من تحصيل الشهر` : ""}.` : "",
   ].filter(Boolean);
   const watch = [...new Map([...s.overdue, ...s.behind, ...s.soon].map((p) => [p.id, p])).values()].slice(0, 6);
   return (
@@ -108,8 +109,8 @@ function Executive() {
       <section className="space-y-3">
         <h2 className="font-semibold">الرواتب والسلف — الشهر الحالي</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Kpi label="صافي الرواتب" value={fmtMoney(gross - adv)} hint={`${emps.length} موظف نشط`} />
-          <Kpi label="سلف ومخالفات تُخصم" value={fmtMoney(adv)} tone={adv ? "warn" : "good"} />
+          <Kpi label="صافي الرواتب" value={fmtMoney(gross)} hint={`${emps.length} موظف نشط`} />
+          <Kpi label={t("سلف ومخالفات منفصلة")} value={fmtMoney(adv)} tone={adv ? "warn" : "good"} />
           <Kpi label="عمولات منفصلة" value={fmtMoney(com)} tone="good" />
           <Kpi label="تم صرف رواتبهم" value={`${paidCount} / ${emps.length}`} />
         </div>

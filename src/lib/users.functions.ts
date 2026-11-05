@@ -87,7 +87,8 @@ export const createUser = createServerFn({ method: "POST" })
     });
     if (!error) await audit(context, made.user?.id ?? null, "create", data.username);
     if (error) return { ok: false as const, error: error.message.includes("already") ? "اسم المستخدم مستخدم بالفعل" : error.message.includes("weak") || error.message.includes("pwned") ? "كلمة السر ضعيفة أو مسربة، اختر غيرها" : "تعذر إنشاء الحساب" };
-    return { ok: true as const };
+    if (!made.user) return { ok: false as const, error: "تعذر إنشاء الحساب" };
+    return { ok: true as const, id: made.user.id };
   });
 
 export const setUserPassword = createServerFn({ method: "POST" })
@@ -137,7 +138,10 @@ export const setUserRole = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("user_roles").insert(rows.map((role) => ({ user_id: data.id, role: role as AssignableRole })));
     if (error) return { ok: false as const, error: "تعذر حفظ الصلاحية" };
     const { data: tu } = await supabaseAdmin.auth.admin.getUserById(data.id);
-    if (tu.user?.user_metadata?.["pending_access"]) await supabaseAdmin.auth.admin.updateUserById(data.id, { user_metadata: { ...tu.user.user_metadata, pending_access: false } });
+    if (tu.user?.user_metadata?.["pending_access"]) {
+      const { error: activationError } = await supabaseAdmin.auth.admin.updateUserById(data.id, { user_metadata: { ...tu.user.user_metadata, pending_access: false } });
+      if (activationError) return { ok: false as const, error: "تعذر تفعيل الحساب؛ حاول حفظ الصلاحية مرة أخرى" };
+    }
     await audit(context, data.id, "role", `${(old ?? []).map((r) => r.role).join("+") || "—"} → ${data.role}`);
     return { ok: true as const };
   });
