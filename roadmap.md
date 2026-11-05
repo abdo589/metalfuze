@@ -1,4 +1,6 @@
 # Roadmap — deep scan fixes
+- [ ] Verify/fix company-email creation assigning the chosen role and allow activating pending managers without changing existing account permissions.
+- [ ] Verify/fix executive salary costs excluding advances/fines consistently with payroll; retain separate balances.
 - [x] First-open optimizations: assistant chat/plugins absent from initial browser requests; sync/alerts reuse session and role reads; unread badges coalesce without extra channels. 26 tests pass and signed-out startup is error-free; Cloud has no exhaustion. Signed-in navigation/save timing remains unverified because self session mint is unavailable.
 - [x] Reduce login startup fan-out with shared UI session and per-account permission reads; eight tests cover coalescing, switching and stale responses; signed-out browser opens without errors. Authenticated timing not measured (self session mint unavailable).
 - [ ] Eilaf login: account confirmed, unbanned and alias intact; service errors no longer mislabeled as bad passwords. Awaiting a fresh retry with username eilaf to distinguish alias/published-version issues from credentials; no password reset performed.
