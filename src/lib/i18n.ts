@@ -24,6 +24,9 @@ export function initializeLanguage() {
 }
 
 export const translations: Record<string, string> = {
+  "لم تُحدد الصلاحية": "No role assigned",
+  "تم إنشاء الحساب لكن تعذر حفظ الصلاحية؛ حددها من قائمة الحسابات.": "Account created, but its role couldn't be saved; assign it from the accounts list.",
+  "سلف ومخالفات منفصلة": "Separate advances and fines",
   "الحساب النشط": "Active account", "تبديل الحساب": "Switch account", "الحسابات": "Accounts", "الحالي": "Current", "إضافة حساب": "Add account", "إزالة": "Remove", "تمت إضافة الحساب": "Account added", "انتهت جلسة هذا الحساب، أضفه مرة أخرى": "This account's session expired; add it again",
   "خصومات الرواتب والسلف": "Salary deductions & advances", "إضافة سلفة أو خصم": "Add advance or deduction",
   "خصومات الشهر": "Monthly deductions", "المسدد سابقًا": "Previously repaid", "المتبقي أول الشهر": "Opening monthly balance",

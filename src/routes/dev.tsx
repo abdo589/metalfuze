@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { ASSIGNABLE_ROLES, createUser, deleteUser, forceSignOut, listUsers, setUserBanned, setUserPassword, setUserRole, type AppUser } from "@/lib/users.functions";
+import { assignedAccountRole, createAccountWithRole } from "@/lib/account-creation";
 
 export const Route = createFileRoute("/dev")({
   head: () => ({
@@ -151,17 +152,14 @@ function Accounts() {
   useLiveRefresh(["bug_reports", "profiles", "user_roles", "account_flags"], load);
   useEffect(() => { load(); supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? "")); }, [load]);
 
-  const mainRole = (u: AppUser) => (u.roles.includes("developer") ? "developer" : u.roles[0] ?? "manager");
+  const mainRole = (u: AppUser) => assignedAccountRole(u.roles, u.pendingAccess);
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setMsg(null);
     try {
-      const r = await create({ data: { name: form.name, username: form.username, password: form.password } });
-      if (!r.ok) setMsg({ ok: false, text: r.error });
+      const r = await createAccountWithRole(form, create, setRole);
+      if (!r.ok) { setMsg({ ok: false, text: t(r.error) }); await load(); }
       else {
-        const fresh = await list();
-        const u = fresh.find((x) => x.username === form.username.toLowerCase());
-        if (u) await setRole({ data: { id: u.id, role: form.role } });
         setMsg({ ok: true, text: `${t("تم إنشاء حساب")} ${form.name} — ${form.username.toLowerCase()} / ${form.password}` });
         setForm({ name: "", username: "", password: genPassword(), role: "viewer" });
         load();
@@ -197,6 +195,7 @@ function Accounts() {
                 <td className="p-3">
                   <select className="rounded-md border bg-background px-2 py-1" value={mainRole(u)} disabled={u.id === me}
                     onChange={async (e) => { const r = await setRole({ data: { id: u.id, role: e.target.value } }); if (!r.ok) toast.error(r.error); else toast.success(t("تم حفظ الصلاحية")); load(); }}>
+                    <option value="" disabled>{t("لم تُحدد الصلاحية")}</option>
                     {ASSIGNABLE_ROLES.map((r) => <option key={r} value={r}>{t(ROLE_LABEL[r] ?? r)}</option>)}
                   </select>
                 </td>
