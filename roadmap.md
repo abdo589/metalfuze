@@ -1,4 +1,5 @@
 # Roadmap — deep scan fixes
+- [x] Pin Haitham and CEO in Eilaf's account switcher; ten tests verify fixed entries, saved-session switching and reauthentication on expiry. Real-account switching remains unverified because no authorized Eilaf session is available.
 - [ ] Push notifications for all current alerts on Android, iPhone and desktop; Firebase linked, but Include web push/public web API key, app ID and VAPID configuration are missing. Awaiting connection update before implementation.
 - [x] Company-email creation assigns selected role by returned auth ID, reports role/activation errors, and pending/role-less accounts can explicitly select manager. Six regression tests pass; authenticated end-to-end blocked because self session mint finds no matching account. Existing permissions unchanged.
 - [x] Executive salary KPI, insight and collection ratio no longer subtract advances/fines; separate balance KPI retained and relabeled. Executive regression verifies Najla salary 12000, separate balance 4763 and ratio 50%; payroll/shared session regressions pass (21 total). Authenticated end-to-end blocked by unavailable self session.
