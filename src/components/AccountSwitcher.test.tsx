@@ -7,11 +7,15 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth } }));
 vi.mock("@/lib/i18n", () => ({ t: (text: string) => text }));
 import { AccountSwitcher } from "./AccountSwitcher";
 
-const owner = { user: { id: "eilaf", email: "eilaf@metalfuze.local", user_metadata: { display_name: "Eilaf" } }, refresh_token: "test-owner" } as Session;
+function testSession(id: string, name: string): Session {
+  return { access_token: "test-only", expires_in: 3600, token_type: "bearer", refresh_token: `test-${id}`,
+    user: { id, email: `${id}@metalfuze.local`, user_metadata: { display_name: name }, app_metadata: {}, aud: "authenticated", created_at: "2026-01-01T00:00:00Z" } };
+}
+const owner = testSession("eilaf", "Eilaf");
 afterEach(() => { cleanup(); localStorage.clear(); vi.resetAllMocks(); });
 
 it("requires Haitham authentication once then switches using his saved session", async () => {
-  const haitham = { user: { id: "haitham", email: "haitham@metalfuze.local", user_metadata: { display_name: "هيثم" } }, refresh_token: "test-haitham" } as Session;
+  const haitham = testSession("haitham", "هيثم");
   auth.signInWithPassword.mockResolvedValue({ data: { session: haitham }, error: null });
   auth.refreshSession.mockResolvedValue({ data: { session: haitham }, error: null });
   const view = render(<AccountSwitcher session={owner} toEmail={(s) => s} />);
