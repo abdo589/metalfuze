@@ -32,8 +32,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ALERT_DAYS, daysLeft } from "@/lib/residency";
-import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
-import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
+import { BrandLogo } from "@/components/BrandLogo";
 import { notificationPermission, requestNotificationPermission } from "@/lib/notification-permission";
 
 export const items = [
@@ -116,10 +115,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 function Logo({ className = "w-36" }: { className?: string }) {
   return (
     <Link to="/" className="block">
-      <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
-        className={`screen-logo logo-on-light mx-auto h-auto ${className}`} />
-      <img src={logoLightAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
-        className={`screen-logo logo-on-dark mx-auto hidden h-auto ${className}`} />
+      <BrandLogo className={`mx-auto h-auto ${className}`} sizes="144px" />
     </Link>
   );
 }

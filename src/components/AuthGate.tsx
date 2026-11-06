@@ -1,8 +1,7 @@
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import { Eye, EyeOff, LogOut } from "lucide-react";
-import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
-import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
+import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -178,10 +177,7 @@ function Login() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <form method="post" action="#" autoComplete="on" onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-6 shadow-lg">
         <div className="flex flex-col items-center gap-2 text-center">
-          <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
-            className="screen-logo logo-on-light mx-auto h-auto w-60" />
-          <img src={logoLightAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
-            className="screen-logo logo-on-dark mx-auto hidden h-auto w-60" />
+          <BrandLogo className="mx-auto h-auto w-60" sizes="240px" />
 
           <h1 className="font-display text-2xl font-extrabold">{signup ? t("إنشاء حساب مدير مشروع") : t("تسجيل الدخول")}</h1>
           <p className="text-sm text-muted-foreground">{t("لوحة متابعة مشاريع Metal Fuze")}</p>
