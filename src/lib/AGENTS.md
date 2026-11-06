@@ -1,0 +1,1 @@
+- Sales attachment opening uses sales-file-open.ts to reserve preview tabs during the user gesture, download unsupported formats, and close failed tabs; this avoids Safari blank tabs without widening storage access.
