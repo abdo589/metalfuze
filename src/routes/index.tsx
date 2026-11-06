@@ -23,8 +23,7 @@ function warrMatch(p: import("@/lib/projects").Project, f: string) {
   return w?.status === f;
 }
 import { exportExcel } from "@/lib/export";
-import logoAsset from "@/assets/metal-fuze-logo.png.asset.json";
-import logoLightAsset from "@/assets/metal-fuze-logo-light.png.asset.json";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -131,10 +130,7 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col items-center gap-4 text-center">
-        <img src={logoAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
-          className="screen-logo logo-on-light h-auto w-72 max-w-full sm:w-96" />
-        <img src={logoLightAsset.url} alt="Metal Fuze — Accuracy Has No Limit" width={1600} height={665}
-          className="screen-logo logo-on-dark hidden h-auto w-72 max-w-full sm:w-96" />
+        <BrandLogo className="h-auto w-72 max-w-full sm:w-96" sizes="(min-width: 640px) 384px, 288px" />
         <div>
           <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{t("لوحة متابعة المشاريع")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
