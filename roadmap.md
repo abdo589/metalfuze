@@ -1,4 +1,5 @@
 # Roadmap — deep scan fixes
+- [ ] Fix Hala's blank pricing attachment page on iPhone; preserve files and access rules, test opening/downloading and report physical-device verification separately.
 - [x] Performance audit: all 12 areas reviewed in performance-audit.md; responsive lossless CDN logos and complete ordered attendance pages added; 211 tests pass and build OK. Three cold throttled before/after runs show no meaningful overall startup improvement; production data/schema untouched.
 - [ ] Performance follow-up: signed-in navigation/attendance/export and physical low-end mobile verification require an authorized app session/device; post-publish visitor comparison requires a new published baseline. Existing self-session mint has no matching account.
 - [ ] Complete Include web push in Firebase and verify a real CEO notification on Haitham's phone signed in as CEO; web client configuration still missing, physical-device registration and receipt require that phone.

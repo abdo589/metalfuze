@@ -17,6 +17,7 @@ import { t, useLanguage, locale } from "@/lib/i18n";
 import { useRole } from "@/lib/permissions";
 import { canApproveSalesStep, canCreateSalesDeal, canEditSalesDeal, commissionDue } from "@/lib/sales";
 import { pricingAttachments, quotationAttachments, salesFilePath, type SalesAttachment } from "@/lib/sales-file";
+import { openSalesFile } from "@/lib/sales-file-open";
 import { OtherSelect } from "@/components/OtherSelect";
 import { readCache } from "@/lib/read-cache";
 
@@ -303,16 +304,24 @@ function SalesPage() {
       toast.success(t("تم سحب الملف وإضافته للمشروع"));
     } catch { toast.error(t("تعذر سحب الملف")); } finally { setBusy(false); }
   }
-  async function openFile(path: string) {
-    const { data } = await supabase.storage.from("sales-files").createSignedUrl(path, 60);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  async function openFile(path: string, name = fileName(path), download = false) {
+    try {
+      await openSalesFile(name, async (asDownload) => {
+        const { data, error } = await supabase.storage.from("sales-files").createSignedUrl(path, 300, asDownload ? { download: name } : undefined);
+        if (error || !data?.signedUrl) throw error ?? new Error("File URL unavailable");
+        return data.signedUrl;
+      }, download);
+    } catch {
+      toast.error(t("تعذر فتح الملف، حاول مرة أخرى"));
+    }
   }
   async function removeFile(path: string) {
     await supabase.storage.from("sales-files").remove([path]);
     setR("docs", ((((edit?.request ?? {}) as Req)["docs"] as string[]) ?? []).filter((x) => x !== path));
   }
   const docsList = (paths: string[], del: boolean) => <ul className="space-y-1">{paths.map((p) => <li key={p} className="flex items-center gap-2 text-sm">
-    <button type="button" className="text-primary underline" onClick={() => openFile(p)}>{fileName(p)}</button>
+    <Button type="button" variant="link" className="h-auto min-w-0 whitespace-normal break-all p-0 text-start" onClick={() => openFile(p)}>{fileName(p)}</Button>
+    <Button type="button" size="icon" variant="ghost" className="size-6 shrink-0" aria-label={`${t("تحميل")} ${fileName(p)}`} title={t("تحميل")} onClick={() => openFile(p, fileName(p), true)}><Download className="size-3.5" /></Button>
     {del && <Button type="button" size="icon" variant="ghost" className="size-6 text-destructive" aria-label={t("حذف")} onClick={() => removeFile(p)}><Trash2 className="size-3.5" /></Button>}</li>)}</ul>;
   const pick = (k: "stage" | "payout_status" | "client_type", label: string, opts: string[]) => (
     <div className="space-y-1.5"><Label>{label}</Label>
@@ -441,8 +450,8 @@ function SalesPage() {
               <h3 className="font-display font-bold">{t("مراحل الاعتماد")}</h3>
               <ol className="flex flex-wrap gap-1.5">{WF.map((s, i) => { const cur = WF.findIndex((x) => x.k === view.workflow_step); return <li key={s.k} className={`rounded-full px-2 py-0.5 text-xs text-background ${STAGE_C[i]} ${i === cur ? "ring-2 ring-foreground ring-offset-1 font-semibold" : i < cur ? "opacity-80" : "opacity-40"}`}>{i + 1}. {t(s.l)}</li>; })}</ol>
               {view.pricing_value != null && <div><span className="text-muted-foreground">{t("التسعير")}:</span> <span dir="ltr">{fmt(Number(view.pricing_value))}</span></div>}
-              {pricingAttachments(view).length > 0 && <div><span className="text-muted-foreground">{t("ملف التسعير")}:</span><ul className="space-y-1">{pricingAttachments(view).map((f) => <li key={f.path}><Button type="button" variant="link" className="h-auto max-w-full whitespace-normal p-0 text-start" onClick={() => openFile(f.path)}>{f.name}</Button></li>)}</ul></div>}
-              {quotationAttachments(view).length > 0 && <div><span className="text-muted-foreground">{t("عرض السعر (Quotation)")}:</span><ul className="space-y-1">{quotationAttachments(view).map((f) => <li key={f.path}><Button type="button" variant="link" className="h-auto max-w-full whitespace-normal break-all p-0 text-start" onClick={() => openFile(f.path)}>{f.name}</Button></li>)}</ul></div>}
+              {pricingAttachments(view).length > 0 && <div><span className="text-muted-foreground">{t("ملف التسعير")}:</span><ul className="space-y-1">{pricingAttachments(view).map((f) => <li key={f.path} className="flex items-center gap-2"><Button type="button" variant="link" className="h-auto min-w-0 whitespace-normal break-all p-0 text-start" onClick={() => openFile(f.path, f.name)}>{f.name}</Button><Button type="button" size="icon" variant="ghost" className="size-6 shrink-0" aria-label={`${t("تحميل")} ${f.name}`} title={t("تحميل")} onClick={() => openFile(f.path, f.name, true)}><Download className="size-3.5" /></Button></li>)}</ul></div>}
+              {quotationAttachments(view).length > 0 && <div><span className="text-muted-foreground">{t("عرض السعر (Quotation)")}:</span><ul className="space-y-1">{quotationAttachments(view).map((f) => <li key={f.path} className="flex items-center gap-2"><Button type="button" variant="link" className="h-auto min-w-0 whitespace-normal break-all p-0 text-start" onClick={() => openFile(f.path, f.name)}>{f.name}</Button><Button type="button" size="icon" variant="ghost" className="size-6 shrink-0" aria-label={`${t("تحميل")} ${f.name}`} title={t("تحميل")} onClick={() => openFile(f.path, f.name, true)}><Download className="size-3.5" /></Button></li>)}</ul></div>}
               {myTurn(view) && <div className="space-y-2 border-t border-border pt-3">
                 {view.workflow_step === "haitham_pricing" && <div className="space-y-1.5"><Label htmlFor="pricing-amount">{t("قيمة التسعير")} ({t("اختياري")})</Label><Input id="pricing-amount" dir="ltr" inputMode="decimal" value={wfPrice} onChange={(e) => setWfPrice(e.target.value.replace(/[^\d.]/g, ""))} /></div>}
                 {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" aria-label={t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} multiple disabled={wfBusy} onChange={(e) => { const files = Array.from(e.target.files ?? []); setWfFiles((prev) => [...prev, ...files]); e.target.value = ""; }} /><ul className="space-y-1">{wfFiles.map((f, i) => <li key={`${f.name}-${i}`} className="flex items-center gap-2"><span className="min-w-0 flex-1 break-all">{f.name}</span><Button type="button" size="icon" variant="ghost" disabled={wfBusy} aria-label={t("إزالة")} title={t("إزالة")} onClick={() => setWfFiles((xs) => xs.filter((_, n) => n !== i))}><Trash2 className="size-4" /></Button></li>)}</ul></div>}
