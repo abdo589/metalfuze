@@ -10,10 +10,13 @@ describe("Haitham optional pricing amount", () => {
 
 describe("Eilaf sales permissions", () => {
   const eilaf = { id: "eilaf-id", email: "eilaf@metalfuze.local", emailConfirmed: true };
-  it("allows Eilaf to create a deal and edit only her own deals", () => {
+  it("allows Eilaf to create a deal and edit every request, including Hala's", () => {
     expect(canCreateSalesDeal("admin", eilaf)).toBe(true);
     expect(canEditSalesDeal("admin", eilaf, "eilaf-id")).toBe(true);
-    expect(canEditSalesDeal("admin", eilaf, "hala-id")).toBe(false);
+    expect(canEditSalesDeal("admin", eilaf, "hala-id")).toBe(true);
+  });
+  it("does not let an unconfirmed Eilaf email edit others' requests", () => {
+    expect(canEditSalesDeal("admin", { ...eilaf, emailConfirmed: false }, "hala-id")).toBe(false);
   });
   it("does not grant other admins or unconfirmed emails deal editing", () => {
     expect(canCreateSalesDeal("admin", { ...eilaf, email: "other@metalfuze.local" })).toBe(false);

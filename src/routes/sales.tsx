@@ -219,7 +219,8 @@ function SalesPage() {
       if (miss.length) { toast.error(`${t("أكمل الحقول المطلوبة")}: ${miss.map((m) => t(m)).join("، ")}`, { duration: 8000 }); return; }
     }
     const { id, created_at: _c, owner_id: _o, ...rest } = edit as D;
-    const req = { ...((rest.request ?? {}) as Req), ...(myEmp ? { owner_emp: myEmp } : {}) };
+    const ownDeal = !id || edit.owner_id === me?.id;
+    const req = { ...((rest.request ?? {}) as Req), ...(myEmp && ownDeal ? { owner_emp: myEmp } : {}) };
     const payload = { ...rest, ...(!id && me ? { owner_id: me.id } : {}), request: req, updated_at: new Date().toISOString() };
     const { error } = id ? await supabase.from("sales_deals").update(payload).eq("id", id) : await supabase.from("sales_deals").insert(payload);
     if (error) { console.error("sales save", error); toast.error(`${t("تعذر الحفظ، حاول مرة أخرى")} (${error.message})`); return; }
