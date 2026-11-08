@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CalendarClock, Coins, Download, Eye, Link2, Mail, Pencil, Plus, Trash2 } from "lucide-react";
+import { CalendarClock, Coins, Download, Eye, Link2, Mail, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { SalesMeetings } from "@/components/SalesMeetings";
 import { SalesReports } from "@/components/SalesReports";
 import { pullLinkFile } from "@/lib/link-file.functions";
@@ -252,7 +252,12 @@ function SalesPage() {
           onPaste={f.k === "link_url" ? (e) => { const s = e.clipboardData.getData("text").trim(); if (s) setTimeout(() => pull(s), 0); } : undefined} />
         {!!String(v ?? "").trim() && <Button type="button" size="sm" variant="outline" onClick={() => window.open(href(String(v)), "_blank", "noopener")}><Link2 className="size-4" /> {t("فتح")}</Button>}
         {f.k === "link_url" && !!String(v ?? "").trim() && <Button type="button" size="sm" disabled={busy} onClick={() => pull(String(v))}><Download className="size-4" /> {t("سحب الملف")}</Button>}
+        {f.k === "link_url" && <Button type="button" size="sm" variant="outline" disabled={busy} asChild>
+          <label className="cursor-pointer"><Upload className="size-4" /> {t("رفع ملف")}
+            <input type="file" multiple className="sr-only" disabled={busy} onChange={(e) => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; upload(fs); }} /></label>
+        </Button>}
       </div>
+      {f.k === "link_url" && <p className="text-xs text-muted-foreground">{t("يمكنك لصق رابط أو رفع ملف من جهازك مباشرة.")}</p>}
       {f.k === "link_url" && busy && <p className="text-xs text-muted-foreground">{t("جارٍ سحب الملف...")}</p>}
       </div>;
     return <div key={f.k} className={`space-y-1.5 ${f.long || f.hint ? "sm:col-span-2" : ""}`}>{lab}{f.hint && <p className="text-xs text-muted-foreground">{t(f.hint)}</p>}
@@ -290,7 +295,9 @@ function SalesPage() {
       }
     } catch { toast.error(t("تعذر رفع الملف")); }
     if (added.length) {
-      setR("docs", [...((((edit?.request ?? {}) as Req)["docs"] as string[] | undefined) ?? []), ...added]);
+      dirty.current = true;
+      setEdit((e) => { const req = (e?.request ?? {}) as Req; const cur = (req["docs"] as string[] | undefined) ?? [];
+        return { ...e, request: { ...req, has_docs: "نعم", docs: [...cur, ...added] } }; });
       toast.success(t("تم رفع الملفات"));
     }
     setBusy(false);
