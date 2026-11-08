@@ -156,6 +156,59 @@ function SalesPage() {
     }
   }
 
+  // Eilaf-only editing of pricing/quotation attachments; unlinked files stay in storage.
+  const canEditFiles = canEditSalesAttachments(me);
+  const [fileEdit, setFileEdit] = useState<{ kind: "pricing" | "quotation"; keep: SalesAttachment[]; add: File[] } | null>(null);
+  const [fileBusy, setFileBusy] = useState(false);
+  async function saveFiles(d: D) {
+    if (!fileEdit || !me || fileBusy) return;
+    setFileBusy(true);
+    const uploaded: SalesAttachment[] = [];
+    try {
+      for (const file of fileEdit.add) {
+        const path = salesFilePath(me.id, file.name);
+        const { error } = await supabase.storage.from("sales-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
+        if (error) throw new Error(`${t("تعذر رفع الملف")}: ${file.name}`);
+        uploaded.push({ path, name: file.name });
+      }
+      const files = [...fileEdit.keep, ...uploaded];
+      const { error } = await supabase.rpc("sales_eilaf_set_files", { p_id: d.id, p_kind: fileEdit.kind, p_files: files });
+      if (error) throw new Error(t("تعذر الحفظ، حاول مرة أخرى"));
+      const first = files[0];
+      setView((v) => v && v.id === d.id ? (fileEdit.kind === "pricing"
+        ? { ...v, pricing_files: files, pricing_file_path: first?.path ?? null, pricing_file_name: first?.name ?? null }
+        : { ...v, quotation_files: files, quotation_file_path: first?.path ?? null, quotation_file_name: first?.name ?? null }) : v);
+      toast.success(t("تم الحفظ")); setFileEdit(null); load();
+    } catch (error) {
+      if (uploaded.length) await supabase.storage.from("sales-files").remove(uploaded.map((f) => f.path));
+      toast.error(error instanceof Error ? error.message : t("تعذر الحفظ، حاول مرة أخرى"));
+    } finally {
+      setFileBusy(false);
+    }
+  }
+  const attachBlock = (d: D, kind: "pricing" | "quotation") => {
+    const list = kind === "pricing" ? pricingAttachments(d) : quotationAttachments(d);
+    const label = t(kind === "pricing" ? "ملف التسعير" : "عرض السعر (Quotation)");
+    const editing = fileEdit?.kind === kind ? fileEdit : null;
+    if (!list.length && !canEditFiles) return null;
+    return <div className="space-y-1">
+      <div className="flex items-center gap-2"><span className="text-muted-foreground">{label}:</span>
+        {canEditFiles && !editing && <Button type="button" size="sm" variant="outline" className="h-7 gap-1 px-2" disabled={!!fileEdit} onClick={() => setFileEdit({ kind, keep: list, add: [] })}><Pencil className="size-3.5" />{t("تحرير")}</Button>}</div>
+      {!editing && (list.length ? <ul className="space-y-1">{list.map((f) => <li key={f.path} className="flex items-center gap-2"><Button type="button" variant="link" className="h-auto min-w-0 whitespace-normal break-all p-0 text-start" onClick={() => openFile(f.path, f.name)}>{f.name}</Button><Button type="button" size="icon" variant="ghost" className="size-6 shrink-0" aria-label={`${t("تحميل")} ${f.name}`} title={t("تحميل")} onClick={() => openFile(f.path, f.name, true)}><Download className="size-3.5" /></Button></li>)}</ul> : <p className="text-xs text-muted-foreground">—</p>)}
+      {editing && <div className="space-y-2 rounded-md border border-border p-2">
+        <ul className="space-y-1">
+          {editing.keep.map((f) => <li key={f.path} className="flex items-center gap-2"><Button type="button" variant="link" className="h-auto min-w-0 flex-1 whitespace-normal break-all p-0 text-start" onClick={() => openFile(f.path, f.name)}>{f.name}</Button><Button type="button" size="icon" variant="ghost" className="size-6 text-destructive" disabled={fileBusy} aria-label={`${t("إزالة")} ${f.name}`} title={t("إزالة")} onClick={() => setFileEdit((e) => e && { ...e, keep: e.keep.filter((x) => x.path !== f.path) })}><Trash2 className="size-3.5" /></Button></li>)}
+          {editing.add.map((f, i) => <li key={`${f.name}-${i}`} className="flex items-center gap-2"><span className="min-w-0 flex-1 break-all">{f.name} <span className="text-xs text-muted-foreground">({t("جديد")})</span></span><Button type="button" size="icon" variant="ghost" className="size-6 text-destructive" disabled={fileBusy} aria-label={`${t("إزالة")} ${f.name}`} title={t("إزالة")} onClick={() => setFileEdit((e) => e && { ...e, add: e.add.filter((_, n) => n !== i) })}><Trash2 className="size-3.5" /></Button></li>)}
+        </ul>
+        <Input type="file" multiple aria-label={`${t("إضافة ملفات")} — ${label}`} disabled={fileBusy} onChange={(e) => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; setFileEdit((x) => x && { ...x, add: [...x.add, ...fs] }); }} />
+        <div className="flex gap-2">
+          <Button type="button" size="sm" disabled={fileBusy} onClick={() => saveFiles(d)}>{t(fileBusy ? "جارٍ الرفع..." : "حفظ")}</Button>
+          <Button type="button" size="sm" variant="outline" disabled={fileBusy} onClick={() => setFileEdit(null)}>{t("إلغاء")}</Button>
+        </div>
+      </div>}
+    </div>;
+  };
+
   const inPeriod = (d: D) => {
     const c = new Date(d.created_at);
     if (c.getFullYear() !== now.getFullYear()) return false;
