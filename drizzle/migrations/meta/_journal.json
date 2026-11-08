@@ -589,6 +589,13 @@
       "when": 1794134174457,
       "tag": "0083_sales_eilaf_edit_files",
       "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1794138851162,
+      "tag": "0084_sales_approve_with_existing_files",
+      "breakpoints": true
     }
   ]
 }

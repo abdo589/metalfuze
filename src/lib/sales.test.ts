@@ -5,6 +5,9 @@ describe("Haitham optional pricing amount", () => {
   it("allows approval with one pricing file and no amount", () => {
     expect(canApproveSalesStep("haitham_pricing", 1)).toBe(true);
     expect(canApproveSalesStep("haitham_pricing", 0)).toBe(false);
+    // Quotation already attached via Eilaf's edit counts, so she can approve and send without re-uploading.
+    expect(canApproveSalesStep("eilaf_quotation", 1)).toBe(true);
+    expect(canApproveSalesStep("eilaf_quotation", 0)).toBe(false);
   });
 });
 
