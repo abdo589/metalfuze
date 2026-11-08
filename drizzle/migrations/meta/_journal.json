@@ -575,6 +575,13 @@
       "when": 1793632983304,
       "tag": "0081_sales_multiple_quotation_files",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1794126447808,
+      "tag": "0082_migration",
+      "breakpoints": true
     }
   ]
 }

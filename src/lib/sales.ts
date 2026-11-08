@@ -10,8 +10,13 @@ export function canCreateSalesDeal(role: string | null | undefined, actor: Sales
   return !!actor && (role === "sales" || (actor.emailConfirmed === true && actor.email.toLowerCase() === "eilaf@metalfuze.local"));
 }
 
+export function isSalesReviewer(actor: SalesActor | null) {
+  return !!actor && actor.emailConfirmed === true && actor.email.toLowerCase() === "eilaf@metalfuze.local";
+}
+
+/** Eilaf edits every pricing request; everyone else edits only their own. */
 export function canEditSalesDeal(role: string | null | undefined, actor: SalesActor | null, ownerId: string) {
-  return canCreateSalesDeal(role, actor) && actor?.id === ownerId;
+  return canCreateSalesDeal(role, actor) && (actor?.id === ownerId || isSalesReviewer(actor));
 }
 
 /** Commission = final contract value (pre-VAT) × rate (default 2%) × this salesperson's share. */
