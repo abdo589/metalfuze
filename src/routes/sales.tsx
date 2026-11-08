@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useRole } from "@/lib/permissions";
-import { canApproveSalesStep, canCreateSalesDeal, canEditSalesDeal, commissionDue } from "@/lib/sales";
+import { canApproveSalesStep, canCreateSalesDeal, canEditSalesAttachments, canEditSalesDeal, commissionDue } from "@/lib/sales";
 import { pricingAttachments, quotationAttachments, salesFilePath, type SalesAttachment } from "@/lib/sales-file";
 import { openSalesFile } from "@/lib/sales-file-open";
 import { OtherSelect } from "@/components/OtherSelect";
