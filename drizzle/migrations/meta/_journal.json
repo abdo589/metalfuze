@@ -582,6 +582,13 @@
       "when": 1794126447808,
       "tag": "0082_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1794134174457,
+      "tag": "0083_sales_eilaf_edit_files",
+      "breakpoints": true
     }
   ]
 }
