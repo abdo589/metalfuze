@@ -19,6 +19,11 @@ export function canEditSalesDeal(role: string | null | undefined, actor: SalesAc
   return canCreateSalesDeal(role, actor) && (actor?.id === ownerId || isSalesReviewer(actor));
 }
 
+/** Only Eilaf (verified) may add or unlink pricing/quotation files after they were attached. */
+export function canEditSalesAttachments(actor: SalesActor | null) {
+  return isSalesReviewer(actor);
+}
+
 /** Commission = final contract value (pre-VAT) × rate (default 2%) × this salesperson's share. */
 export function commissionDue(d: { contract_value?: number | string | null; commission_rate?: number | string | null; shared?: boolean | null; my_share?: number | string | null }) {
   const share = d.shared ? Number(d.my_share ?? 100) / 100 : 1;
