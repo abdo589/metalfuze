@@ -132,7 +132,7 @@ function SalesPage() {
     setMe({ id: data.user.id, email: data.user.email ?? "", emailConfirmed: !!data.user.email_confirmed_at });
     supabase.from("profiles").select("employee_id").eq("id", data.user.id).maybeSingle().then(({ data: p }) => setMyEmp(p?.employee_id ?? null));
   }); }, []);
-  const myTurn = (d: D) => !!me && (d.workflow_step === "sales_entry" ? d.owner_id === me.id && canEdit : WF.find((s) => s.k === d.workflow_step)?.email === me.email);
+  const myTurn = (d: D) => !!me && (d.workflow_step === "sales_entry" ? d.owner_id === me.id && canEdit : canActOnSalesStep(d.workflow_step, WF.find((s) => s.k === d.workflow_step)?.email, me.email));
   const [wfNote, setWfNote] = useState(""); const [wfPrice, setWfPrice] = useState(""); const [wfFiles, setWfFiles] = useState<File[]>([]); const [wfBusy, setWfBusy] = useState(false);
   async function advance(d: D, action: "approve" | "reject") {
     if (wfBusy || !me) return;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "./auth-session";
+import { hasCeoAccess } from "./ceo-access";
 
 export type Role = "developer" | "admin" | "hr" | "viewer" | "manager" | "accountant" | "executive" | "mail" | "sales" | null;
 
@@ -10,9 +11,7 @@ export const DEV_PATHS = ["/dev", "/mail", "/messages", "/my-checkin", "/design-
 /** Pages an HR-only account may open; everything else is hidden from them. */
 export const HR_PATHS = ["/payroll", "/salary-deductions", "/attendance", "/attendance-tracking", "/workers-checkin", "/hr-dashboard", "/hr-file", "/residencies", "/leaves", "/documents", "/fleet", "/custody", "/establishment", "/est-payroll", "/settlements", "/performance", "/messages", "/mail", "/sales", "/my-checkin"];
 /** Per-account menu trims: pages hidden from a specific account by its email (visible to everyone else). */
-const ACCOUNT_HIDDEN_PATHS: Record<string, string[]> = {
-  "haitham@metalfuze.local": ["/bank", "/hr-file", "/report"],
-};
+const ACCOUNT_HIDDEN_PATHS: Record<string, string[]> = {};
 /** Paths hidden from the current signed-in account (empty for everyone else). */
 export function useHiddenPaths() {
   const session = useAuthSession();
@@ -121,10 +120,10 @@ export function useCanEditHr() {
   return !ro && role === "hr";
 }
 
-/** Payments & collections: admins plus the CEO account (its records feed Hisham's summary). */
+/** Payments & collections: admins plus the CEO account and Haitham (CEO records feed Hisham's summary). */
 export function useCanEditPayments() {
   const role = useRole();
-  const isCeo = useAuthSession()?.user.email === "ceo@metalfuze.local";
+  const isCeo = hasCeoAccess(useAuthSession()?.user.email);
   const ro = useMyAccess()?.read_only;
   return !ro && (role === "admin" || isCeo);
 }

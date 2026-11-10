@@ -33,7 +33,7 @@ export function ExecSnapshotSync() {
   const session = useAuthSession();
   const role = useRole();
   const userId = session?.user.id;
-  const mode = !userId ? null : session?.user.email === "ceo@metalfuze.local" ? "ceo" : role === "admin" ? "admin" : isProjectAccountant(role, session?.user.email) ? "projects" : null;
+  const mode = !userId ? null : hasCeoAccess(session?.user.email) ? "ceo" : role === "admin" ? "admin" : isProjectAccountant(role, session?.user.email) ? "projects" : null;
 
   useEffect(() => {
     if (!mode) return;
