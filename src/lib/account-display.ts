@@ -1,6 +1,6 @@
 export const SWITCH_OWNER = "eilaf@metalfuze.local";
 /** Accounts allowed to keep several sessions on one device (Hisham is also the CEO). */
-export const SWITCH_OWNERS = [SWITCH_OWNER, "hisham@metalfuze.local", "ceo@metalfuze.local"];
+export const SWITCH_OWNERS = [SWITCH_OWNER, "hisham@metalfuze.local", "ceo@metalfuze.local", "haitham@metalfuze.local"];
 export const canSwitch = (email?: string | null) => !!email && SWITCH_OWNERS.includes(email);
 type Identity = { id: string; email?: string | null | undefined; name: string };
 

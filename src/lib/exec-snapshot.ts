@@ -6,6 +6,7 @@ import { projectStore, projectChanges, type Project } from "./projects";
 import { txnStore, txnChanges, type Txn } from "./transactions";
 import { subscribeLiveRefresh } from "./live-refresh";
 import { isProjectAccountant, useRole } from "./permissions";
+import { hasCeoAccess } from "./ceo-access";
 import { useAuthSession } from "./auth-session";
 
 type Row = { id: string; data: unknown; version: number; deleted_at: string | null; updated_at: string };
@@ -33,7 +34,7 @@ export function ExecSnapshotSync() {
   const session = useAuthSession();
   const role = useRole();
   const userId = session?.user.id;
-  const mode = !userId ? null : session?.user.email === "ceo@metalfuze.local" ? "ceo" : role === "admin" ? "admin" : isProjectAccountant(role, session?.user.email) ? "projects" : null;
+  const mode = !userId ? null : hasCeoAccess(session?.user.email) ? "ceo" : role === "admin" ? "admin" : isProjectAccountant(role, session?.user.email) ? "projects" : null;
 
   useEffect(() => {
     if (!mode) return;
