@@ -2334,6 +2334,7 @@ export type Database = {
       cp_can_plan: { Args: { _project: string }; Returns: boolean }
       cp_can_submit: { Args: { _project: string }; Returns: boolean }
       cp_is_member: { Args: { _project: string }; Returns: boolean }
+      has_ceo_access: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
