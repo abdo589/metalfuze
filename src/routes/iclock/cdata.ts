@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { parseAttlog } from "@/lib/attendance";
 
 // ZKTeco ADMS (push) endpoint. Path is fixed by the device firmware: /iclock/cdata.
-// Only devices whose serial number was approved by an admin can store punches.
+// Handshake only: unsigned pushes are acknowledged but never stored (see POST).
 const text = (s: string, status = 200) => new Response(s, { status, headers: { "Content-Type": "text/plain" } });
 
 // Devices are added manually by an admin; unknown serials are ignored (never inserted).
@@ -38,25 +37,13 @@ export const Route = createFileRoute("/iclock/cdata")({
         const sn = url.searchParams.get("SN")?.slice(0, 64);
         if (!sn) return text("Missing SN", 400);
         if (!ipAllowed(request)) return text("Forbidden", 403);
-        const body = (await request.text()).slice(0, 500_000);
-        const { admin, approved } = await device(sn);
+        const { approved } = await device(sn);
         if (url.searchParams.get("table") !== "ATTLOG") return text("OK");
         if (!approved) return text("OK: 0"); // pending approval in the attendance page
-        // Once the office agent is live, set ATTENDANCE_PUSH_DISABLED=1 so unsigned pushes are never stored.
-        if (process.env["ATTENDANCE_PUSH_DISABLED"] === "1") return text("OK: 0");
-        // Reject implausible punches: future times, older than 45 days, odd PINs, or oversized batches.
-        const now = Date.now();
-        const rows = parseAttlog(body).filter((r) => {
-          const t = Date.parse(r.punched_at);
-          return /^\d{1,9}$/.test(r.device_user_id) && Number.isFinite(t) && t <= now + 10 * 60_000 && t >= now - 45 * 86_400_000;
-        }).slice(0, 5000).map((r) => ({ ...r, device_sn: sn }));
-        if (rows.length) {
-          const { error } = await admin.from("attendance_logs").upsert(rows, { onConflict: "device_sn,device_user_id,punched_at", ignoreDuplicates: true });
-          if (error) { console.error("attlog insert failed", error); return text("ERROR", 500); }
-          // last_seen only moves when real punches were stored, not on bare GET/heartbeat requests.
-          await admin.from("attendance_devices").update({ last_seen: new Date().toISOString() }).eq("serial_number", sn);
-        }
-        return text(`OK: ${rows.length}`);
+        // The ADMS protocol carries no secret, so anyone who knows the serial could forge punches.
+        // Unsigned pushes are never stored; punches arrive via the token-signed office agent
+        // (/api/public/attendance-agent). The device still gets "OK" so it keeps its connection.
+        return text("OK: 0");
       },
     },
   },
