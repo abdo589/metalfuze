@@ -1,0 +1,1 @@
+CREATE POLICY "eilaf sales delete all" ON public.sales_deals FOR DELETE TO authenticated USING (public.verified_email() = 'eilaf@metalfuze.local');
