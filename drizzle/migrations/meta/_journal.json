@@ -610,6 +610,13 @@
       "when": 1794479269260,
       "tag": "0086_sales_eilaf_delete_all",
       "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "7",
+      "when": 1794479364315,
+      "tag": "0087_sales_new_step_files_replace_old",
+      "breakpoints": true
     }
   ]
 }
