@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canApproveSalesStep, canCreateSalesDeal, canEditSalesAttachments, canEditSalesDeal, commissionDue } from "./sales";
+import { canApproveSalesStep, canCreateSalesDeal, canDeleteSalesDeal, canEditSalesAttachments, canEditSalesDeal, commissionDue } from "./sales";
 
 describe("Haitham optional pricing amount", () => {
   it("allows approval with one pricing file and no amount", () => {
@@ -30,6 +30,14 @@ describe("Eilaf sales permissions", () => {
     const hala = { id: "hala-id", email: "hala@metalfuze.local" };
     expect(canEditSalesDeal("sales", hala, "hala-id")).toBe(true);
     expect(canEditSalesDeal("sales", hala, "eilaf-id")).toBe(false);
+  });
+  it("lets verified Eilaf delete any request, others only their own", () => {
+    const hala = { id: "hala-id", email: "hala@metalfuze.local", emailConfirmed: true };
+    expect(canDeleteSalesDeal("admin", eilaf, "hala-id")).toBe(true);
+    expect(canDeleteSalesDeal("admin", { ...eilaf, emailConfirmed: false }, "hala-id")).toBe(false);
+    expect(canDeleteSalesDeal("sales", hala, "hala-id")).toBe(true);
+    expect(canDeleteSalesDeal("sales", hala, "eilaf-id")).toBe(false);
+    expect(canDeleteSalesDeal("admin", { id: "h", email: "haitham@metalfuze.local", emailConfirmed: true }, "hala-id")).toBe(false);
   });
   it("lets only verified Eilaf edit pricing and quotation files", () => {
     expect(canEditSalesAttachments(eilaf)).toBe(true);

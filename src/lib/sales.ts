@@ -19,6 +19,11 @@ export function canEditSalesDeal(role: string | null | undefined, actor: SalesAc
   return canCreateSalesDeal(role, actor) && (actor?.id === ownerId || isSalesReviewer(actor));
 }
 
+/** Sales accounts delete only their own requests; verified Eilaf deletes any request. */
+export function canDeleteSalesDeal(role: string | null | undefined, actor: SalesActor | null, ownerId: string) {
+  return !!actor && ((role === "sales" && actor.id === ownerId) || isSalesReviewer(actor));
+}
+
 /** Only Eilaf (verified) may add or unlink pricing/quotation files after they were attached. */
 export function canEditSalesAttachments(actor: SalesActor | null) {
   return isSalesReviewer(actor);

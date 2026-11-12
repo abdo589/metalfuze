@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { t, useLanguage, locale } from "@/lib/i18n";
 import { useRole } from "@/lib/permissions";
 import { canActOnSalesStep } from "@/lib/ceo-access";
-import { canApproveSalesStep, canCreateSalesDeal, canEditSalesAttachments, canEditSalesDeal, commissionDue } from "@/lib/sales";
+import { canApproveSalesStep, canCreateSalesDeal, canDeleteSalesDeal, canEditSalesAttachments, canEditSalesDeal, commissionDue } from "@/lib/sales";
 import { pricingAttachments, quotationAttachments, salesFilePath, type SalesAttachment } from "@/lib/sales-file";
 import { openSalesFile } from "@/lib/sales-file-open";
 import { OtherSelect } from "@/components/OtherSelect";
@@ -282,8 +282,10 @@ function SalesPage() {
     toast.success(t("تم الحفظ")); setEdit(null); load();
   }
   async function remove(d: D) {
-    if (role !== "sales" || !ownsEditableDeal(d) || !confirm(t("حذف؟"))) return;
-    await supabase.from("sales_deals").delete().eq("id", d.id); load();
+    if (!canDeleteSalesDeal(role, me, d.owner_id) || !confirm(t("حذف؟"))) return;
+    const { error } = await supabase.from("sales_deals").delete().eq("id", d.id);
+    if (error) { toast.error(`${t("تعذر الحذف")} (${error.message})`); return; }
+    toast.success(t("تم الحذف")); load();
   }
   const set = <K extends keyof D>(k: K, v: D[K]) => setEdit((e) => ({ ...e, [k]: v }));
   const num = (k: "quote_value" | "contract_value" | "collected" | "my_share" | "commission_rate", label: string) => (
@@ -456,7 +458,7 @@ function SalesPage() {
                 <td className="p-2 whitespace-nowrap"><Button size="icon" variant="ghost" className="size-7" aria-label={t("التفاصيل")} onClick={() => setView(d)}><Eye className="size-4" /></Button><Button size="icon" variant="ghost" className="size-7" aria-label={t("إرسال للعميل")} title={t("إرسال للعميل")} onClick={() => mailClient(d)}><Mail className="size-4" /></Button><Button size="icon" variant="ghost" className="size-7" aria-label={t("الاجتماعات")} title={t("الاجتماعات")} onClick={() => setMeet(d)}><CalendarClock className="size-4" /></Button>{ownsEditableDeal(d) && <>
                   <Button size="icon" variant="ghost" className="size-7" aria-label={t("تعديل")} onClick={() => { setMode("pricing"); openDraft(d); }}><Pencil className="size-4" /></Button>
                   {role === "sales" && <><Button size="icon" variant="ghost" className="size-7" aria-label={t("العمولة")} title={t("العمولة")} onClick={() => { setMode("commission"); setEdit(d); }}><Coins className="size-4" /></Button>
-                  <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} onClick={() => remove(d)}><Trash2 className="size-4" /></Button></>}</>}</td>
+                  </>}</>}{canDeleteSalesDeal(role, me, d.owner_id) && <Button size="icon" variant="ghost" className="size-7 text-destructive" aria-label={t("حذف")} title={t("حذف")} onClick={() => remove(d)}><Trash2 className="size-4" /></Button>}</td>
               </tr>
             ))}
           </tbody>
