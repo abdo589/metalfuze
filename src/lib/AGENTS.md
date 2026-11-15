@@ -3,3 +3,5 @@
 - Workflow approval (sales_advance_files): new uploads replace the step's current files (no stale rejected file stays main); with no upload the already-attached files are kept, so Eilaf's edit still satisfies the file requirement. Replaced files stay in storage.
 
 - CEO-equivalent rights go through ceo-access.ts in the app and public.has_ceo_access() in the database; messages to the CEO are copied to Haitham by a DB trigger, so new CEO checks must use these instead of comparing the CEO email.
+
+- Sales commissions reach HR data only from the HR-approved snapshot (confirmed_* columns, written solely by sales_confirm_commission); typed contract values earn nothing until approved, so salespeople cannot raise their own commission.

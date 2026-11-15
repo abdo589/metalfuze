@@ -1774,6 +1774,13 @@ export type Database = {
           client_type: string
           collected: number
           commission_rate: number
+          confirmed_at: string | null
+          confirmed_by: string | null
+          confirmed_commission_rate: number | null
+          confirmed_contract_value: number | null
+          confirmed_my_share: number | null
+          confirmed_owner_emp: string | null
+          confirmed_shared: boolean | null
           contract_value: number
           created_at: string
           id: string
@@ -1803,6 +1810,13 @@ export type Database = {
           client_type?: string
           collected?: number
           commission_rate?: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          confirmed_commission_rate?: number | null
+          confirmed_contract_value?: number | null
+          confirmed_my_share?: number | null
+          confirmed_owner_emp?: string | null
+          confirmed_shared?: boolean | null
           contract_value?: number
           created_at?: string
           id?: string
@@ -1832,6 +1846,13 @@ export type Database = {
           client_type?: string
           collected?: number
           commission_rate?: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          confirmed_commission_rate?: number | null
+          confirmed_contract_value?: number | null
+          confirmed_my_share?: number | null
+          confirmed_owner_emp?: string | null
+          confirmed_shared?: boolean | null
           contract_value?: number
           created_at?: string
           id?: string
@@ -2427,6 +2448,10 @@ export type Database = {
           p_price?: number
         }
         Returns: string
+      }
+      sales_confirm_commission: {
+        Args: { p_contract_value: number; p_id: string }
+        Returns: undefined
       }
       sales_eilaf_set_files: {
         Args: { p_files: Json; p_id: string; p_kind: string }

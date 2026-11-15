@@ -34,3 +34,23 @@ export function commissionDue(d: { contract_value?: number | string | null; comm
   const share = d.shared ? Number(d.my_share ?? 100) / 100 : 1;
   return Number(d.contract_value ?? 0) * (Number(d.commission_rate ?? 2) / 100) * share;
 }
+
+type ConfirmedDeal = {
+  contract_value?: number | string | null; shared?: boolean | null; my_share?: number | string | null;
+  confirmed_contract_value?: number | string | null; confirmed_commission_rate?: number | string | null;
+  confirmed_shared?: boolean | null; confirmed_my_share?: number | string | null;
+};
+
+/** HR-recorded commission uses only the HR-approved snapshot; unapproved typed values earn nothing. */
+export function confirmedCommissionDue(d: ConfirmedDeal) {
+  if (d.confirmed_contract_value == null) return 0;
+  return commissionDue({ contract_value: d.confirmed_contract_value, commission_rate: d.confirmed_commission_rate ?? null, shared: d.confirmed_shared ?? null, my_share: d.confirmed_my_share ?? null });
+}
+
+/** A deal with a contract value needs HR approval when nothing, or different figures, were approved. */
+export function needsCommissionConfirm(d: ConfirmedDeal) {
+  if (!(Number(d.contract_value ?? 0) > 0)) return false;
+  if (d.confirmed_contract_value == null) return true;
+  return Number(d.confirmed_contract_value) !== Number(d.contract_value) || !!d.confirmed_shared !== !!d.shared
+    || (!!d.shared && Number(d.confirmed_my_share ?? 100) !== Number(d.my_share ?? 100));
+}

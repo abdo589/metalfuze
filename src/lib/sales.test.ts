@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canApproveSalesStep, canCreateSalesDeal, canDeleteSalesDeal, canEditSalesAttachments, canEditSalesDeal, commissionDue } from "./sales";
+import { canApproveSalesStep, canCreateSalesDeal, canDeleteSalesDeal, canEditSalesAttachments, canEditSalesDeal, commissionDue, confirmedCommissionDue, needsCommissionConfirm } from "./sales";
 
 describe("Haitham optional pricing amount", () => {
   it("allows approval with one pricing file and no amount", () => {
@@ -53,5 +53,22 @@ describe("sales commission", () => {
   });
   it("splits by share when another salesperson took part (50/50)", () => {
     expect(commissionDue({ contract_value: 100000, commission_rate: 2, shared: true, my_share: 50 })).toBe(1000);
+  });
+});
+
+describe("HR-approved commission", () => {
+  it("earns nothing from a typed contract value until HR approves it", () => {
+    expect(confirmedCommissionDue({ contract_value: 10_000_000 })).toBe(0);
+    expect(needsCommissionConfirm({ contract_value: 10_000_000 })).toBe(true);
+  });
+  it("uses only the approved figures, even if the value is raised later", () => {
+    const d = { contract_value: 900_000, confirmed_contract_value: 100_000, confirmed_commission_rate: 2, confirmed_shared: true, confirmed_my_share: 50, shared: true, my_share: 50 };
+    expect(confirmedCommissionDue(d)).toBe(1000);
+    expect(needsCommissionConfirm(d)).toBe(true);
+    expect(needsCommissionConfirm({ ...d, contract_value: 100_000 })).toBe(false);
+    expect(needsCommissionConfirm({ ...d, contract_value: 100_000, my_share: 100 })).toBe(true);
+  });
+  it("needs no approval without a contract value", () => {
+    expect(needsCommissionConfirm({ contract_value: 0 })).toBe(false);
   });
 });
