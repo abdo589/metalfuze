@@ -44,7 +44,7 @@ type ConfirmedDeal = {
 /** HR-recorded commission uses only the HR-approved snapshot; unapproved typed values earn nothing. */
 export function confirmedCommissionDue(d: ConfirmedDeal) {
   if (d.confirmed_contract_value == null) return 0;
-  return commissionDue({ contract_value: d.confirmed_contract_value, commission_rate: d.confirmed_commission_rate, shared: d.confirmed_shared, my_share: d.confirmed_my_share });
+  return commissionDue({ contract_value: d.confirmed_contract_value, commission_rate: d.confirmed_commission_rate ?? null, shared: d.confirmed_shared ?? null, my_share: d.confirmed_my_share ?? null });
 }
 
 /** A deal with a contract value needs HR approval when nothing, or different figures, were approved. */
