@@ -174,12 +174,12 @@ function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <form method="post" action="#" autoComplete="on" onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-6 shadow-lg">
+    <div className="flex min-h-dvh w-full items-center justify-center bg-card px-6 py-10 sm:px-10">
+      <form method="post" action="#" autoComplete="on" onSubmit={onSubmit} className="w-full max-w-lg space-y-5 [&_button]:h-12 [&_input]:h-12 [&_input]:text-base">
         <div className="flex flex-col items-center gap-2 text-center">
-          <BrandLogo className="mx-auto h-auto w-60" sizes="240px" />
+          <BrandLogo className="mx-auto h-auto w-72 sm:w-80" sizes="320px" />
 
-          <h1 className="font-display text-2xl font-extrabold">{signup ? t("إنشاء حساب مدير مشروع") : t("تسجيل الدخول")}</h1>
+          <h1 className="font-display text-3xl font-extrabold">{signup ? t("إنشاء حساب مدير مشروع") : t("تسجيل الدخول")}</h1>
           <p className="text-sm text-muted-foreground">{t("لوحة متابعة مشاريع Metal Fuze")}</p>
         </div>
         {signup && <Input placeholder={t("الاسم الكامل")} value={fullName} onChange={(e) => setFullName(e.target.value)} required />}
