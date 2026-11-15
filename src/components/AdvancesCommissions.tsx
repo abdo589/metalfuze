@@ -1,15 +1,16 @@
 import { useLiveRefresh } from "@/lib/live-refresh";
 import { useCallback, useEffect, useState } from "react";
-import { Coins, Eye, Pencil, Plus, Save, Trash2, TrendingUp, X } from "lucide-react";
+import { BadgeCheck, Coins, Eye, Pencil, Plus, Save, Trash2, TrendingUp, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { commissionDue } from "@/lib/sales";
+import { confirmedCommissionDue, needsCommissionConfirm } from "@/lib/sales";
 
 type Kind = "advances" | "commissions";
 type Row = { id: string; data: Record<string, string | number> };
+type Pending = { id: string; client: string; project: string; contract_value: number; shared: boolean; my_share: number };
 type Field = { k: string; type?: "number" | "date" | "select" | "month"; opts?: string[] };
 
 const ID = "رقم الموظف";
@@ -42,17 +43,23 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
   const [rows, setRows] = useState<Record<Kind, Row[]>>({ advances: [], commissions: [] });
   const [edit, setEdit] = useState<{ kind: Kind; id: string; d: Record<string, string>; view: boolean } | null>(null);
 
+  const [pending, setPending] = useState<Pending[]>([]);
+  const [confirming, setConfirming] = useState("");
+
   const load = useCallback(async () => {
     const { data, error } = await supabase.from("hr_records").select("id,sheet,data").in("sheet", ["advances", "commissions"]).order("sort");
     if (error) { toast.error("تعذر تحميل السلف والعمولات"); return; }
     let list0 = (data ?? []) as unknown as (Row & { sheet: Kind })[];
     if (canEdit) {
-      // Sales commissions are computed from the deal and added here automatically (one row per deal).
-      const { data: deals } = await supabase.from("sales_deals").select("id,client,project,contract_value,commission_rate,shared,my_share,request").gt("contract_value", 0);
-      const mine = (deals ?? []).filter((d) => String((d.request as Record<string, unknown> | null)?.["owner_emp"] ?? "") === empId);
+      // Sales commissions are added here automatically (one row per deal), but only from HR-approved contract figures.
+      const { data: deals } = await supabase.from("sales_deals").select("id,client,project,contract_value,shared,my_share,request,confirmed_contract_value,confirmed_commission_rate,confirmed_shared,confirmed_my_share,confirmed_owner_emp").gt("contract_value", 0);
+      const all = deals ?? [];
+      setPending(all.filter((d) => String((d.request as Record<string, unknown> | null)?.["owner_emp"] ?? "") === empId && needsCommissionConfirm(d))
+        .map((d) => ({ id: d.id, client: d.client, project: d.project, contract_value: Number(d.contract_value), shared: !!d.shared, my_share: Number(d.my_share ?? 100) })));
+      const mine = all.filter((d) => (d.confirmed_owner_emp ?? "") === empId && Number(d.confirmed_contract_value ?? 0) > 0);
       let changed = false;
       for (const d of mine) {
-        const no = `SAL-${d.id.slice(0, 6)}`, amount = Math.round(commissionDue(d) * 100) / 100;
+        const no = `SAL-${d.id.slice(0, 6)}`, amount = Math.round(confirmedCommissionDue(d) * 100) / 100;
         const ex = list0.find((r) => r.sheet === "commissions" && r.data["رقم العمولة"] === no);
         if (ex && n(ex.data["المبلغ"]) === amount) continue;
         changed = true;
@@ -69,6 +76,15 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
   }, [empId, canEdit]);
   useEffect(() => { load(); }, [load]);
   useLiveRefresh(["hr_records", "sales_deals"], load);
+
+  async function confirmDeal(p: Pending) {
+    if (!confirm(`اعتماد قيمة العقد ${p.contract_value.toLocaleString("en-US")} ريال لـ ${p.client}؟`)) return;
+    setConfirming(p.id);
+    const { error } = await supabase.rpc("sales_confirm_commission", { p_id: p.id, p_contract_value: p.contract_value });
+    setConfirming("");
+    if (error) { toast.error(error.message.includes("changed") ? "تغيّرت قيمة العقد، راجعها مرة أخرى" : "تعذر الاعتماد"); load(); return; }
+    toast.success("تم اعتماد قيمة العقد"); load();
+  }
 
   function openNew(kind: Kind) {
     const c = CFG[kind];
@@ -149,6 +165,21 @@ export function AdvancesCommissions({ empId, canEdit }: { empId: string; canEdit
         [["العمولات المستحقة", com.reduce((a, r) => a + n(r.data["المبلغ"]), 0)], ["المعتمدة", sumBy("معتمدة")], ["قيد المراجعة", sumBy("قيد المراجعة")]],
         ["رقم العمولة", "نوع العمولة", "تاريخ الاستحقاق", "شهر الصرف", "المبلغ", "الحالة"],
         (r, c) => c === "الحالة" ? badge(r.data[c]) : c === "المبلغ" ? num(r.data[c]) : String(r.data[c] ?? "—"))}
+
+      {canEdit && pending.length > 0 && (
+        <section className="space-y-2 rounded-xl border border-border bg-card p-4">
+          <h3 className="flex items-center gap-2 font-display text-base font-bold"><BadgeCheck className="size-5 text-primary" />صفقات مبيعات بانتظار اعتماد قيمة العقد</h3>
+          <p className="text-xs text-muted-foreground">لا تُسجَّل العمولة إلا بعد مراجعة قيمة العقد واعتمادها.</p>
+          <ul className="space-y-2">
+            {pending.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-2 text-sm">
+                <span>{p.client} / {p.project} — <span dir="ltr">{p.contract_value.toLocaleString("en-US")}</span> ريال{p.shared ? ` (نسبة ${p.my_share}%)` : ""}</span>
+                <Button size="sm" disabled={confirming === p.id} onClick={() => confirmDeal(p)}><BadgeCheck /> اعتماد</Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
         <DialogContent className="max-w-lg">
