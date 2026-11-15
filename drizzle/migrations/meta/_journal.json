@@ -624,6 +624,13 @@
       "when": 1794479542636,
       "tag": "0088_sales_meetings_read_verified_email",
       "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1794735464913,
+      "tag": "0089_sales_commission_hr_confirmation",
+      "breakpoints": true
     }
   ]
 }
