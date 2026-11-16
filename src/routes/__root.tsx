@@ -188,7 +188,7 @@ function RootComponent() {
         <AssistantFab />
         <BugReportButton />
       </AuthGate>
-      <footer className="border-t border-border py-3 text-center text-xs text-muted-foreground print:hidden">
+      <footer className="border-t border-border pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-3 text-center text-xs text-muted-foreground print:hidden">
         © Metal Fuze · <Link to="/privacy" className="underline hover:text-foreground">سياسة الخصوصية</Link> · <Link to="/terms" className="underline hover:text-foreground">شروط الاستخدام</Link>
       </footer>
       <Toaster position="top-center" richColors />
