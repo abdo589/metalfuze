@@ -1,0 +1,2 @@
+ALTER TABLE public.settlements ADD COLUMN IF NOT EXISTS files jsonb NOT NULL DEFAULT '[]'::jsonb;
+COMMENT ON COLUMN public.settlements.files IS 'Attachments for this settlement: [{path,name}] in the employee-files bucket under settlements/{employee_id}/';
