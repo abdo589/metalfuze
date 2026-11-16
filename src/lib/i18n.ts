@@ -335,7 +335,7 @@ Object.assign(translations, {
   "جميع الأسباب": "All reasons", "من تاريخ": "From date", "إلى تاريخ": "To date", "جميع الحالات": "All statuses", "إنشاء مخالصة": "Create settlement", "عرض": "View",
   "لا توجد مخالصات": "No settlements", "تفاصيل المخالصة": "Settlement details", "سبب إنهاء الخدمة": "End-of-service reason", "حالة المخالصة": "Settlement status",
   "تاريخ آخر يوم عمل": "Last working day", "الأجر الشهري (أساسي + بدلات)": "Monthly pay (basic + allowances)", "رصيد الإجازات (أيام)": "Leave balance (days)",
-  "مستحقات أخرى": "Other dues", "مدة الخدمة": "Service period", "سنة": "years", "مكافأة نهاية الخدمة": "End-of-service award", "بدل الإجازات": "Leave payout",
+  "مستحقات أخرى": "Other dues", "ملفات المخالصة": "Settlement files", "تم رفع الملف — اضغط حفظ": "File uploaded — press Save", "اختر الموظف أولاً لرفع الملفات": "Choose the employee first to upload files", "مدة الخدمة": "Service period", "سنة": "years", "مكافأة نهاية الخدمة": "End-of-service award", "بدل الإجازات": "Leave payout",
   "المستحقات الصافية": "Net dues", "صلاحية العرض فقط — لا يمكنك التعديل": "View only — you can't edit",
   "افتح التطبيق المثبت أو الموقع في نافذة مستقلة لتفعيل التنبيهات": "Open the installed app or the site in its own window to enable alerts",
   "تم تفعيل تنبيهات الإقامات على الجهاز": "Iqama alerts enabled on this device", "التنبيهات مرفوضة — فعّلها من إعدادات الموقع في المتصفح": "Alerts are blocked — allow them in the browser's site settings",
