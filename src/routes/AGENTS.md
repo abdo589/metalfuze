@@ -1,0 +1,1 @@
+- Settlement attachments live in settlements.files ([{path,name}]) with objects in the private employee-files bucket under settlements/{employee_id}/, so they reuse the existing HR-write / staff-read storage rules.

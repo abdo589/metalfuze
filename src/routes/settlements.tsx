@@ -132,7 +132,7 @@ function SettlementsPage() {
     // Contract details from the employee file (هيئة الموظفين), keyed by employee number.
     if (c.data) setContracts(Object.fromEntries((c.data as { data: Record<string, unknown> }[])
       .map((r) => [String(r.data?.["رقم الموظف"] ?? "").trim(), r.data]).filter(([k]) => k)));
-    if (s.data) setRows(s.data as Row[]);
+    if (s.data) setRows(s.data as unknown as Row[]);
     if (e.data) setEmps(e.data as Emp[]);
     if (b.data) setBalances(Object.fromEntries((b.data as { employee_id: string; remaining: number }[]).map((x) => [x.employee_id, Number(x.remaining) || 0])));
   }, []);

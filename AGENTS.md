@@ -47,5 +47,3 @@
 - LiveUpdates in root owns a session-scoped channel; table-scoped useLiveRefresh readers refresh data, not screens or drafts, with visible/online polling fallback.
 - Custody email opens an HR-contact mailto draft; managed templates remain unused.
 - Notification permission calls use notification-permission guards and catch failures to protect the app shell on partial-support browsers.
-
-- Settlement attachments live in settlements.files ([{path,name}]) with objects in the private employee-files bucket under settlements/{employee_id}/, so they reuse the existing HR-write / staff-read storage rules.
