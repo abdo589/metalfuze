@@ -21,6 +21,7 @@ import { pricingAttachments, quotationAttachments, salesFilePath, type SalesAtta
 import { openSalesFile } from "@/lib/sales-file-open";
 import { OtherSelect } from "@/components/OtherSelect";
 import { readCache } from "@/lib/read-cache";
+import { REJECTED_STEP, REQUEST_FORM, WF, href, logActionLabel, wfLabel, type LogE, type Req, type F } from "@/lib/sales-form";
 
 export const Route = createFileRoute("/sales")({
   head: () => ({ meta: [
@@ -35,52 +36,9 @@ export const Route = createFileRoute("/sales")({
 
 const STAGES = ["تسعير", "تم تقديم العرض", "فاز", "خسر"];
 const PAYOUT = ["لم تُستحق", "مستحقة", "مصروفة"];
-// Approval chain: sales → Eilaf review → Haitham pricing → Eilaf quotation → Haitham approval → CEO → back to Hala & Eilaf.
-const WF: { k: string; l: string; email?: string }[] = [
-  { k: "sales_entry", l: "بيانات التسعير من المبيعات" },
-  { k: "eilaf_review", l: "مراجعة وموافقة Eilaf", email: "eilaf@metalfuze.local" },
-  { k: "haitham_pricing", l: "التسعير — Haitham", email: "haitham@metalfuze.local" },
-  { k: "eilaf_quotation", l: "عرض السعر — Eilaf", email: "eilaf@metalfuze.local" },
-  { k: "haitham_approval", l: "التعميد — Haitham", email: "haitham@metalfuze.local" },
-  { k: "ceo_approval", l: "موافقة وتعميد CEO", email: "ceo@metalfuze.local" },
-  { k: "done", l: "مكتمل — المبيعات و Eilaf" },
-];
 const STAGE_C = ["bg-stage-1","bg-stage-2","bg-stage-3","bg-stage-4","bg-stage-5","bg-stage-6","bg-stage-7"];
 const stageC = (k: string) => STAGE_C[Math.max(0, WF.findIndex((s) => s.k === k))];
-const wfLabel = (k: string) => WF.find((s) => s.k === k)?.l ?? k;
-type LogE = { at: string; by: string; from: string; to: string; action: string; note: string };
 type D = Tables<"sales_deals">;
-type Req = Record<string, string | string[]>;
-type F = { k: string; l: string; req?: boolean; opts?: string[]; multi?: boolean; hint?: string; long?: boolean; link?: boolean };
-// Questions of the "طلب تسعيرة مشروع جديد" pricing-request form, built into the site.
-const REQUEST_FORM: { title: string; fields: F[] }[] = [
-  { title: "بيانات موظف المبيعات", fields: [
-    { k: "sales_name", l: "اسم موظف المبيعات", req: true, opts: ["هالة الخميسي", "نجلاء عساف", "أخرى"] },
-    { k: "sales_email", l: "البريد الإلكتروني لموظف المبيعات", req: true },
-    { k: "work_type", l: "نوع الأعمال", req: true, opts: ["أعمال العظم", "أعمال التشطيب", "أعمال الإيبوكسي", "أعمال الخشبيات", "أعمال اللوحات", "أعمال متعددة التخصصات"] },
-  ] },
-  { title: "بيانات العميل", fields: [
-    { k: "contact_name", l: "اسم مسؤول التواصل", req: true },
-    { k: "contact_title", l: "المسمى الوظيفي لمسؤول التواصل", req: true, opts: ["مالك", "مدير عام", "مدير مشروع", "مهندس مشروع", "مهندس موقع", "مدير مشتريات", "مهندس مشتريات", "أخرى"] },
-    { k: "contact_phone", l: "رقم جوال مسؤول التواصل", req: true },
-    { k: "contact_email", l: "البريد الإلكتروني لمسؤول التواصل", req: true },
-    { k: "client_capacity", l: "صفة جهة العميل", req: true, opts: ["مالك المشروع", "مقاول رئيسي", "مقاول من الباطن", "استشاري", "أخرى"] },
-  ] },
-  { title: "بيانات المشروع", fields: [
-    { k: "in_riyadh", l: "هل المشروع داخل مدينة الرياض؟", opts: ["نعم", "لا"] },
-    { k: "scope", l: "وصف مختصر لنطاق العمل المطلوب", req: true, long: true },
-    { k: "project_state", l: "حالة المشروع الحالية", req: true, multi: true, opts: ["لم يبدأ", "تحت التنفيذ", "قائم ويحتاج تجديدًا"] },
-    { k: "start_time", l: "موعد بدء التنفيذ المتوقع", req: true, opts: ["فوري", "خلال شهر", "خلال 1-3 أشهر", "أكثر من 3 أشهر", "غير محدد"] },
-    { k: "has_consultant", l: "هل يوجد استشاري للمشروع؟", opts: ["نعم", "لا", "غير معروف"] },
-  ] },
-  { title: "بيانات طلب التسعير والمستندات", fields: [
-    { k: "pricing_type", l: "نوع التسعيرة", req: true, opts: ["تسعيرة مبدئية", "تسعيرة تفصيلية", "مناقصة"] },
-    { k: "has_docs", l: "هل توجد مستندات للمشروع؟", opts: ["نعم", "لا"] },
-    { k: "budget_mentioned", l: "هل ذكر العميل ميزانية أو سعرًا متوقعًا للمشروع؟", req: true, opts: ["نعم", "لا"] },
-    { k: "budget", l: "الميزانية أو النطاق السعري المتوقع من العميل (ريال سعودي)", hint: "يُعبأ فقط إذا ذكر العميل مبلغًا محددًا أو نطاقًا تقريبيًا، ولا يُكتب أي رقم غير مؤكد." },
-    { k: "link_url", l: "رابط المشروع", link: true, hint: "الصق رابطًا خارجيًا: مجلد Google Drive، ملف، صور المشروع، أو أي صفحة مطلوبة للتسعير." },
-  ] },
-];
 const blank = (): Partial<D> => ({ client: "", project: "", client_type: "جديد", shared: false, partner_name: "", my_share: 100, quote_value: 0, contract_value: 0, collected: 0, commission_rate: 2, payout_status: "لم تُستحق", stage: "تسعير", notes: "", request: {} });
 const missingList = (e: Partial<D>): string[] => {
   const r = (e.request ?? {}) as Req;
@@ -93,8 +51,6 @@ const missingList = (e: Partial<D>): string[] => {
   return out;
 };
 const fmt = (n: number) => Math.round(n).toLocaleString(locale());
-/** Open a pasted link even when the user forgot "https://". */
-const href = (s: string) => (/^https?:\/\//i.test(s) ? s : `https://${s}`);
 
 function SalesPage() {
   useLanguage();
@@ -109,7 +65,7 @@ function SalesPage() {
   const load = useCallback(async () => {
     readCache.clearTable("sales_deals");
     const { data } = await supabase.from("sales_deals").select("*").order("created_at", { ascending: false });
-    if (data) setRows(data);
+    if (data) setRows(data.filter((d) => d.workflow_step !== REJECTED_STEP));
   }, []);
   useEffect(() => {
     void load();
@@ -137,6 +93,7 @@ function SalesPage() {
   const [wfNote, setWfNote] = useState(""); const [wfPrice, setWfPrice] = useState(""); const [wfFiles, setWfFiles] = useState<File[]>([]); const [wfBusy, setWfBusy] = useState(false);
   async function advance(d: D, action: "approve" | "reject") {
     if (wfBusy || !me) return;
+    if (action === "reject" && !confirm(t("سيتم رفض الطلب ونقله إلى «مشاريع مؤقتة» بكل ملفاته. متابعة؟"))) return;
     setWfBusy(true);
     const uploaded: SalesAttachment[] = [];
     try {
@@ -148,7 +105,7 @@ function SalesPage() {
       }
       const { error } = await supabase.rpc("sales_advance_files", { p_id: d.id, p_action: action, p_note: wfNote, ...(wfPrice ? { p_price: Number(wfPrice) } : {}), p_files: uploaded });
       if (error) throw new Error(t("تعذر الحفظ، حاول مرة أخرى"));
-      toast.success(t("تم الإرسال للمرحلة التالية")); setWfNote(""); setWfPrice(""); setWfFiles([]); setView(null); load();
+      toast.success(t(action === "reject" ? "تم الرفض ونقل الطلب إلى «مشاريع مؤقتة»" : "تم الإرسال للمرحلة التالية")); setWfNote(""); setWfPrice(""); setWfFiles([]); setView(null); load();
     } catch (error) {
       if (uploaded.length) await supabase.storage.from("sales-files").remove(uploaded.map((f) => f.path));
       toast.error(error instanceof Error ? error.message : t("تعذر الحفظ، حاول مرة أخرى"));
@@ -523,11 +480,11 @@ function SalesPage() {
                 <div className="space-y-1.5"><Label>{t("ملاحظات")}</Label><Textarea value={wfNote} onChange={(e) => setWfNote(e.target.value)} /></div>
                 <div className="flex gap-2">
                   <Button disabled={wfBusy || !canApproveSalesStep(view.workflow_step, wfFiles.length + (view.workflow_step === "haitham_pricing" ? pricingAttachments(view).length : view.workflow_step === "eilaf_quotation" ? quotationAttachments(view).length : 0))} onClick={() => advance(view, "approve")}>{t(wfBusy ? "جارٍ الرفع..." : view.workflow_step === "sales_entry" ? "إرسال للمراجعة" : "موافقة وإرسال")}</Button>
-                  {view.workflow_step !== "sales_entry" && <Button variant="outline" className="text-destructive" disabled={wfBusy} onClick={() => advance(view, "reject")}>{t("رفض وإرجاع")}</Button>}
+                  {view.workflow_step !== "sales_entry" && <Button variant="outline" className="text-destructive" disabled={wfBusy} onClick={() => advance(view, "reject")}>{t("رفض")}</Button>}
                 </div>
               </div>}
               {((view.workflow_log ?? []) as LogE[]).length > 0 && <ul className="space-y-1 border-t border-border pt-2 text-xs">{((view.workflow_log ?? []) as LogE[]).map((l, i) => <li key={i}>
-                <span dir="ltr">{new Date(l.at).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" })}</span> — {l.by}: {t(l.action === "reject" ? "رفض" : "موافقة")} ({t(wfLabel(l.from))} ← {t(wfLabel(l.to))}){l.note && <> — {l.note}</>}</li>)}</ul>}
+                <span dir="ltr">{new Date(l.at).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" })}</span> — {l.by}: {t(logActionLabel(l.action))} ({t(wfLabel(l.from))} ← {t(wfLabel(l.to))}){l.note && <> — {l.note}</>}</li>)}</ul>}
             </div>
             <div><b>{t("اسم الشركة أو العميل")}:</b> {view.client}</div><div><b>{t("اسم المشروع")}:</b> {view.project}</div>
             {REQUEST_FORM.map((sec) => <div key={sec.title}><h3 className="mb-1 border-b border-border font-display font-bold">{t(sec.title)}</h3>

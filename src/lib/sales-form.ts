@@ -47,6 +47,7 @@ export const REQUEST_FORM: { title: string; fields: F[] }[] = [
     { k: "budget", l: "الميزانية أو النطاق السعري المتوقع من العميل (ريال سعودي)", hint: "يُعبأ فقط إذا ذكر العميل مبلغًا محددًا أو نطاقًا تقريبيًا، ولا يُكتب أي رقم غير مؤكد." },
     { k: "link_url", l: "رابط المشروع", link: true, hint: "الصق رابطًا خارجيًا: مجلد Google Drive، ملف، صور المشروع، أو أي صفحة مطلوبة للتسعير." },
   ] },
+];
 
 /** Open a pasted link even when the user forgot "https://". */
 export const href = (s: string) => (/^https?:\/\//i.test(s) ? s : `https://${s}`);
