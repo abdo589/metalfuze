@@ -1,7 +1,7 @@
 import { useLiveRefresh } from "@/lib/live-refresh";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Clock, DollarSign, Eye, FileText, Plus, Search, Trash2 } from "lucide-react";
+import { CheckCircle2, Clock, DollarSign, Download, Eye, FileText, FileUp, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import { EMPLOYEE_STATUSES } from "@/lib/employee-status";
 import { endOfService, leavePay, serviceYears, SETTLEMENT_STATUSES } from "@/lib/settlement";
 import { PdfButton } from "@/components/PdfButton";
 import { extractContract } from "@/lib/doc-extract.functions";
+import { openSalesFile } from "@/lib/sales-file-open";
+import { parseTypedAmount } from "@/lib/typed-amount";
 
 export const Route = createFileRoute("/settlements")({
   head: () => ({
@@ -34,15 +36,76 @@ type Emp = { id: string; name: string; base: number; allowances: number; joined:
 type Row = {
   id: string; employee_id: string; employee_name: string; reason: string; last_day: string; joined: string | null;
   wage: number; eos: number; leave_days: number; leave_pay: number; other_dues: number; deductions: number;
-  net: number; status: string; notes: string;
+  net: number; status: string; notes: string; files: SFile[];
 };
+type SFile = { path: string; name: string };
 const REASONS = EMPLOYEE_STATUSES.filter((s) => s.key !== "active").map((s) => s.ar);
 const fmt = (n: number) => Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
 const today = () => new Date().toISOString().slice(0, 10);
 
 function blank(): Omit<Row, "id"> {
   return { employee_id: "", employee_name: "", reason: REASONS[0]!, last_day: today(), joined: null, wage: 0, eos: 0,
-    leave_days: 0, leave_pay: 0, other_dues: 0, deductions: 0, net: 0, status: "draft", notes: "" };
+    leave_days: 0, leave_pay: 0, other_dues: 0, deductions: 0, net: 0, status: "draft", notes: "", files: [] };
+}
+
+/** Plain typed amount (no spinner, wheel does nothing); accepts Arabic digits and commas. */
+function AmountInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const [text, setText] = useState(value ? String(value) : "");
+  useEffect(() => { setText((cur) => (parseTypedAmount(cur) === Number(value || 0) ? cur : value ? String(value) : "")); }, [value]);
+  return <Input type="text" inputMode="decimal" dir="ltr" placeholder="0" value={text}
+    onChange={(e) => { setText(e.target.value); onChange(parseTypedAmount(e.target.value)); }} />;
+}
+
+function SettlementFiles({ edit, canEdit, onChange }: { edit: Omit<Row, "id"> & { id?: string }; canEdit: boolean; onChange: (f: SFile[]) => void }) {
+  const [busy, setBusy] = useState(false);
+  const files = Array.isArray(edit.files) ? edit.files : [];
+  async function upload(list: File[]) {
+    if (!edit.employee_id) { toast.error(t("اختر الموظف")); return; }
+    setBusy(true);
+    const added: SFile[] = [];
+    for (const f of list) {
+      const ext = (f.name.split(".").pop() || "pdf").replace(/[^a-z0-9]/gi, "").toLowerCase() || "pdf";
+      const p = `settlements/${edit.employee_id.replace(/[^a-z0-9_-]/gi, "_")}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+      const up = await supabase.storage.from("employee-files").upload(p, f);
+      if (up.error) { toast.error(`${t("تعذر رفع الملف")}: ${f.name}`); continue; }
+      added.push({ path: p, name: f.name });
+    }
+    setBusy(false);
+    if (added.length) { onChange([...files, ...added]); toast.success(t("تم رفع الملف — اضغط حفظ")); }
+  }
+  const open = (f: SFile, download = false) => openSalesFile(f.name, async (dl) => {
+    const { data, error } = await supabase.storage.from("employee-files").createSignedUrl(f.path, 60, dl ? { download: f.name } : undefined);
+    if (error || !data) throw error ?? new Error("no url");
+    return data.signedUrl;
+  }, download).catch(() => toast.error(t("تعذر فتح الملف")));
+  return (
+    <div className="space-y-2 rounded-xl border border-border p-3 text-sm sm:col-span-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <FileText className="size-4 text-primary" />
+        <span className="font-medium">{t("ملفات المخالصة")} ({files.length})</span>
+        {canEdit && (
+          <Button size="sm" variant="outline" type="button" disabled={busy || !edit.employee_id} asChild>
+            <label className={edit.employee_id ? "cursor-pointer" : "pointer-events-none opacity-50"}>
+              <FileUp /> {busy ? t("جارٍ الرفع…") : t("رفع ملف")}
+              <input type="file" multiple accept=".pdf,image/*,.doc,.docx,.xls,.xlsx" className="hidden"
+                onChange={(e) => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; if (fs.length) upload(fs); }} />
+            </label>
+          </Button>
+        )}
+      </div>
+      {!edit.employee_id && canEdit && <p className="text-muted-foreground">{t("اختر الموظف أولاً لرفع الملفات")}</p>}
+      {edit.employee_id && !files.length && <p className="text-muted-foreground">{t("لا توجد ملفات بعد")}</p>}
+      {files.map((f) => (
+        <div key={f.path} className="flex items-center gap-2 rounded-md bg-muted/40 px-2 py-1">
+          <span className="flex-1 truncate">{f.name}</span>
+          <Button size="sm" variant="ghost" type="button" onClick={() => open(f)}><Eye /> {t("عرض")}</Button>
+          <Button size="sm" variant="ghost" type="button" onClick={() => open(f, true)} aria-label={t("تحميل")}><Download /></Button>
+          {canEdit && <Button size="sm" variant="ghost" type="button" className="text-destructive hover:text-destructive" aria-label={t("حذف")}
+            onClick={() => { if (confirm(`${t("حذف")} ${f.name}؟`)) onChange(files.filter((x) => x.path !== f.path)); }}><Trash2 /></Button>}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function SettlementsPage() {
@@ -186,7 +249,7 @@ function SettlementsPage() {
                   <td className="px-4 py-3">{r.last_day}</td>
                   <td className="px-4 py-3 font-bold">{fmt(r.net)}</td>
                   <td className="px-4 py-3"><span className={`rounded-full px-3 py-1 text-xs font-medium ${st(r.status).cls}`}>{t(st(r.status).label)}</span></td>
-                  <td className="px-4 py-3"><Button size="sm" variant="outline" onClick={() => setEdit({ ...r })}><Eye /> {t("عرض")}</Button></td>
+                  <td className="px-4 py-3"><Button size="sm" variant="outline" onClick={() => setEdit({ ...r, files: Array.isArray(r.files) ? r.files : [] })}><Eye /> {t("عرض")}</Button></td>
                 </tr>
               ))}
               {!filtered.length && <tr><td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">{t("لا توجد مخالصات")}</td></tr>}
@@ -220,7 +283,7 @@ function SettlementsPage() {
               <label className="space-y-1 text-sm">{t("تاريخ آخر يوم عمل")}<Input type="date" value={edit.last_day} onChange={(e) => setEdit(recalc({ ...edit, last_day: e.target.value }))} /></label>
               <label className="space-y-1 text-sm">{t("الأجر الشهري (أساسي + بدلات)")}<Input type="number" value={edit.wage} onChange={(e) => setEdit(recalc({ ...edit, wage: Number(e.target.value) }))} /></label>
               <label className="space-y-1 text-sm">{t("رصيد الإجازات (أيام)")}<Input type="number" value={edit.leave_days} onChange={(e) => setEdit(recalc({ ...edit, leave_days: Number(e.target.value) }))} /></label>
-              <label className="space-y-1 text-sm">{t("مستحقات أخرى")}<Input type="number" value={edit.other_dues} onChange={(e) => setEdit(recalc({ ...edit, other_dues: Number(e.target.value) }))} /></label>
+              <label className="space-y-1 text-sm">{t("مستحقات أخرى")}<AmountInput value={edit.other_dues} onChange={(n) => setEdit((cur) => cur && recalc({ ...cur, other_dues: n }))} /></label>
               <label className="space-y-1 text-sm">{t("الخصومات")}<Input type="number" value={edit.deductions} onChange={(e) => setEdit(recalc({ ...edit, deductions: Number(e.target.value) }))} /></label>
               <div className="grid grid-cols-2 gap-2 rounded-xl bg-muted/50 p-3 text-sm sm:col-span-2">
                 <span>{t("مدة الخدمة")}</span><b>{serviceYears(edit.joined, edit.last_day).toFixed(2)} {t("سنة")}</b>
@@ -228,6 +291,7 @@ function SettlementsPage() {
                 <span>{t("بدل الإجازات")}</span><b>{fmt(edit.leave_pay)}</b>
                 <span className="font-bold">{t("المستحقات الصافية")}</span><b className="text-primary">{fmt(edit.net)}</b>
               </div>
+              <SettlementFiles edit={edit} canEdit={canEdit} onChange={(files) => setEdit((cur) => cur && { ...cur, files })} />
               <label className="space-y-1 text-sm sm:col-span-2">{t("ملاحظات")}<Textarea value={edit.notes} onChange={(e) => setEdit({ ...edit, notes: e.target.value })} /></label>
               {canEdit && (
                 <div className="flex gap-2 sm:col-span-2">
