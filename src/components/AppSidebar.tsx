@@ -18,7 +18,7 @@ import {
   Radar,
   Mail, Star, FolderOpen, Building2,
   Car, Wrench, CalendarClock,
-  Laptop,
+  Laptop, Archive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -28,6 +28,8 @@ import { InstallAppButton } from "@/components/InstallAppButton";
 import { setSidebar, useSidebar } from "@/lib/sidebar";
 import { HR_ADMIN_ONLY, HR_PATHS, useHiddenPaths, useIsAli, useRole, useIsProjectAccountant } from "@/lib/permissions";
 import { useUnreadMessages } from "@/lib/unread-messages";
+import { useAuthSession } from "@/lib/auth-session";
+import { isSalesReviewer } from "@/lib/sales";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,7 +75,10 @@ function useNavItems() {
   const unread = useUnreadMessages();
   const isAli = useIsAli();
   const projectAccountant = useIsProjectAccountant();
-  const visible = (isAli ? [{ to: "/project-admin", label: "إدارة مشاريع", icon: FolderKanban }, { to: "/project-admin/projects", label: "المشاريع", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
+  const user = useAuthSession()?.user;
+  // «مشاريع مؤقتة» (rejected pricing requests) is Eilaf's alone; it sits right after the sales page.
+  const isEilaf = isSalesReviewer(user ? { id: user.id, email: user.email ?? "", emailConfirmed: !!user.email_confirmed_at } : null);
+  const base = (isAli ? [{ to: "/project-admin", label: "إدارة مشاريع", icon: FolderKanban }, { to: "/project-admin/projects", label: "المشاريع", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === "developer" ? [{ to: "/dev", label: "الأعطال وإعدادات الحسابات", icon: Wrench }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }, { to: "/design-system", label: "دليل التصميم", icon: Wrench }]
     : role === "hr" ? items.filter((i) => HR_PATHS.includes(i.to))
     : role === "sales" ? [{ to: "/sales", label: "المبيعات", icon: Calculator }, { to: "/meetings", label: "الاجتماعات", icon: CalendarClock }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
@@ -83,6 +88,9 @@ function useNavItems() {
     : role === "manager" ? [{ to: "/my-projects", label: "مشاريعي", icon: FolderKanban }, { to: "/messages", label: "الرسائل", icon: MessageSquare }, { to: "/mail", label: "البريد (Outlook)", icon: Mail }, { to: "/my-checkin", label: "تسجيل حضوري", icon: Fingerprint }]
     : role === undefined ? [] : role === "admin" ? items.filter((i) => !["/establishment", "/est-payroll", "/attendance"].includes(i.to)) : items.filter((i) => i.to !== "/my-projects" && !HR_ADMIN_ONLY.includes(i.to)))
     .filter((i) => !hidden.includes(i.to));
+  const salesAt = base.findIndex((i) => i.to === "/sales");
+  const temp = { to: "/temp-projects", label: "مشاريع مؤقتة", icon: Archive };
+  const visible = isEilaf && !hidden.includes(temp.to) ? (salesAt >= 0 ? [...base.slice(0, salesAt + 1), temp, ...base.slice(salesAt + 1)] : [...base, temp]) : base;
   return { visible, pathname, unread };
 }
 

@@ -44,6 +44,7 @@ import { Route as SalaryDeductionsRouteImport } from './routes/salary-deductions
 import { Route as SalesRouteImport } from './routes/sales'
 import { Route as SettlementsRouteImport } from './routes/settlements'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TempProjectsRouteImport } from './routes/temp-projects'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
@@ -243,6 +244,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TempProjectsRoute = TempProjectsRouteImport.update({
+  id: '/temp-projects',
+  path: '/temp-projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -398,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/sales': typeof SalesRoute
   '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/temp-projects': typeof TempProjectsRoute
   '/terms': typeof TermsRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
@@ -458,6 +465,7 @@ export interface FileRoutesByTo {
   '/sales': typeof SalesRoute
   '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/temp-projects': typeof TempProjectsRoute
   '/terms': typeof TermsRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
@@ -519,6 +527,7 @@ export interface FileRoutesById {
   '/sales': typeof SalesRoute
   '/settlements': typeof SettlementsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/temp-projects': typeof TempProjectsRoute
   '/terms': typeof TermsRoute
   '/users': typeof UsersRoute
   '/workers-checkin': typeof WorkersCheckinRoute
@@ -581,6 +590,7 @@ export interface FileRouteTypes {
     | '/sales'
     | '/settlements'
     | '/sitemap.xml'
+    | '/temp-projects'
     | '/terms'
     | '/users'
     | '/workers-checkin'
@@ -641,6 +651,7 @@ export interface FileRouteTypes {
     | '/sales'
     | '/settlements'
     | '/sitemap.xml'
+    | '/temp-projects'
     | '/terms'
     | '/users'
     | '/workers-checkin'
@@ -701,6 +712,7 @@ export interface FileRouteTypes {
     | '/sales'
     | '/settlements'
     | '/sitemap.xml'
+    | '/temp-projects'
     | '/terms'
     | '/users'
     | '/workers-checkin'
@@ -762,6 +774,7 @@ export interface RootRouteChildren {
   SalesRoute: typeof SalesRoute
   SettlementsRoute: typeof SettlementsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TempProjectsRoute: typeof TempProjectsRoute
   TermsRoute: typeof TermsRoute
   UsersRoute: typeof UsersRoute
   WorkersCheckinRoute: typeof WorkersCheckinRoute
@@ -1034,6 +1047,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/temp-projects': {
+      id: '/temp-projects'
+      path: '/temp-projects'
+      fullPath: '/temp-projects'
+      preLoaderRoute: typeof TempProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -1234,6 +1254,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalesRoute: SalesRoute,
   SettlementsRoute: SettlementsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TempProjectsRoute: TempProjectsRoute,
   TermsRoute: TermsRoute,
   UsersRoute: UsersRoute,
   WorkersCheckinRoute: WorkersCheckinRoute,

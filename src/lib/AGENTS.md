@@ -5,3 +5,5 @@
 - CEO-equivalent rights go through ceo-access.ts in the app and public.has_ceo_access() in the database; messages to the CEO are copied to Haitham by a DB trigger, so new CEO checks must use these instead of comparing the CEO email.
 
 - Sales commissions reach HR data only from the HR-approved snapshot (confirmed_* columns, written solely by sales_confirm_commission); typed contract values earn nothing until approved, so salespeople cannot raise their own commission.
+
+- Rejecting a pricing request at any step sets workflow_step = 'rejected' (sales_advance); the sales page hides those rows and Eilaf's /temp-projects lists them. Only the sales_restore_rejected RPC (verified Eilaf) brings one back, at eilaf_review — so a rejected request can't silently re-enter the approval chain.
