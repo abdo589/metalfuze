@@ -2042,6 +2042,7 @@ export type Database = {
           employee_id: string
           employee_name: string
           eos: number
+          files: Json
           id: string
           joined: string | null
           last_day: string
@@ -2062,6 +2063,7 @@ export type Database = {
           employee_id: string
           employee_name: string
           eos?: number
+          files?: Json
           id?: string
           joined?: string | null
           last_day: string
@@ -2082,6 +2084,7 @@ export type Database = {
           employee_id?: string
           employee_name?: string
           eos?: number
+          files?: Json
           id?: string
           joined?: string | null
           last_day?: string
