@@ -2464,6 +2464,10 @@ export type Database = {
         Args: { p_meeting: string; p_note?: string; p_response: string }
         Returns: undefined
       }
+      sales_restore_rejected: {
+        Args: { p_id: string; p_note?: string }
+        Returns: string
+      }
       sales_step_email: { Args: { _step: string }; Returns: string }
       verified_email: { Args: never; Returns: string }
     }
