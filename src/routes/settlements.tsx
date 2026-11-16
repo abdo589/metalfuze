@@ -196,7 +196,7 @@ function SettlementsPage() {
       </section>
 
       <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-h-[90dvh] max-w-2xl overflow-y-auto">
           <DialogHeader><DialogTitle>{edit?.id ? t("تفاصيل المخالصة") : t("إنشاء مخالصة")}</DialogTitle></DialogHeader>
           {edit && (
             <fieldset disabled={!canEdit} className="grid gap-3 sm:grid-cols-2">
