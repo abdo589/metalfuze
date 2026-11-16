@@ -378,3 +378,15 @@ Object.assign(translations, {
   "لا يوجد بريد مسجل للموظف — أدخل البريد الإلكتروني": "No email on file for this employee — enter their email address",
   "تعذر إرسال الإيميل": "Couldn't send the email",
 });
+
+// Temporary (rejected) sales projects
+Object.assign(translations, {
+  "مشاريع مؤقتة": "Temporary projects", "أي طلب تسعير يُرفض في المبيعات ينتقل هنا بكل بياناته وملفاته.": "Any pricing request rejected in sales moves here with all its details and files.",
+  "لا توجد مشاريع مرفوضة": "No rejected projects", "موظف المبيعات": "Salesperson", "رُفض من": "Rejected by", "في مرحلة": "At step",
+  "تاريخ الرفض": "Rejected on", "الملفات": "Files", "سبب الرفض": "Rejection reason", "التفاصيل والملفات": "Details & files",
+  "إرجاع للمبيعات": "Return to sales", "حذف نهائي": "Delete permanently", "حذف هذا المشروع نهائيًا؟ لا يمكن التراجع.": "Delete this project permanently? This can't be undone.",
+  "تم إرجاع الطلب لصفحة المبيعات": "Request returned to the sales page", "هذه الصفحة متاحة لإيلاف فقط.": "This page is available to Eilaf only.",
+  "يرجع الطلب لصفحة المبيعات في مرحلة «مراجعة وموافقة Eilaf» بكل ملفاته.": "The request goes back to the sales page at Eilaf's review step with all its files.",
+  "سيتم رفض الطلب ونقله إلى «مشاريع مؤقتة» بكل ملفاته. متابعة؟": "The request will be rejected and moved to Temporary projects with all its files. Continue?",
+  "تم الرفض ونقل الطلب إلى «مشاريع مؤقتة»": "Rejected and moved to Temporary projects", "نقل": "Moved",
+});
