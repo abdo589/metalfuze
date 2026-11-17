@@ -44,5 +44,5 @@
 ## Sales quotation total (Nov 17)
 - [x] Sum all quotation PDFs incl. VAT; live update on add/remove (step + تحرير)
 - [x] Dashboard progress = paid ÷ contract
-- [ ] Quotation total auto-calculated immediately and placed in the «عرض السعر» value field
-- [ ] Verify sales step/edit + dashboard at phone/desktop, light/dark
+- [x] Quotation total auto-calculated immediately and placed in the «عرض السعر» value field
+- [x] Verify sales step/edit + dashboard at phone/desktop, light/dark
