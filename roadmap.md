@@ -47,3 +47,4 @@
 - [x] Quotation total auto-calculated immediately and placed in the «عرض السعر» value field
 - [x] Verify sales step/edit + dashboard at phone/desktop, light/dark
 - [x] Laptop red counter on tab/app icon in every account (messages + sales steps + leave approvals + meeting invites) with pop-up alert when a new one arrives
+- [x] In-site bell with the notification count (laptop + phone) listing messages/sales/leaves/meetings, since the preview frame can't show the tab icon

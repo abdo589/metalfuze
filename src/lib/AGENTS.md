@@ -14,4 +14,4 @@
 
 - Eilaf's quotation-list edits save files and total together through sales_eilaf_set_quotations (wraps sales_eilaf_set_files), and attached PDFs are re-read in the browser by storage path, so the shown total always matches the saved one.
 
-- The laptop/phone red counter is set only through app-badge.ts setAppBadgeCount (tab icon drawn on canvas + installed-app badge), fed by MessageAlerts in root, so one total covers every icon.
+- The laptop/phone red counter is set only through app-badge.ts (setAppBadgeCount for tab/app icons, setBadgeCounts for the in-site NotificationBell), fed by MessageAlerts in root, so every place shows one total.
