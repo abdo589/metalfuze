@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 // Reads the total price from one quotation/pricing file (PDF, picture, or spreadsheet text)
 // for the sales page. Signed-in callers only; runs on the workspace OpenAI connection
 // (connector udc_openai), same as /api/translate. Nothing is stored.
-const MAX_DATA_CHARS = 14_000_000;
+const MAX_DATA_CHARS = 34_000_000; // ~25 MB files (large quotations with BOQ appendices)
 const MAX_TEXT_CHARS = 200_000;
 
 export const Route = createFileRoute("/api/extract-price")({
