@@ -17,3 +17,11 @@ describe("pricing value from quotation files", () => {
     expect(toAmount(0)).toBeNull();
   });
 });
+
+import { isReadablePriceFile as readable } from "./sales-price";
+import { test as t2, expect as e2 } from "vitest";
+t2("only PDF quotations are read for the price", () => {
+  e2(readable({ name: "QT.pdf", type: "application/pdf" })).toBe(true);
+  e2(readable({ name: "QT.xlsx", type: "" })).toBe(false);
+  e2(readable({ name: "photo.jpg", type: "image/jpeg" })).toBe(false);
+});

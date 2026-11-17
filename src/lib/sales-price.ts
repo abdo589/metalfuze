@@ -18,5 +18,6 @@ export function sumPrices(prices: (FilePrice | undefined)[]): number | null {
 }
 
 export const isSheet = (f: { name: string; type: string }) => /\.(xlsx|xlsm|xls|csv)$/i.test(f.name) || /spreadsheet|excel|csv/i.test(f.type);
+/** Only PDF quotations are read for the price; Excel, pictures and other files are attached but never counted. */
 export const isReadablePriceFile = (f: { name: string; type: string }) =>
-  isSheet(f) || f.type === "application/pdf" || /\.pdf$/i.test(f.name) || f.type.startsWith("image/");
+  f.type === "application/pdf" || /\.pdf$/i.test(f.name);
