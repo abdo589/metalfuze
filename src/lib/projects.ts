@@ -168,9 +168,16 @@ export function plannedFromDates(p: Pick<Project, "start" | "end">, today = new 
   if (total <= 0) return null;
   return Math.min(1, Math.max(0, (Date.parse(today) - Date.parse(p.start)) / total));
 }
+/** Actual completion share (0..1) from client payments: paid ÷ total contract value. null when there is no contract value. */
+export function progressFromPaid(p: Pick<Project, "contract" | "paid">): number | null {
+  const contract = Number(p.contract) || 0;
+  if (contract <= 0) return null;
+  return Math.min(1, Math.max(0, (Number(p.paid) || 0) / contract));
+}
 export const withAutoStatus = (p: Project): Project => {
   const planned = plannedFromDates(p);
-  return { ...p, status: autoStatus(p), planned: planned ?? p.planned, progress: p.actualEnd ? 1 : p.progress };
+  const fromPaid = progressFromPaid(p);
+  return { ...p, status: autoStatus(p), planned: planned ?? p.planned, progress: fromPaid ?? (p.actualEnd ? 1 : p.progress) };
 };
 
 export const STATUSES = ["طبيعي", "متقدم", "متأخر"];

@@ -27,3 +27,10 @@ export async function readFilePrice(f: File): Promise<number | null> {
   const j = await r.json();
   return toAmount(j.amount);
 }
+
+/** Reads the price of a quotation already attached to a request (downloaded from storage first). */
+export async function readStoredFilePrice(path: string, name: string): Promise<number | null> {
+  const { data, error } = await supabase.storage.from("sales-files").download(path);
+  if (error || !data) throw error ?? new Error("download failed");
+  return readFilePrice(new File([data], name, { type: /\.pdf$/i.test(name) ? "application/pdf" : data.type }));
+}

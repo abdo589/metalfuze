@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { autoStatus, plannedFromDates, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, warrantyInfo, type Project } from "@/lib/projects";
+import { autoStatus, plannedFromDates, progressFromPaid, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, warrantyInfo, type Project } from "@/lib/projects";
 import { findDuplicate } from "@/lib/bloom";
 
 const empty = (): Project => ({
@@ -119,7 +119,8 @@ export function ProjectDialog({
             </Select>
           </div>
           {text("hasContract", t("هل يوجد عقد شركة"))}
-          {num("progress", t("نسبة الإنجاز %"), true)}
+          {progressFromPaid(f) === null ? num("progress", t("نسبة الإنجاز %"), true)
+            : <div className="space-y-1.5"><Label>{t("نسبة الإنجاز %")} ({t("تلقائي من المدفوع ÷ قيمة العقد")})</Label><Input disabled dir="ltr" value={`${Math.round(progressFromPaid(f)! * 100)}%`} /></div>}
           {plannedFromDates(f) === null ? num("planned", t("نسبة الإنجاز المخطط %"), true)
             : <div className="space-y-1.5"><Label>{t("نسبة الإنجاز المخطط %")} ({t("تلقائي من التاريخ")})</Label><Input disabled dir="ltr" value={`${Math.round(plannedFromDates(f)! * 100)}%`} /></div>}
           {num("contract", t("قيمة العقد"))}

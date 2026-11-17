@@ -9,3 +9,7 @@
 - Rejecting a pricing request at any step sets workflow_step = 'rejected' (sales_advance); the sales page hides those rows and Eilaf's /temp-projects lists them. Only the sales_restore_rejected RPC (verified Eilaf) brings one back, at eilaf_review — so a rejected request can't silently re-enter the approval chain.
 
 - Eilaf quotation-step pricing value is pre-filled by /api/extract-price (signed-in only, reads one file and counts it only if it is a client quotation, never a pricing/cost sheet, stores nothing; spreadsheets converted to CSV in the browser) and summed per file via sales-price.ts; typing in the field stops auto-fill, so the saved value is always what she sees.
+
+- Project actual progress is derived in withAutoStatus (projects.ts progressFromPaid) whenever a contract value exists, so every dashboard/report reads one computed value; the typed progress is only a fallback for projects without a contract value.
+
+- Eilaf's quotation-list edits save files and total together through sales_eilaf_set_quotations (wraps sales_eilaf_set_files), and attached PDFs are re-read in the browser by storage path, so the shown total always matches the saved one.
