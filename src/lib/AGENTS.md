@@ -8,4 +8,4 @@
 
 - Rejecting a pricing request at any step sets workflow_step = 'rejected' (sales_advance); the sales page hides those rows and Eilaf's /temp-projects lists them. Only the sales_restore_rejected RPC (verified Eilaf) brings one back, at eilaf_review — so a rejected request can't silently re-enter the approval chain.
 
-- Eilaf quotation-step pricing value is pre-filled by /api/extract-price (signed-in only, reads one file, stores nothing; spreadsheets converted to CSV in the browser) and summed per file via sales-price.ts; typing in the field stops auto-fill, so the saved value is always what she sees.
+- Eilaf quotation-step pricing value is pre-filled by /api/extract-price (signed-in only, reads one file and counts it only if it is a client quotation, never a pricing/cost sheet, stores nothing; spreadsheets converted to CSV in the browser) and summed per file via sales-price.ts; typing in the field stops auto-fill, so the saved value is always what she sees.

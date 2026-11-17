@@ -8,7 +8,7 @@ const fileToBase64 = (f: File) => new Promise<string>((res, rej) => {
   r.readAsDataURL(f);
 });
 
-/** Asks the server to read the total price in one file; null when none was found. */
+/** Asks the server to read the total price in one quotation file; null when none was found or the file is not a quotation (e.g. a pricing/cost sheet). */
 export async function readFilePrice(f: File): Promise<number | null> {
   const { data: s } = await supabase.auth.getSession();
   const token = s.session?.access_token;
