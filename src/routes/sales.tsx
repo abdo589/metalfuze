@@ -19,6 +19,8 @@ import { canActOnSalesStep } from "@/lib/ceo-access";
 import { canApproveSalesStep, canCreateSalesDeal, canDeleteSalesDeal, canEditSalesAttachments, canEditSalesDeal, commissionDue } from "@/lib/sales";
 import { pricingAttachments, quotationAttachments, salesFilePath, type SalesAttachment } from "@/lib/sales-file";
 import { openSalesFile } from "@/lib/sales-file-open";
+import { isReadablePriceFile, sumPrices, type FilePrice } from "@/lib/sales-price";
+import { readFilePrice } from "@/lib/sales-price-read";
 import { OtherSelect } from "@/components/OtherSelect";
 import { readCache } from "@/lib/read-cache";
 import { REJECTED_STEP, REQUEST_FORM, WF, href, logActionLabel, wfLabel, type LogE, type Req, type F } from "@/lib/sales-form";
@@ -91,6 +93,21 @@ function SalesPage() {
   }); }, []);
   const myTurn = (d: D) => !!me && (d.workflow_step === "sales_entry" ? d.owner_id === me.id && canEdit : canActOnSalesStep(d.workflow_step, WF.find((s) => s.k === d.workflow_step)?.email, me.email));
   const [wfNote, setWfNote] = useState(""); const [wfPrice, setWfPrice] = useState(""); const [wfFiles, setWfFiles] = useState<File[]>([]); const [wfBusy, setWfBusy] = useState(false);
+  // Eilaf's quotation step: each picked file's total price is read automatically and the field shows their sum until she types her own value.
+  const [wfPrices, setWfPrices] = useState<Map<File, FilePrice>>(new Map()); const [wfPriceManual, setWfPriceManual] = useState(false);
+  function readPrices(files: File[]) {
+    for (const f of files.filter(isReadablePriceFile)) {
+      setWfPrices((m) => new Map(m).set(f, { status: "reading", amount: null }));
+      readFilePrice(f).then((amount) => ({ status: "done" as const, amount }), () => ({ status: "failed" as const, amount: null }))
+        .then((r) => setWfPrices((m) => m.has(f) ? new Map(m).set(f, r) : m));
+    }
+  }
+  useEffect(() => {
+    if (wfPriceManual) return;
+    const sum = sumPrices(wfFiles.map((f) => wfPrices.get(f)));
+    setWfPrice(sum == null ? "" : String(sum));
+  }, [wfFiles, wfPrices, wfPriceManual]);
+  const wfReading = wfFiles.some((f) => wfPrices.get(f)?.status === "reading");
   async function advance(d: D, action: "approve" | "reject") {
     if (wfBusy || !me) return;
     if (action === "reject" && !confirm(t("سيتم رفض الطلب ونقله إلى «مشاريع مؤقتة» بكل ملفاته. متابعة؟"))) return;
@@ -280,7 +297,7 @@ function SalesPage() {
   useEffect(() => {
     setView((current) => current ? rows.find((row) => row.id === current.id) ?? null : null);
   }, [rows]);
-  useEffect(() => { setWfFiles([]); setWfPrice(""); setWfNote(""); }, [view?.id]);
+  useEffect(() => { setWfFiles([]); setWfPrice(""); setWfNote(""); setWfPrices(new Map()); setWfPriceManual(false); }, [view?.id]);
   const [meet, setMeet] = useState<D | null>(null);
   const [reports, setReports] = useState(false);
   const mailClient = (d: D) => {
@@ -475,8 +492,8 @@ function SalesPage() {
               {attachBlock(view, "pricing")}
               {attachBlock(view, "quotation")}
               {myTurn(view) && <div className="space-y-2 border-t border-border pt-3">
-                {view.workflow_step === "eilaf_quotation" && <div className="space-y-1.5"><Label htmlFor="pricing-amount">{t("قيمة التسعير")} ({t("اختياري")})</Label><Input id="pricing-amount" dir="ltr" inputMode="decimal" value={wfPrice} onChange={(e) => setWfPrice(e.target.value.replace(/[^\d.]/g, ""))} /></div>}
-                {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" aria-label={t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} multiple disabled={wfBusy} onChange={(e) => { const files = Array.from(e.target.files ?? []); setWfFiles((prev) => [...prev, ...files]); e.target.value = ""; }} /><ul className="space-y-1">{wfFiles.map((f, i) => <li key={`${f.name}-${i}`} className="flex items-center gap-2"><span className="min-w-0 flex-1 break-all">{f.name}</span><Button type="button" size="icon" variant="ghost" disabled={wfBusy} aria-label={t("إزالة")} title={t("إزالة")} onClick={() => setWfFiles((xs) => xs.filter((_, n) => n !== i))}><Trash2 className="size-4" /></Button></li>)}</ul>{wfFiles.length > 0 && (view.workflow_step === "haitham_pricing" ? pricingAttachments(view) : quotationAttachments(view)).length > 0 && <p className="text-xs text-muted-foreground">{t("الملفات الجديدة ستحل محل الملفات الحالية")}</p>}</div>}
+                {view.workflow_step === "eilaf_quotation" && <div className="space-y-1.5"><Label htmlFor="pricing-amount">{t("قيمة التسعير")} ({t("اختياري")})</Label><Input id="pricing-amount" dir="ltr" inputMode="decimal" value={wfPrice} onChange={(e) => { setWfPriceManual(true); setWfPrice(e.target.value.replace(/[^\d.]/g, "")); }} /><p className="text-xs text-muted-foreground">{t(wfReading ? "جارٍ قراءة السعر من الملفات..." : "تُحسب تلقائياً من ملفات عرض السعر (مجموع كل الملفات)، ويمكنك تعديلها")}{wfPriceManual && wfFiles.length > 0 && <Button type="button" variant="link" size="sm" className="h-auto px-1 py-0" onClick={() => setWfPriceManual(false)}>{t("إعادة الحساب من الملفات")}</Button>}</p></div>}
+                {(view.workflow_step === "haitham_pricing" || view.workflow_step === "eilaf_quotation") && <div className="space-y-1.5"><Label>{t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} *</Label><Input type="file" aria-label={t(view.workflow_step === "haitham_pricing" ? "ملف التسعير" : "ملف عرض السعر (Quotation)")} multiple disabled={wfBusy} onChange={(e) => { const files = Array.from(e.target.files ?? []); setWfFiles((prev) => [...prev, ...files]); e.target.value = ""; if (view.workflow_step === "eilaf_quotation") readPrices(files); }} /><ul className="space-y-1">{wfFiles.map((f, i) => <li key={`${f.name}-${i}`} className="flex items-center gap-2"><span className="min-w-0 flex-1 break-all">{f.name}{view.workflow_step === "eilaf_quotation" && (() => { const p = wfPrices.get(f); if (!p) return null; return <span className="ms-2 text-xs text-muted-foreground">{p.status === "reading" ? t("جارٍ قراءة السعر...") : p.amount != null ? `— ${fmt(p.amount)} ${t("ريال")}` : t("— لم يُعثر على سعر")}</span>; })()}</span><Button type="button" size="icon" variant="ghost" disabled={wfBusy} aria-label={t("إزالة")} title={t("إزالة")} onClick={() => { setWfFiles((xs) => xs.filter((_, n) => n !== i)); setWfPrices((m) => { const c = new Map(m); c.delete(f); return c; }); }}><Trash2 className="size-4" /></Button></li>)}</ul>{wfFiles.length > 0 && (view.workflow_step === "haitham_pricing" ? pricingAttachments(view) : quotationAttachments(view)).length > 0 && <p className="text-xs text-muted-foreground">{t("الملفات الجديدة ستحل محل الملفات الحالية")}</p>}</div>}
                 <div className="space-y-1.5"><Label>{t("ملاحظات")}</Label><Textarea value={wfNote} onChange={(e) => setWfNote(e.target.value)} /></div>
                 <div className="flex gap-2">
                   <Button disabled={wfBusy || !canApproveSalesStep(view.workflow_step, wfFiles.length + (view.workflow_step === "haitham_pricing" ? pricingAttachments(view).length : view.workflow_step === "eilaf_quotation" ? quotationAttachments(view).length : 0))} onClick={() => advance(view, "approve")}>{t(wfBusy ? "جارٍ الرفع..." : view.workflow_step === "sales_entry" ? "إرسال للمراجعة" : "موافقة وإرسال")}</Button>
