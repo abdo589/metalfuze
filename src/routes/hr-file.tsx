@@ -20,6 +20,7 @@ import { NationalitySelect } from "@/components/NationalitySelect";
 import { contractOptions, resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
 import { useLanguage } from "@/lib/i18n";
 import { findDuplicate } from "@/lib/bloom";
+import { speakPayroll } from "@/lib/speak";
 
 export const Route = createFileRoute("/hr-file")({
   head: () => ({
@@ -107,6 +108,13 @@ function HrFilePage() {
       : await supabase.from("hr_records").insert({ sheet: sel.sheet, data, sort: bySheet(sel.sheet).length });
     if (res.error) { toast.error("تعذر الحفظ"); return; }
     toast.success("تم الحفظ");
+    if (sel.sheet === "payroll") {
+      const paid = (v: unknown) => { const x = String(v ?? "").trim(); return !!x && x !== "—" && x !== "غير مدفوع" && x.toLowerCase() !== "unpaid"; };
+      if (paid(data["حالة الصرف"]) && (!sel.id || !paid(sel.data["حالة الصرف"]))) {
+        const amt = Number(data["صافي الراتب"] ?? 0);
+        speakPayroll(`تم صرف راتب ${data[NAME] ?? ""}${amt ? ` بمبلغ ${amt.toLocaleString("ar-SA")} ريال` : ""}`, lang);
+      }
+    }
     setSel(null); setDraft(null); load();
   }
 
