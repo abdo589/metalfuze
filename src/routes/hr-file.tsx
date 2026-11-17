@@ -171,7 +171,16 @@ function HrFilePage() {
                     <tr key={r.id} onClick={() => open(r)} className={`cursor-pointer border-b border-border/60 hover:bg-muted/40 ${r.sheet === "employees" && statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang) ? "bg-destructive/10 opacity-80" : ""}`}>
                       {cols.map((c) => (
                         <td key={c} className="p-3">
-                          {show(r.data[c])}
+                          {r.sheet === "documents" && (c === "الأيام المتبقية" || c === "الحالة") ? (() => {
+                            const e = String(r.data["تاريخ الانتهاء"] ?? "");
+                            if (!/^\d{4}-\d{2}-\d{2}$/.test(e)) return show(r.data[c]);
+                            const now = new Date(); const d = Math.round((Date.parse(e) - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+                            if (c === "الأيام المتبقية") return d;
+                            const label = d < 0 ? "منتهية" : d <= 30 ? "قريبة الانتهاء" : "سارية";
+                            return d <= 30
+                              ? <span className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-0.5 text-xs font-semibold text-destructive-foreground animate-pulse"><span className="size-1.5 rounded-full bg-destructive-foreground" />{label}</span>
+                              : <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-semibold text-success">{label}</span>;
+                          })() : show(r.data[c])}
                           {c === "اسم الموظف" && r.sheet === "employees" && statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang) && (
                             <span className="ms-2 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang)}</span>
                           )}
