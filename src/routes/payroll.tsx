@@ -15,7 +15,7 @@ import { PdfButton } from "@/components/PdfButton";
 import { fmtMoney } from "@/lib/projects";
 import { summarize } from "@/lib/attendance";
 import { useMonthPunches } from "@/lib/attendance-data";
-import { availableMonths, forMonth, paidFor, withPaid, monthKey, monthLabel, netSalary, payrollNet, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
+import { availableMonths, forMonth, paidFor, remainingFor, withPaid, monthKey, monthLabel, netSalary, payrollNet, payrollStore, usePayroll, type Employee } from "@/lib/payroll";
 import { supabase } from "@/integrations/supabase/client";
 import { useApprovedLeaves } from "@/lib/leave-data";
 import { unpaidDaysInMonth, unpaidDeduction } from "@/lib/leave-engine";
@@ -80,7 +80,8 @@ function Payroll() {
     const paidOf = (e: Employee) => paidFor(e, month, finalNet(e));
     const paidSum = active.reduce((a, e) => a + paidOf(e), 0);
     const paidCount = active.filter((e) => paidOf(e) > 0).length;
-    return { total, paidCount, paidSum, remaining: total - paidSum };
+    const remaining = active.reduce((a, e) => a + remainingFor(finalNet(e), paidOf(e)), 0);
+    return { total, paidCount, paidSum, remaining };
   }, [active, month, leaves.reqs, leaves.types]);
 
   const filtered = employees.filter((e) =>
@@ -99,7 +100,7 @@ function Payroll() {
           [t("عدد الموظفين"), active.length, "int"],
           [t("إجمالي صافي الرواتب"), total, "money"],
           [t("المدفوع"), paidN, "money"],
-          [t("المتبقي للصرف"), total - paidN, "money"],
+          [t("المتبقي للصرف"), active.reduce((x, e) => x + remainingFor(finalNet(e), paidFor(e, month, finalNet(e))), 0), "money"],
         ],
         sheets: [{
           name: t("مسير الرواتب"),
