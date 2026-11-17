@@ -98,7 +98,7 @@ function SalesPage() {
   function readPrices(files: File[]) {
     for (const f of files.filter(isReadablePriceFile)) {
       setWfPrices((m) => new Map(m).set(f, { status: "reading", amount: null }));
-      readFilePrice(f).then((amount) => ({ status: "done" as const, amount }), () => ({ status: "failed" as const, amount: null }))
+      readFilePrice(f).catch(() => readFilePrice(f)).then((amount) => ({ status: "done" as const, amount }), () => ({ status: "failed" as const, amount: null }))
         .then((r) => setWfPrices((m) => m.has(f) ? new Map(m).set(f, r) : m));
     }
   }
@@ -110,7 +110,7 @@ function SalesPage() {
       if (!isReadablePriceFile({ name: a.name, type: "" }) || storedAsked.current.has(a.path)) continue;
       storedAsked.current.add(a.path);
       setStoredPrices((m) => new Map(m).set(a.path, { status: "reading", amount: null }));
-      readStoredFilePrice(a.path, a.name)
+      readStoredFilePrice(a.path, a.name).catch(() => readStoredFilePrice(a.path, a.name))
         .then((amount) => ({ status: "done" as const, amount }), () => { storedAsked.current.delete(a.path); return { status: "failed" as const, amount: null }; })
         .then((r) => setStoredPrices((m) => new Map(m).set(a.path, r)));
     }
