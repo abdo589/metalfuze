@@ -15,6 +15,7 @@ import { AdvancesCommissions } from "@/components/AdvancesCommissions";
 import { EmployeeSignature } from "@/components/EmployeeSignature";
 import { EmployeeReviews } from "@/components/EmployeeReviews";
 import { DocsOverview } from "@/components/DocsOverview";
+import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import { NationalitySelect } from "@/components/NationalitySelect";
 import { contractOptions, resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
 import { useLanguage } from "@/lib/i18n";
@@ -78,7 +79,7 @@ function HrFilePage() {
   const curMonth = month || months[0] || "";
   const rows = useMemo(() => all.filter((r) => r.sheet === tab && (tab !== "payroll" || !curMonth || String(r.data["الشهر"] ?? "") === curMonth) && Object.values(r.data).join(" ").includes(q)), [all, tab, q, curMonth]);
   const monthLabel = (m: string) => { const d = new Date(m); return isNaN(+d) ? m : d.toLocaleDateString("ar-SA-u-ca-gregory", { month: "long", year: "numeric" }); };
-  const cols = META[tab].columns.slice(0, 7);
+  const cols = tab === "documents" ? [...META[tab].columns.slice(0, 7), "الحالة"] : META[tab].columns.slice(0, 7);
 
   const open = (r: Rec) => { setSel(r); setDraft(null); setPtab("basic"); };
   const startEdit = (r: Rec) => setDraft(Object.fromEntries(META[r.sheet].columns.map((c) => [c, r.data[c] === undefined ? "" : String(r.data[c])])));
@@ -174,10 +175,10 @@ function HrFilePage() {
                           {r.sheet === "documents" && (c === "الأيام المتبقية" || c === "الحالة") ? (() => {
                             const e = String(r.data["تاريخ الانتهاء"] ?? "");
                             if (!/^\d{4}-\d{2}-\d{2}$/.test(e)) return show(r.data[c]);
-                            const now = new Date(); const d = Math.round((Date.parse(e) - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+                            const d = daysLeft(e) ?? 0;
                             if (c === "الأيام المتبقية") return d;
-                            const label = d < 0 ? "منتهية" : d <= 30 ? "قريبة الانتهاء" : "سارية";
-                            return d <= 30
+                            const label = d < 0 ? "منتهية" : d <= ALERT_DAYS ? "قريبة الانتهاء" : "سارية";
+                            return d <= ALERT_DAYS
                               ? <span className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-0.5 text-xs font-semibold text-destructive-foreground animate-pulse"><span className="size-1.5 rounded-full bg-destructive-foreground" />{label}</span>
                               : <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-semibold text-success">{label}</span>;
                           })() : show(r.data[c])}
