@@ -46,3 +46,4 @@
 - [x] Dashboard progress = paid ÷ contract
 - [x] Quotation total auto-calculated immediately and placed in the «عرض السعر» value field
 - [x] Verify sales step/edit + dashboard at phone/desktop, light/dark
+- [x] Laptop red counter on tab/app icon (unread messages + sales waiting on me) + alert when a sales request reaches my step
