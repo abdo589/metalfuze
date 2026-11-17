@@ -652,6 +652,13 @@
       "when": 1794908439059,
       "tag": "0092_sales_pricing_value_eilaf",
       "breakpoints": true
+    },
+    {
+      "idx": 93,
+      "version": "7",
+      "when": 1794915305559,
+      "tag": "0093_sales_eilaf_quotations_total",
+      "breakpoints": true
     }
   ]
 }

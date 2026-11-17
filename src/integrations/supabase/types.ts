@@ -2460,6 +2460,10 @@ export type Database = {
         Args: { p_files: Json; p_id: string; p_kind: string }
         Returns: undefined
       }
+      sales_eilaf_set_quotations: {
+        Args: { p_files: Json; p_id: string; p_price: number }
+        Returns: undefined
+      }
       sales_meeting_respond: {
         Args: { p_meeting: string; p_note?: string; p_response: string }
         Returns: undefined
