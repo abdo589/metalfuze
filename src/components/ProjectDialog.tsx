@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { autoStatus, plannedFromDates, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, warrantyInfo, type Project } from "@/lib/projects";
+import { autoStatus, plannedFromDates, progressFromPaid, newId, projectStore, SECTORS, STATUS_OPTIONS, CLIENT_CAPACITIES, OUR_ROLES, warrantyInfo, type Project } from "@/lib/projects";
 import { findDuplicate } from "@/lib/bloom";
 
 const empty = (): Project => ({
