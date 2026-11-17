@@ -17,7 +17,7 @@ export async function readFilePrice(f: File): Promise<number | null> {
   if (isSheet(f)) {
     const XLSX = await import("xlsx");
     const wb = XLSX.read(await f.arrayBuffer(), { type: "array" });
-    body = { name: f.name, text: wb.SheetNames.map((n) => `## ${n}\n${XLSX.utils.sheet_to_csv(wb.Sheets[n], { blankrows: false })}`).join("\n\n") };
+    body = { name: f.name, text: wb.SheetNames.map((n) => `## ${n}\n${(wb.Sheets[n] ? XLSX.utils.sheet_to_csv(wb.Sheets[n], { blankrows: false }) : "")}`).join("\n\n") };
   } else {
     const mediaType = f.type || (/\.pdf$/i.test(f.name) ? "application/pdf" : "");
     body = { name: f.name, mediaType, data: await fileToBase64(f) };
