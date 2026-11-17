@@ -13,3 +13,5 @@
 - Project actual progress is derived in withAutoStatus (projects.ts progressFromPaid) whenever a contract value exists, so every dashboard/report reads one computed value; the typed progress is only a fallback for projects without a contract value.
 
 - Eilaf's quotation-list edits save files and total together through sales_eilaf_set_quotations (wraps sales_eilaf_set_files), and attached PDFs are re-read in the browser by storage path, so the shown total always matches the saved one.
+
+- The laptop/phone red counter is set only through app-badge.ts setAppBadgeCount (tab icon drawn on canvas + installed-app badge), fed by MessageAlerts in root, so one total covers every icon.
