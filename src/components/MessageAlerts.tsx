@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnreadMessages } from "@/lib/unread-messages";
 import { t } from "@/lib/i18n";
@@ -53,13 +53,20 @@ export function MessageAlerts() {
   const waitingTotal = waiting ? waiting.sales + waiting.leaves + waiting.meetings : 0;
   const unread = useUnreadMessages();
   const navigate = useNavigate();
-  const path = useRouterState({ select: (s) => s.location.pathname });
 
+  // Page title shows the same count; re-applied whenever a page sets its own title.
   useEffect(() => {
-    const base = document.title.replace(/^\(\d+\+?\)\s*/, "");
     const total = unread + waitingTotal;
-    document.title = total > 0 ? `(${total > 99 ? "99+" : total}) ${base}` : base;
-  }, [unread, waitingTotal, path]);
+    const apply = () => {
+      const base = document.title.replace(/^\(\d+\+?\)\s*/, "");
+      const next = total > 0 ? `(${total > 99 ? "99+" : total}) ${base}` : base;
+      if (document.title !== next) document.title = next;
+    };
+    apply();
+    const obs = new MutationObserver(apply);
+    obs.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => obs.disconnect();
+  }, [unread, waitingTotal]);
 
   // Red counter on the laptop/phone icon (browser tab + installed app taskbar icon).
   useEffect(() => { setAppBadgeCount(unread + waitingTotal); }, [unread, waitingTotal]);
