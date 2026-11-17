@@ -168,3 +168,6 @@ export function withPaid(e: Employee, month: string, paid: number): Employee {
   const cur = forMonth(e, month);
   return { ...e, monthly: { ...(e.monthly ?? {}), [month]: { base: cur.base, allowances: cur.allowances, deductions: cur.deductions, paid } } };
 }
+
+/** Still owed to one employee for the month; paying someone extra never lowers what others are still owed (matches the monthly payroll sheets). */
+export const remainingFor = (net: number, paid: number) => Math.max(net - paid, 0);
