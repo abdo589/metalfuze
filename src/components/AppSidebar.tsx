@@ -25,6 +25,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { InstallAppButton } from "@/components/InstallAppButton";
+import { NotificationBell } from "@/components/NotificationBell";
 import { setSidebar, useSidebar } from "@/lib/sidebar";
 import { HR_ADMIN_ONLY, HR_PATHS, useHiddenPaths, useIsAli, useRole, useIsProjectAccountant } from "@/lib/permissions";
 import { useUnreadMessages } from "@/lib/unread-messages";
@@ -175,10 +176,13 @@ export function AppSidebar() {
       <aside className="sidebar-rail sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 overflow-hidden border-e bg-card/40 p-4 lg:flex print:hidden">
         <div className="flex items-start justify-between gap-1">
           <Logo />
-          <Button size="icon" variant="ghost" className="shrink-0" aria-label={t("إخفاء القائمة")}
-            title={t("إخفاء القائمة")} onClick={() => setSidebar("hidden")}>
-            <PanelLeftClose />
-          </Button>
+          <div className="flex shrink-0 flex-col items-center gap-1">
+            <Button size="icon" variant="ghost" className="shrink-0" aria-label={t("إخفاء القائمة")}
+              title={t("إخفاء القائمة")} onClick={() => setSidebar("hidden")}>
+              <PanelLeftClose />
+            </Button>
+            <NotificationBell />
+          </div>
         </div>
         <NavLinks />
         <div className="flex shrink-0 flex-col items-stretch gap-2 border-t pt-4">
@@ -194,6 +198,7 @@ export function AppSidebar() {
           onClick={() => setSidebar("visible")}>
           <PanelLeftOpen />
         </Button>
+        <NotificationBell />
       </div>
 
       {/* Mobile: top bar with a slide-in menu holding the same links. */}
@@ -216,7 +221,7 @@ export function AppSidebar() {
           </SheetContent>
         </Sheet>
         <Logo className="w-28" />
-        <span className="size-9 shrink-0" aria-hidden="true" />
+        <NotificationBell />
       </header>
 
       {/* Mobile: app-style bottom tab bar with the first pages; "المزيد" opens the full menu. */}

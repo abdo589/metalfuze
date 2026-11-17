@@ -1,4 +1,5 @@
 // Laptop/phone red counter: one number shown on the browser-tab icon and on the installed app's taskbar icon.
+import { useSyncExternalStore } from "react";
 import { WF } from "./sales-form";
 import { canActOnSalesStep } from "./ceo-access";
 import { REQUIRED_MEETING_PEOPLE } from "./sales-meetings";
@@ -100,4 +101,18 @@ let currentCount = 0;
 export function setAppBadgeCount(n: number) {
   currentCount = n;
   void showAppBadge(n);
+}
+
+/** Per-kind counts shown in the in-site bell; MessageAlerts (root) is the only writer. */
+export type BadgeCounts = { messages: number; sales: number; leaves: number; meetings: number };
+const EMPTY: BadgeCounts = { messages: 0, sales: 0, leaves: 0, meetings: 0 };
+let counts: BadgeCounts = EMPTY;
+const subs = new Set<() => void>();
+export function setBadgeCounts(next: BadgeCounts) {
+  if ((Object.keys(next) as (keyof BadgeCounts)[]).every((k) => next[k] === counts[k])) return;
+  counts = next;
+  subs.forEach((f) => f());
+}
+export function useBadgeCounts() {
+  return useSyncExternalStore((f) => { subs.add(f); return () => { subs.delete(f); }; }, () => counts, () => EMPTY);
 }

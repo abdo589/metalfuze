@@ -7,7 +7,7 @@ import { t } from "@/lib/i18n";
 import { notificationPermission, requestNotificationPermission } from "@/lib/notification-permission";
 import { useAuthSession } from "@/lib/auth-session";
 import { useLiveRefresh } from "@/lib/live-refresh";
-import { answersMeetings, hasSalesStep, leavesWaitingCount, meetingsWaitingCount, salesWaitingCount, setAppBadgeCount } from "@/lib/app-badge";
+import { answersMeetings, hasSalesStep, leavesWaitingCount, meetingsWaitingCount, salesWaitingCount, setAppBadgeCount, setBadgeCounts } from "@/lib/app-badge";
 
 type Waiting = { sales: number; leaves: number; meetings: number };
 const WAIT_LINKS = [
@@ -70,6 +70,9 @@ export function MessageAlerts() {
 
   // Red counter on the laptop/phone icon (browser tab + installed app taskbar icon).
   useEffect(() => { setAppBadgeCount(unread + waitingTotal); }, [unread, waitingTotal]);
+  useEffect(() => {
+    setBadgeCounts({ messages: unread, sales: waiting?.sales ?? 0, leaves: waiting?.leaves ?? 0, meetings: waiting?.meetings ?? 0 });
+  }, [unread, waiting]);
 
   // System notification when something new reaches this account (sales step, leave approval, meeting invite).
   const lastWaiting = useRef<Waiting | null>(null);
