@@ -39,3 +39,4 @@
 - [ ] Phase 4: atomic roles, attendance unique index, leave locking/overlap
 
 - [x] Eilaf quotation step: auto-read price from PDF / Excel quotation files and sum them
+- [x] Eilaf price auto-read: PDF quotations only
