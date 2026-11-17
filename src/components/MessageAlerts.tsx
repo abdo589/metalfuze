@@ -7,19 +7,41 @@ import { t } from "@/lib/i18n";
 import { notificationPermission, requestNotificationPermission } from "@/lib/notification-permission";
 import { useAuthSession } from "@/lib/auth-session";
 import { useLiveRefresh } from "@/lib/live-refresh";
-import { hasSalesStep, salesWaitingCount, setAppBadgeCount } from "@/lib/app-badge";
+import { answersMeetings, hasSalesStep, leavesWaitingCount, meetingsWaitingCount, salesWaitingCount, setAppBadgeCount } from "@/lib/app-badge";
 
-// Sales requests waiting on this account's approval step (RLS limits the rows it can see).
-function useSalesWaiting(email?: string | null) {
-  const [count, setCount] = useState<number | null>(null);
+type Waiting = { sales: number; leaves: number; meetings: number };
+const WAIT_LINKS = [
+  { k: "sales", to: "/sales", label: "طلب مبيعات بانتظارك" },
+  { k: "leaves", to: "/leaves", label: "طلب إجازة بانتظار موافقتك" },
+  { k: "meetings", to: "/meetings", label: "دعوة اجتماع بانتظار ردك" },
+] as const;
+
+// Items waiting on this account (each account sees only its own; RLS limits the rows).
+function useWaiting(userId?: string, email?: string | null) {
+  const [w, setW] = useState<Waiting | null>(null);
   const load = useCallback(async () => {
-    if (!hasSalesStep(email)) { setCount(0); return; }
-    const { data, error } = await supabase.from("sales_deals").select("workflow_step");
-    if (!error) setCount(salesWaitingCount((data ?? []).map((d) => d.workflow_step as string), email));
-  }, [email]);
-  useEffect(() => { setCount(null); void load(); }, [load]);
-  useLiveRefresh(["sales_deals"], load);
-  return count;
+    if (!userId) { setW(null); return; }
+    const [sales, leaves, meetings] = await Promise.all([
+      hasSalesStep(email)
+        ? supabase.from("sales_deals").select("workflow_step").then(({ data, error }) => error ? null : salesWaitingCount((data ?? []).map((d) => d.workflow_step as string), email))
+        : Promise.resolve(0),
+      supabase.rpc("leave_can_approve", { _uid: userId }).then(async ({ data: ok }) => {
+        if (!ok) return 0;
+        const { data, error } = await supabase.from("leave_requests").select("status").in("status", ["pending_manager", "pending_hr"]);
+        return error ? null : leavesWaitingCount((data ?? []).map((r) => r.status), true);
+      }, () => 0),
+      answersMeetings(email)
+        ? Promise.all([
+            supabase.from("sales_meetings").select("id,meeting_at,attendees").contains("attendees", [email!.toLowerCase()]).gte("meeting_at", new Date().toISOString()),
+            supabase.from("sales_meeting_responses").select("meeting_id").eq("user_id", userId),
+          ]).then(([m, r]) => m.error ? null : meetingsWaitingCount(m.data ?? [], new Set((r.data ?? []).map((x) => x.meeting_id)), email, Date.now()))
+        : Promise.resolve(0),
+    ]);
+    setW((prev) => ({ sales: sales ?? prev?.sales ?? 0, leaves: leaves ?? prev?.leaves ?? 0, meetings: meetings ?? prev?.meetings ?? 0 }));
+  }, [userId, email]);
+  useEffect(() => { setW(null); void load(); }, [load]);
+  useLiveRefresh(["sales_deals", "leave_requests", "sales_meetings", "sales_meeting_responses"], load);
+  return w;
 }
 
 // Pops an alert (in-app + browser notification) when a new direct message arrives,
@@ -27,36 +49,41 @@ function useSalesWaiting(email?: string | null) {
 export function MessageAlerts() {
   const session = useAuthSession();
   const userId = session?.user.id;
-  const salesWaiting = useSalesWaiting(session?.user.email);
+  const waiting = useWaiting(userId, session?.user.email);
+  const waitingTotal = waiting ? waiting.sales + waiting.leaves + waiting.meetings : 0;
   const unread = useUnreadMessages();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     const base = document.title.replace(/^\(\d+\+?\)\s*/, "");
-    const total = unread + (salesWaiting ?? 0);
+    const total = unread + waitingTotal;
     document.title = total > 0 ? `(${total > 99 ? "99+" : total}) ${base}` : base;
-  }, [unread, salesWaiting, path]);
+  }, [unread, waitingTotal, path]);
 
   // Red counter on the laptop/phone icon (browser tab + installed app taskbar icon).
-  useEffect(() => { setAppBadgeCount(unread + (salesWaiting ?? 0)); }, [unread, salesWaiting]);
+  useEffect(() => { setAppBadgeCount(unread + waitingTotal); }, [unread, waitingTotal]);
 
-  // System notification when a new sales request reaches this account's step.
-  const lastWaiting = useRef<number | null>(null);
+  // System notification when something new reaches this account (sales step, leave approval, meeting invite).
+  const lastWaiting = useRef<Waiting | null>(null);
   useEffect(() => {
     const prev = lastWaiting.current;
-    lastWaiting.current = salesWaiting;
-    if (salesWaiting === null || prev === null || salesWaiting <= prev) return;
-    if (window.location.pathname !== "/sales") {
-      toast.info(t("طلب مبيعات بانتظارك"), { action: { label: t("فتح"), onClick: () => navigate({ to: "/sales" }) } });
+    lastWaiting.current = waiting;
+    if (!waiting || !prev) return;
+    for (const l of WAIT_LINKS) {
+      const n = waiting[l.k];
+      if (n <= prev[l.k]) continue;
+      if (window.location.pathname !== l.to) {
+        toast.info(t(l.label), { action: { label: t("فتح"), onClick: () => navigate({ to: l.to }) } });
+      }
+      if (notificationPermission() === "granted" && (document.hidden || !document.hasFocus())) {
+        try {
+          const note = new Notification("Metal Fuze", { body: `${t(l.label)} (${n})`, icon: "/icon-192.png", tag: `waiting-${l.k}` });
+          note.onclick = () => { window.focus(); navigate({ to: l.to }); note.close(); };
+        } catch { /* unsupported */ }
+      }
     }
-    if (notificationPermission() === "granted" && (document.hidden || !document.hasFocus())) {
-      try {
-        const n = new Notification("Metal Fuze", { body: `${t("طلب مبيعات بانتظارك")} (${salesWaiting})`, icon: "/icon-192.png", tag: "sales-waiting" });
-        n.onclick = () => { window.focus(); navigate({ to: "/sales" }); n.close(); };
-      } catch { /* unsupported */ }
-    }
-  }, [salesWaiting, navigate]);
+  }, [waiting, navigate]);
 
   useEffect(() => {
     if (!userId) return;

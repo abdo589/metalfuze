@@ -1,6 +1,7 @@
 // Laptop/phone red counter: one number shown on the browser-tab icon and on the installed app's taskbar icon.
 import { WF } from "./sales-form";
 import { canActOnSalesStep } from "./ceo-access";
+import { REQUIRED_MEETING_PEOPLE } from "./sales-meetings";
 
 /** Text drawn inside the red circle; null hides the circle. */
 export function badgeLabel(n: number): string | null {
@@ -16,6 +17,28 @@ export function salesWaitingCount(steps: readonly string[], myEmail?: string | n
 /** Whether this account owns any approval step (others never need the sales query). */
 export function hasSalesStep(myEmail?: string | null): boolean {
   return WF.some((s) => s.k !== "sales_entry" && canActOnSalesStep(s.k, s.email, myEmail));
+}
+
+/** Leave requests waiting for an approver (HR and CEO-access accounts approve both stages). */
+export function leavesWaitingCount(statuses: readonly string[], canApprove: boolean): number {
+  return canApprove ? statuses.filter((s) => s === "pending_manager" || s === "pending_hr").length : 0;
+}
+
+/** Whether this account must answer meeting invitations. */
+export function answersMeetings(myEmail?: string | null): boolean {
+  const e = myEmail?.toLowerCase();
+  return !!e && REQUIRED_MEETING_PEOPLE.some((p) => p.email === e);
+}
+
+/** Upcoming meetings this account is invited to and has not answered yet. */
+export function meetingsWaitingCount(
+  meetings: readonly { id: string; meeting_at: string; attendees: string[] }[],
+  answeredIds: ReadonlySet<string>, myEmail: string | null | undefined, now: number,
+): number {
+  if (!answersMeetings(myEmail)) return 0;
+  const e = myEmail!.toLowerCase();
+  return meetings.filter((m) => !answeredIds.has(m.id) && new Date(m.meeting_at).getTime() >= now
+    && m.attendees.some((a) => a.toLowerCase() === e)).length;
 }
 
 let originalIcon: string | null = null;
