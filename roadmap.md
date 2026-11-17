@@ -37,3 +37,5 @@
 - [x] Phase 2: real forced sign-out, per-account local storage
 - [x] Phase 3: projects/payments one row each, versions, tombstones, DB receipt numbers, read-cache generations
 - [ ] Phase 4: atomic roles, attendance unique index, leave locking/overlap
+
+- [x] Eilaf quotation step: auto-read price from PDF / Excel quotation files and sum them

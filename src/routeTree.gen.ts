@@ -50,6 +50,7 @@ import { Route as UsersRouteImport } from './routes/users'
 import { Route as WorkersCheckinRouteImport } from './routes/workers-checkin'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiExtractPriceRouteImport } from './routes/api/extract-price'
 import { Route as ApiTranslateRouteImport } from './routes/api/translate'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
@@ -275,6 +276,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExtractPriceRoute = ApiExtractPriceRouteImport.update({
+  id: '/api/extract-price',
+  path: '/api/extract-price',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTranslateRoute = ApiTranslateRouteImport.update({
   id: '/api/translate',
   path: '/api/translate',
@@ -410,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/workers-checkin': typeof WorkersCheckinRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/extract-price': typeof ApiExtractPriceRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
@@ -471,6 +478,7 @@ export interface FileRoutesByTo {
   '/workers-checkin': typeof WorkersCheckinRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/extract-price': typeof ApiExtractPriceRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
@@ -533,6 +541,7 @@ export interface FileRoutesById {
   '/workers-checkin': typeof WorkersCheckinRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/extract-price': typeof ApiExtractPriceRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
@@ -596,6 +605,7 @@ export interface FileRouteTypes {
     | '/workers-checkin'
     | '/.well-known/oauth-protected-resource'
     | '/api/chat'
+    | '/api/extract-price'
     | '/api/translate'
     | '/api/tts'
     | '/assistant/$threadId'
@@ -657,6 +667,7 @@ export interface FileRouteTypes {
     | '/workers-checkin'
     | '/.well-known/oauth-protected-resource'
     | '/api/chat'
+    | '/api/extract-price'
     | '/api/translate'
     | '/api/tts'
     | '/assistant/$threadId'
@@ -718,6 +729,7 @@ export interface FileRouteTypes {
     | '/workers-checkin'
     | '/.well-known/oauth-protected-resource'
     | '/api/chat'
+    | '/api/extract-price'
     | '/api/translate'
     | '/api/tts'
     | '/assistant/$threadId'
@@ -780,6 +792,7 @@ export interface RootRouteChildren {
   WorkersCheckinRoute: typeof WorkersCheckinRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiExtractPriceRoute: typeof ApiExtractPriceRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
   ApiTtsRoute: typeof ApiTtsRoute
   AssistantThreadIdRoute: typeof AssistantThreadIdRoute
@@ -1089,6 +1102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/extract-price': {
+      id: '/api/extract-price'
+      path: '/api/extract-price'
+      fullPath: '/api/extract-price'
+      preLoaderRoute: typeof ApiExtractPriceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/translate': {
       id: '/api/translate'
       path: '/api/translate'
@@ -1261,6 +1281,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiExtractPriceRoute: ApiExtractPriceRoute,
   ApiTranslateRoute: ApiTranslateRoute,
   ApiTtsRoute: ApiTtsRoute,
   AssistantThreadIdRoute: AssistantThreadIdRoute,
