@@ -182,6 +182,7 @@ function HrFilePage() {
                               ? <span className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-0.5 text-xs font-semibold text-destructive-foreground animate-pulse"><span className="size-1.5 rounded-full bg-destructive-foreground" />{label}</span>
                               : <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-semibold text-success">{label}</span>;
                           })() : show(r.data[c])}
+                          {c === "اسم الموظف" && r.sheet === "documents" && (() => { const d = daysLeft(String(r.data["تاريخ الانتهاء"] ?? "")); return d !== null && d <= ALERT_DAYS ? <span className="ms-2 inline-block animate-pulse rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{d < 0 ? "منتهية" : "قريبة الانتهاء"}</span> : null; })()}
                           {c === "اسم الموظف" && r.sheet === "employees" && statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang) && (
                             <span className="ms-2 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang)}</span>
                           )}
