@@ -15,6 +15,7 @@ import { AdvancesCommissions } from "@/components/AdvancesCommissions";
 import { EmployeeSignature } from "@/components/EmployeeSignature";
 import { EmployeeReviews } from "@/components/EmployeeReviews";
 import { DocsOverview } from "@/components/DocsOverview";
+import { ALERT_DAYS, daysLeft } from "@/lib/residency";
 import { NationalitySelect } from "@/components/NationalitySelect";
 import { contractOptions, resolveEmployeeStatus, statusLabel, statusOptions } from "@/lib/employee-status";
 import { useLanguage } from "@/lib/i18n";
@@ -78,7 +79,7 @@ function HrFilePage() {
   const curMonth = month || months[0] || "";
   const rows = useMemo(() => all.filter((r) => r.sheet === tab && (tab !== "payroll" || !curMonth || String(r.data["الشهر"] ?? "") === curMonth) && Object.values(r.data).join(" ").includes(q)), [all, tab, q, curMonth]);
   const monthLabel = (m: string) => { const d = new Date(m); return isNaN(+d) ? m : d.toLocaleDateString("ar-SA-u-ca-gregory", { month: "long", year: "numeric" }); };
-  const cols = META[tab].columns.slice(0, 7);
+  const cols = tab === "documents" ? [...META[tab].columns.slice(0, 7), "الحالة"] : META[tab].columns.slice(0, 7);
 
   const open = (r: Rec) => { setSel(r); setDraft(null); setPtab("basic"); };
   const startEdit = (r: Rec) => setDraft(Object.fromEntries(META[r.sheet].columns.map((c) => [c, r.data[c] === undefined ? "" : String(r.data[c])])));
@@ -171,7 +172,17 @@ function HrFilePage() {
                     <tr key={r.id} onClick={() => open(r)} className={`cursor-pointer border-b border-border/60 hover:bg-muted/40 ${r.sheet === "employees" && statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang) ? "bg-destructive/10 opacity-80" : ""}`}>
                       {cols.map((c) => (
                         <td key={c} className="p-3">
-                          {show(r.data[c])}
+                          {r.sheet === "documents" && (c === "الأيام المتبقية" || c === "الحالة") ? (() => {
+                            const e = String(r.data["تاريخ الانتهاء"] ?? "");
+                            if (!/^\d{4}-\d{2}-\d{2}$/.test(e)) return show(r.data[c]);
+                            const d = daysLeft(e) ?? 0;
+                            if (c === "الأيام المتبقية") return d;
+                            const label = d < 0 ? "منتهية" : d <= ALERT_DAYS ? "قريبة الانتهاء" : "سارية";
+                            return d <= ALERT_DAYS
+                              ? <span className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-0.5 text-xs font-semibold text-destructive-foreground animate-pulse"><span className="size-1.5 rounded-full bg-destructive-foreground" />{label}</span>
+                              : <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-semibold text-success">{label}</span>;
+                          })() : show(r.data[c])}
+                          {c === "اسم الموظف" && r.sheet === "documents" && (() => { const d = daysLeft(String(r.data["تاريخ الانتهاء"] ?? "")); return d !== null && d <= ALERT_DAYS ? <span className="ms-2 inline-block animate-pulse rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{d < 0 ? "منتهية" : "قريبة الانتهاء"}</span> : null; })()}
                           {c === "اسم الموظف" && r.sheet === "employees" && statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang) && (
                             <span className="ms-2 inline-block rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">{statusLabel(r.data["حالة الموظف"] ?? r.data["الحالة"], lang)}</span>
                           )}
